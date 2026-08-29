@@ -454,17 +454,20 @@ function SplashScreen({ go }: { go: (s: Screen) => void }) {
 function LoginScreen({ go }: { go: (s: Screen) => void }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const isDesktop = useIsDesktop()
+
   return (
     <div
       style={{
-        flex: 1,
+        minHeight: "100dvh",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Same background as splash */}
+      {/* Background */}
       <img
         src="https://images.unsplash.com/photo-1518843875459-f738682238a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxmcmVzaCUyMGNvbG9yZnVsJTIwZnJ1aXRzJTIwdmVnZXRhYmxlcyUyMGhlYWx0aHklMjBmb29kfGVufDF8fHx8MTc4NjIzOTc1M3ww&ixlib=rb-4.1.0&q=80&w=1080"
         alt=""
@@ -477,203 +480,251 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
           objectPosition: "center",
         }}
       />
+
+      {/* Dark overlay */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(12,32,18,0.82)",
+          background: isDesktop
+            ? "rgba(5, 25, 14, 0.72)"
+            : "rgba(12, 32, 18, 0.82)",
         }}
       />
-      <Center
-        maxWidth={440}
+
+      {/* Main content */}
+      <div
         style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          paddingTop: SAFE_TOP,
-          paddingLeft: 28,
-          paddingRight: 28,
-          paddingBottom: 40,
           position: "relative",
           zIndex: 1,
+          width: "100%",
+          minHeight: "100dvh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          boxSizing: "border-box",
+          padding: isDesktop ? "40px 24px" : "20px 28px 40px",
         }}
       >
-        <div style={{ marginBottom: 8 }}>
-          <BackBtn onPress={() => go("splash")} />
-        </div>
-        {/* header */}
         <div
           style={{
+            width: "100%",
+            maxWidth: isDesktop ? 560 : 440,
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
-            paddingTop: "10px",
-            paddingBottom: "32px",
-            paddingLeft: 0,
-            paddingRight: 0,
+            boxSizing: "border-box",
           }}
         >
-          <Logo
-            size={200}
+          {/* Logo and heading */}
+          <div
             style={{
-              borderRadius: 0,
-              marginBottom: -12,
-              mixBlendMode: "screen",
-            }}
-          />
-          <p
-            style={{
-              marginTop: "-12px",
-              fontWeight: 800,
-              fontSize: 32,
-              fontFamily: "'Poppins', sans-serif",
-              letterSpacing: "-0.01em",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              paddingTop: isDesktop ? 0 : 10,
+              paddingBottom: isDesktop ? 28 : 32,
             }}
           >
-            <span style={{ color: C.textOnDark }}>Scan</span>
-            <span style={{ color: C.greenLight }}>ity</span>
-          </p>
-          <h2
-            style={{
-              marginTop: 4,
-              fontWeight: 800,
-              fontSize: 26,
-              color: C.textOnDark,
-            }}
-          >
-            Welcome Back!
-          </h2>
-          <p
-            style={{
-              fontSize: 13,
-              color: "rgba(255,255,255,0.6)",
-              marginTop: 4,
-            }}
-          >
-            Please login to continue
-          </p>
-        </div>
-        {/* form */}
-        <div style={{ flex: 1 }}>
-          <Field
-            icon={
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            }
-            placeholder="Email"
-            type="email"
-            value={email}
-            onChange={setEmail}
-          />
-          <Field
-            icon={
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0110 0v4" />
-              </svg>
-            }
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={setPassword}
-          />
-          <div style={{ textAlign: "right", marginBottom: 28 }}>
-            <button
-              type="button"
-              onClick={() => go("forgotPassword")}
+            <Logo
+              size={isDesktop ? 180 : 200}
               style={{
-                border: "none",
-                background: "transparent",
-                color: C.greenLight,
+                borderRadius: 0,
+                marginBottom: -12,
+                mixBlendMode: "screen",
+              }}
+            />
+
+            <p
+              style={{
+                marginTop: "-12px",
+                marginBottom: 0,
+                fontWeight: 800,
+                fontSize: isDesktop ? 30 : 32,
                 fontFamily: "'Poppins', sans-serif",
-                fontSize: 10,
-                fontWeight: 600,
-                cursor: "pointer",
-                padding: 0,
+                letterSpacing: "-0.01em",
               }}
             >
-              Forgot Password?
-            </button>
+              <span style={{ color: C.textOnDark }}>Scan</span>
+              <span style={{ color: C.greenLight }}>ity</span>
+            </p>
+
+            <h2
+              style={{
+                marginTop: 8,
+                marginBottom: 0,
+                fontWeight: 800,
+                fontSize: isDesktop ? 30 : 26,
+                color: C.textOnDark,
+                textAlign: "center",
+              }}
+            >
+              Welcome Back!
+            </h2>
+
+            <p
+              style={{
+                fontSize: isDesktop ? 14 : 13,
+                color: "rgba(255,255,255,0.7)",
+                marginTop: 6,
+                marginBottom: 0,
+                textAlign: "center",
+              }}
+            >
+              Please login to continue
+            </p>
           </div>
-          <PrimaryBtn
-            label="LOGIN"
-            onClick={() => go("success")}
-            color={C.mocha}
-          />
-          <p
-            style={{
-              textAlign: "center",
-              marginTop: 20,
-              fontSize: 13,
-              color: "rgba(255,255,255,0.6)",
-            }}
-          >
-            Don't have an account?{" "}
-            <button
-              onClick={() => go("register")}
+
+          {/* Form */}
+          <div>
+            <Field
+              icon={
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              }
+              placeholder="Email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+            />
+
+            <Field
+              icon={
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect
+                    x="3"
+                    y="11"
+                    width="18"
+                    height="11"
+                    rx="2"
+                    ry="2"
+                  />
+                  <path d="M7 11V7a5 5 0 0110 0v4" />
+                </svg>
+              }
+              placeholder="Password"
+              type="password"
+              value={password}
+              onChange={setPassword}
+            />
+
+            {/* Forgot password */}
+            <div
               style={{
-                background: "none",
-                border: "none",
-                color: C.greenLight,
-                fontFamily: "'Poppins', sans-serif",
-                fontWeight: 600,
-                fontSize: 13,
-                cursor: "pointer",
+                textAlign: "right",
+                marginTop: 4,
+                marginBottom: isDesktop ? 32 : 28,
               }}
             >
-              Register
-            </button>
-          </p>
-        </div>
-        {/* bottom accent */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 6,
-            marginTop: 24,
-          }}
-        >
+              <button
+                type="button"
+                onClick={() => go("forgotPassword")}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: C.greenLight,
+                  fontFamily: "'Poppins', sans-serif",
+                  fontSize: isDesktop ? 12 : 10,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                Forgot Password?
+              </button>
+            </div>
+
+            {/* Login button */}
+            <PrimaryBtn
+              label="LOGIN"
+              onClick={() => go("success")}
+              color={C.mocha}
+            />
+
+            {/* Register */}
+            <p
+              style={{
+                textAlign: "center",
+                marginTop: 22,
+                fontSize: isDesktop ? 14 : 13,
+                color: "rgba(255,255,255,0.7)",
+              }}
+            >
+              Don't have an account?{" "}
+              <button
+                onClick={() => go("register")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: C.greenLight,
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 600,
+                  fontSize: isDesktop ? 14 : 13,
+                  cursor: "pointer",
+                }}
+              >
+                Register
+              </button>
+            </p>
+          </div>
+
+          {/* Bottom accent */}
           <div
             style={{
-              width: 40,
-              height: 3,
-              borderRadius: 2,
-              background: C.green,
+              display: "flex",
+              justifyContent: "center",
+              gap: 6,
+              marginTop: isDesktop ? 35 : 24,
             }}
-          />
-          <div
-            style={{
-              width: 12,
-              height: 3,
-              borderRadius: 2,
-              background: C.mocha,
-            }}
-          />
-          <div
-            style={{ width: 6, height: 3, borderRadius: 2, background: C.gray }}
-          />
+          >
+            <div
+              style={{
+                width: 40,
+                height: 3,
+                borderRadius: 2,
+                background: C.green,
+              }}
+            />
+
+            <div
+              style={{
+                width: 12,
+                height: 3,
+                borderRadius: 2,
+                background: C.mocha,
+              }}
+            />
+
+            <div
+              style={{
+                width: 6,
+                height: 3,
+                borderRadius: 2,
+                background: C.gray,
+              }}
+            />
+          </div>
         </div>
-      </Center>
+      </div>
     </div>
   )
 }
+
 function RegisterScreen({ go }: { go: (s: Screen) => void }) {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -1115,20 +1166,22 @@ function SuccessScreen({ go }: { go: (s: Screen) => void }) {
   )
 }
 const ALLERGY_LIST = [
-  { id: "peanuts", label: "Peanuts", icon: "🥜" },
-  { id: "tree-nuts", label: "Tree Nuts", icon: "🌰" },
-  { id: "dairy", label: "Dairy", icon: "🥛" },
-  { id: "eggs", label: "Eggs", icon: "🥚" },
-  { id: "wheat", label: "Wheat / Gluten", icon: "🌾" },
-  { id: "soy", label: "Soy", icon: "🫘" },
-  { id: "fish", label: "Fish", icon: "🐟" },
-  { id: "shellfish", label: "Shellfish", icon: "🦐" },
-  { id: "sesame", label: "Sesame", icon: "🌿" },
-  { id: "other", label: "Other", icon: "➕" },
+  { id: "peanuts", label: "Peanuts", icon: "🥜", iconBg: "#B5834A" },
+  { id: "tree-nuts", label: "Tree Nuts", icon: "🌰", iconBg: "#C4574B" },
+  { id: "dairy", label: "Dairy", icon: "🥛", iconBg: "#4A90C4" },
+  { id: "eggs", label: "Eggs", icon: "🥚", iconBg: "#E0A72E" },
+  { id: "wheat", label: "Wheat / Gluten", icon: "🌾", iconBg: "#6B9E4A" },
+  { id: "soy", label: "Soy", icon: "🫘", iconBg: "#C45B8A" },
+  { id: "fish", label: "Fish", icon: "🐟", iconBg: "#4A90C4" },
+  { id: "shellfish", label: "Shellfish", icon: "🦐", iconBg: "#C4574B" },
+  { id: "sesame", label: "Sesame", icon: "🌿", iconBg: "#6B9E4A" },
+  { id: "other", label: "Other", icon: "➕", iconBg: "#8A6FC4" },
 ]
+
 function AllergiesScreen({ go }: { go: (s: Screen) => void }) {
   const [selected, setSelected] = useState<Set<string>>(new Set(["peanuts"]))
   const [otherText, setOtherText] = useState("")
+
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev)
@@ -1136,6 +1189,7 @@ function AllergiesScreen({ go }: { go: (s: Screen) => void }) {
       return next
     })
   }
+
   return (
     <div
       style={{
@@ -1176,9 +1230,6 @@ function AllergiesScreen({ go }: { go: (s: Screen) => void }) {
           paddingTop: SAFE_TOP,
         }}
       >
-        <div style={{ padding: "0 28px", marginBottom: 8 }}>
-          <BackBtn onPress={() => go("success")} />
-        </div>
         <div style={{ padding: "16px 28px 20px", textAlign: "center" }}>
           {/* icon */}
           <div
@@ -1186,6 +1237,7 @@ function AllergiesScreen({ go }: { go: (s: Screen) => void }) {
               display: "flex",
               justifyContent: "center",
               marginBottom: 14,
+              marginTop: 50,
             }}
           >
             <div
@@ -1232,7 +1284,8 @@ function AllergiesScreen({ go }: { go: (s: Screen) => void }) {
             Choose all that apply to you.
           </p>
         </div>
-        {/* list */}
+
+        {/* Allergy list */}
         <div style={{ flex: 1, overflowY: "auto", padding: "0 16px" }}>
           <div
             style={{
@@ -1242,162 +1295,159 @@ function AllergiesScreen({ go }: { go: (s: Screen) => void }) {
               paddingBottom: 16,
             }}
           >
+            {/* Normal allergy cards */}
             {ALLERGY_LIST.filter((i) => i.id !== "other").map((item) => {
               const active = selected.has(item.id)
               return (
-                <button
+                <div
                   key={item.id}
                   onClick={() => toggle(item.id)}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 10,
-                    padding: "13px 14px",
-                    borderRadius: 14,
-                    border: `2px solid ${active ? C.green : C.border}`,
+                    padding: "10px 12px",
+                    borderRadius: 999,
+                    border: `1.5px solid ${
+                      active ? C.green : "rgba(255,255,255,0.15)"
+                    }`,
                     background: active
                       ? "rgba(224,167,46,0.2)"
-                      : "rgba(255,255,255,0.08)",
-                    backdropFilter: "blur(16px)",
-                    WebkitBackdropFilter: "blur(16px)",
+                      : "rgba(255,255,255,0.05)",
+                    backdropFilter: "blur(6px)",
+                    WebkitBackdropFilter: "blur(6px)",
                     cursor: "pointer",
-                    transition: "all 0.18s",
-                    textAlign: "left",
-                    boxShadow: active ? `0 2px 8px ${C.green}25` : "none",
+                    transition: "all 0.18s ease",
                   }}
                 >
-                  <span style={{ fontSize: 20 }}>{item.icon}</span>
+                  <span
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      background: item.iconBg,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 15,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.icon}
+                  </span>
                   <span
                     style={{
                       flex: 1,
+                      minWidth: 0,
                       fontFamily: "'Poppins', sans-serif",
                       fontWeight: 500,
-                      fontSize: 12,
+                      fontSize: 13,
                       color: C.textOnDark,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {item.label}
                   </span>
                   {active && (
-                    <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
-                      <circle cx="6" cy="6" r="6" fill={C.green} />
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      style={{ flexShrink: 0 }}
+                    >
                       <polyline
-                        points="10 3 5 9 2 6"
-                        stroke="white"
-                        strokeWidth="1.8"
+                        points="12 3 5.5 10 2 6.5"
+                        stroke={C.textOnDark}
+                        strokeWidth="2.2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
                     </svg>
                   )}
-                </button>
+                </div>
               )
             })}
-          </div>
-          {/* Other — separate below grid */}
-          {(() => {
-            const active = selected.has("other")
-            return (
-              <div
-                onClick={() => !active && toggle("other")}
+
+            {/* OTHER */}
+            <div
+              onClick={() => toggle("other")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "10px 12px",
+                borderRadius: 999,
+                border: `1.5px solid ${
+                  selected.has("other") ? C.green : "rgba(255,255,255,0.15)"
+                }`,
+                background: selected.has("other")
+                  ? "rgba(224,167,46,0.2)"
+                  : "rgba(255,255,255,0.05)",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                cursor: "pointer",
+                transition: "all 0.18s ease",
+                gridColumn: "1 / -1",
+              }}
+            >
+              <span
                 style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: "#8A6FC4",
                   display: "flex",
                   alignItems: "center",
-                  gap: 10,
-                  padding: "13px 14px",
-                  borderRadius: 14,
-                  border: `2px solid ${active ? C.green : C.border}`,
-                  background: active
-                    ? "rgba(224,167,46,0.2)"
-                    : "rgba(255,255,255,0.08)",
-                  backdropFilter: "blur(16px)",
-                  WebkitBackdropFilter: "blur(16px)",
-                  cursor: active ? "default" : "pointer",
-                  transition: "all 0.18s",
-                  boxShadow: active ? `0 2px 8px ${C.green}25` : "none",
-                  marginBottom: 16,
+                  justifyContent: "center",
+                  fontSize: 15,
+                  flexShrink: 0,
                 }}
               >
-                <span style={{ fontSize: 20 }}>➕</span>
-                {active ? (
-                  <input
-                    autoFocus
-                    value={otherText}
-                    onChange={(e) => setOtherText(e.target.value)}
-                    placeholder="Type your allergy…"
-                    style={{
-                      flex: 1,
-                      background: "none",
-                      border: "none",
-                      outline: "none",
-                      fontFamily: "'Poppins', sans-serif",
-                      fontWeight: 500,
-                      fontSize: 12,
-                      color: C.textOnDark,
-                    }}
-                  />
-                ) : (
-                  <span
-                    style={{
-                      flex: 1,
-                      fontFamily: "'Poppins', sans-serif",
-                      fontWeight: 500,
-                      fontSize: 12,
-                      color: C.textOnDark,
-                    }}
-                  >
-                    Other
-                  </span>
-                )}
-                {active && (
-                  <button
-                    onClick={() => toggle("other")}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: 0,
-                      lineHeight: 1,
-                    }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
-                      <circle
-                        cx="6"
-                        cy="6"
-                        r="6"
-                        fill="rgba(255,255,255,0.2)"
-                      />
-                      <line
-                        x1="4"
-                        y1="4"
-                        x2="8"
-                        y2="8"
-                        stroke="white"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                      <line
-                        x1="8"
-                        y1="4"
-                        x2="4"
-                        y2="8"
-                        stroke="white"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            )
-          })()}
+                ➕
+              </span>
+              {selected.has("other") ? (
+                <input
+                  autoFocus
+                  value={otherText}
+                  onChange={(e) => setOtherText(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  placeholder="Please specify"
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: 500,
+                    fontSize: 13,
+                    color: C.textOnDark,
+                  }}
+                />
+              ) : (
+                <span
+                  style={{
+                    flex: 1,
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: 500,
+                    fontSize: 13,
+                    color: C.textOnDark,
+                  }}
+                >
+                  Other
+                </span>
+              )}
+            </div>
+          </div>
         </div>
+
         {/* sticky footer */}
         <div
           style={{
             padding: "14px 24px 28px",
-            borderTop: "1.5px solid rgba(255,255,255,0.12)",
-            background: "rgba(12,32,18,0.6)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -1441,18 +1491,20 @@ function AllergiesScreen({ go }: { go: (s: Screen) => void }) {
 }
 // ── Health Conditions Screen ──────────────────────────────────────────────────
 const HEALTH_LIST = [
-  { id: "diabetes", label: "Diabetes", icon: "🩸" },
-  { id: "hypertension", label: "Hypertension", icon: "❤️" },
-  { id: "celiac", label: "Celiac Disease", icon: "🌾" },
-  { id: "lactose", label: "Lactose Intolerance", icon: "🥛" },
-  { id: "ibs", label: "IBS / Crohn's", icon: "🫁" },
-  { id: "kidney", label: "Kidney Disease", icon: "🫘" },
-  { id: "heart", label: "Heart Disease", icon: "💊" },
-  { id: "none", label: "None of the above", icon: "✓" },
+  { id: "diabetes", label: "Diabetes", icon: "🩸", iconBg: "#C4574B" },
+  { id: "hypertension", label: "Hypertension", icon: "❤️", iconBg: "#C45B8A" },
+  { id: "celiac", label: "Celiac Disease", icon: "🌾", iconBg: "#6B9E4A" },
+  { id: "lactose", label: "Lactose Intolerance", icon: "🥛", iconBg: "#4A90C4" },
+  { id: "ibs", label: "IBS / Crohn's", icon: "🫁", iconBg: "#B5834A" },
+  { id: "kidney", label: "Kidney Disease", icon: "🫘", iconBg: "#8A6FC4" },
+  { id: "heart", label: "Heart Disease", icon: "💊", iconBg: "#E0A72E" },
+  { id: "none", label: "None of the above", icon: "✓", iconBg: "#6B9E4A" },
 ]
+
 function HealthScreen({ go }: { go: (s: Screen) => void }) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [otherText, setOtherText] = useState("")
+
   const toggle = (item: string) => {
     setSelected((prev) => {
       const next = new Set(prev)
@@ -1464,6 +1516,7 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
       return next
     })
   }
+
   return (
     <div
       style={{
@@ -1507,20 +1560,12 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
           paddingTop: SAFE_TOP,
         }}
       >
-        {/* Back button */}
-        <div
-          style={{
-            padding: "0 28px",
-            marginBottom: 8,
-          }}
-        >
-          <BackBtn onPress={() => go("allergies")} />
-        </div>
         {/* Header */}
         <div
           style={{
             padding: "16px 28px 20px",
             textAlign: "center",
+            marginTop:50,
           }}
         >
           <div
@@ -1580,6 +1625,7 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
             Choose all that apply to you.
           </p>
         </div>
+
         {/* Health condition list */}
         <div
           style={{
@@ -1607,12 +1653,14 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
                     display: "flex",
                     alignItems: "center",
                     gap: 10,
-                    padding: "13px 12px",
-                    borderRadius: 14,
-                    border: `2px solid ${active ? C.green : C.border}`,
+                    padding: "10px 12px",
+                    borderRadius: 999,
+                    border: `1.5px solid ${
+                      active ? C.green : "rgba(255,255,255,0.15)"
+                    }`,
                     background: active
                       ? "rgba(224,167,46,0.2)"
-                      : "rgba(255,255,255,0.08)",
+                      : "rgba(255,255,255,0.05)",
                     backdropFilter: "blur(6px)",
                     WebkitBackdropFilter: "blur(6px)",
                     cursor: "pointer",
@@ -1621,9 +1669,15 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
                 >
                   <span
                     style={{
-                      fontSize: 20,
-                      width: 28,
-                      textAlign: "center",
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      background: item.iconBg,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 15,
+                      flexShrink: 0,
                     }}
                   >
                     {item.icon}
@@ -1631,17 +1685,39 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
                   <span
                     style={{
                       flex: 1,
+                      minWidth: 0,
                       fontFamily: "'Poppins', sans-serif",
-                      fontWeight: 600,
-                      fontSize: 11,
+                      fontWeight: 500,
+                      fontSize: 13,
                       color: C.textOnDark,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {item.label}
                   </span>
+                  {active && (
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      style={{ flexShrink: 0 }}
+                    >
+                      <polyline
+                        points="12 3 5.5 10 2 6.5"
+                        stroke={C.textOnDark}
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
                 </div>
               )
             })}
+
             {/* OTHER */}
             <div
               onClick={() => toggle("other")}
@@ -1649,14 +1725,14 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
-                padding: "13px 12px",
-                borderRadius: 14,
-                border: `2px solid ${
-                  selected.has("other") ? C.green : C.border
+                padding: "10px 12px",
+                borderRadius: 999,
+                border: `1.5px solid ${
+                  selected.has("other") ? C.green : "rgba(255,255,255,0.15)"
                 }`,
                 background: selected.has("other")
                   ? "rgba(224,167,46,0.2)"
-                  : "rgba(255,255,255,0.08)",
+                  : "rgba(255,255,255,0.05)",
                 backdropFilter: "blur(6px)",
                 WebkitBackdropFilter: "blur(6px)",
                 cursor: "pointer",
@@ -1667,10 +1743,15 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
               {/* Plus icon */}
               <span
                 style={{
-                  fontSize: 20,
-                  color: selected.has("other") ? C.green : C.textOnDark,
-                  width: 28,
-                  textAlign: "center",
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  background: "#8A6FC4",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 15,
+                  flexShrink: 0,
                 }}
               >
                 ➕
@@ -1685,12 +1766,13 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
                   placeholder="Please specify"
                   style={{
                     flex: 1,
+                    minWidth: 0,
                     background: "transparent",
                     border: "none",
                     outline: "none",
                     fontFamily: "'Poppins', sans-serif",
                     fontWeight: 500,
-                    fontSize: 12,
+                    fontSize: 13,
                     color: C.textOnDark,
                   }}
                 />
@@ -1699,8 +1781,8 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
                   style={{
                     flex: 1,
                     fontFamily: "'Poppins', sans-serif",
-                    fontWeight: 600,
-                    fontSize: 11,
+                    fontWeight: 500,
+                    fontSize: 13,
                     color: C.textOnDark,
                   }}
                 >
@@ -1710,12 +1792,11 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
             </div>
           </div>
         </div>
+
         {/* Bottom section */}
         <div
           style={{
             padding: "14px 24px 28px",
-            borderTop: "1.5px solid rgba(255,255,255,0.12)",
-            background: "rgba(12,32,18,0.6)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -1757,6 +1838,7 @@ function HealthScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+
 // ── Loading Screen ────────────────────────────────────────────────────────────
 function LoadingScreen({ go }: { go: (s: Screen) => void }) {
   const [progress] = useState(75)
@@ -2214,6 +2296,7 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [showLogoutLoading, setShowLogoutLoading] = useState(false)
   const isDesktop = useIsDesktop()
+
   // ── Dashboard Small Cards ────────────────────────────────────────────────
   const cards = [
     {
@@ -2232,6 +2315,7 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
       action: () => go("productCompare"),
     },
   ]
+
   // ── Logout ───────────────────────────────────────────────────────────────
   const handleLogout = () => {
     setShowLogoutConfirm(false)
@@ -2242,8 +2326,9 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
       go("splash")
     }, 1800)
   }
-  // Shared sidebar menu content, reused for the mobile slide-out drawer and
-  // the permanent desktop rail.
+
+  // Shared sidebar menu content — used inside the slide-out drawer on
+  // every screen size.
   const sidebarMenu = (
     <>
       {/* ── User Information ── */}
@@ -2406,6 +2491,7 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
       </button>
     </>
   )
+
   return (
     <div
       style={{
@@ -2436,8 +2522,9 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
           background: "rgba(5, 28, 15, 0.84)",
         }}
       />
-      {/* Mobile slide-out sidebar (hidden on desktop, which uses the permanent rail below) */}
-      {sidebarOpen && !isDesktop && (
+
+      {/* Slide-out sidebar — same behavior on every screen size, opened only via the hamburger button */}
+      {sidebarOpen && (
         <div
           style={{
             position: "absolute",
@@ -2460,7 +2547,7 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
             style={{
               position: "relative",
               zIndex: 21,
-              width: 260,
+              width: isDesktop ? 300 : 260,
               height: "100%",
               background: "rgba(7, 35, 19, 0.97)",
               backdropFilter: "blur(20px)",
@@ -2476,10 +2563,21 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
               boxSizing: "border-box",
             }}
           >
+            {isDesktop && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: 18,
+                }}
+              >
+              </div>
+            )}
             {sidebarMenu}
           </div>
         </div>
       )}
+
       {showLogoutConfirm && (
         <div
           style={{
@@ -2607,6 +2705,7 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
           </div>
         </div>
       )}
+
       {showLogoutLoading && (
         <div
           style={{
@@ -2712,6 +2811,7 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
           </div>
         </div>
       )}
+
       <style>
         {`
           @keyframes logoutProgress {
@@ -2724,513 +2824,440 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
           }
         `}
       </style>
-      {/* ═══════ Desktop shell: permanent rail + content ═══════ */}
+
+      {/* ═══════ Content shell — full width; sidebar is always an overlay drawer ═══════ */}
       <div
         style={{
           flex: 1,
           display: "flex",
-          flexDirection: isDesktop ? "row" : "column",
+          flexDirection: "column",
           position: "relative",
           zIndex: 1,
           minHeight: 0,
         }}
       >
-        {isDesktop && (
-          <div
+        {/* Nav bar — always visible, hamburger opens the drawer on every screen size */}
+        <div
+          style={{
+            paddingTop: SAFE_TOP,
+            paddingLeft: isDesktop ? 40 : 20,
+            paddingRight: isDesktop ? 40 : 20,
+            paddingBottom: 14,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: 15,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
             style={{
-              width: 260,
-              flexShrink: 0,
-              height: "100%",
-              background: "rgba(7, 35, 19, 0.97)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
+              width: 36,
+              height: 36,
+              background: "rgba(255,255,255,0.10)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 10,
+              cursor: "pointer",
               display: "flex",
-              flexDirection: "column",
-              padding: "28px 0 24px",
-              borderRight: "1px solid rgba(224,167,46,0.18)",
-              boxSizing: "border-box",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <div
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            >
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <img
+            src={logoImg}
+            alt="Scanity logo"
+            style={{
+              width: 60,
+              height: 60,
+              objectFit: "contain",
+              mixBlendMode: "screen",
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => go("profile")}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              background: "rgba(224,167,46,0.20)",
+              border: "1.5px solid rgba(224,167,46,0.45)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={C.greenLight}
+              strokeWidth="2"
+            >
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Greeting */}
+        <div
+          style={{
+            padding: isDesktop ? "8px 40px 16px" : "4px 20px 16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <h2
               style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 18,
+                fontFamily: "'Poppins', sans-serif",
+                fontWeight: 800,
+                fontSize: isDesktop ? 26 : 22,
+                color: C.textOnDark,
+                marginBottom: 2,
+                marginTop: 2,
               }}
             >
-              <img
-                src={logoImg}
-                alt="Scanity logo"
-                style={{
-                  width: 46,
-                  height: 46,
-                  objectFit: "contain",
-                  mixBlendMode: "screen",
-                }}
-              />
-            </div>
-            {sidebarMenu}
+              Hello, User!
+            </h2>
+            <p
+              style={{
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: 12,
+                color: "rgba(255,255,255,0.50)",
+                margin: 0,
+              }}
+            >
+              See It. Know It. Eat It.
+            </p>
           </div>
-        )}
+        </div>
+
         <div
           style={{
             flex: 1,
-            display: "flex",
-            flexDirection: "column",
+            overflowY: "auto",
+            padding: isDesktop ? "0 40px 40px" : "0 16px 24px",
             minHeight: 0,
-            minWidth: 0,
           }}
         >
-          {/* Nav bar (mobile only — desktop uses the permanent rail) */}
-          {!isDesktop && (
-            <div
+          <Center maxWidth={isDesktop ? 900 : undefined}>
+            {/* SCAN BARCODE HERO — now taller on desktop so it reads as the primary action */}
+            <button
+              type="button"
+              onClick={() => go("barcode")}
               style={{
-                paddingTop: SAFE_TOP,
-                paddingLeft: 20,
-                paddingRight: 20,
-                paddingBottom: 14,
+                width: "100%",
+                height: isDesktop ? 220 : 150,
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "space-between",
+                justifyContent: "center",
+                gap: 14,
+                borderRadius: 20,
+                background: "rgba(40,90,55,0.88)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                border: "2px solid rgba(224,167,46,0.70)",
+                boxShadow:
+                  "0 8px 32px rgba(224,167,46,0.20), inset 0 1px 0 rgba(255,255,255,0.10)",
+                cursor: "pointer",
+                marginBottom: 16,
+                boxSizing: "border-box",
               }}
             >
-              <button
-                type="button"
-                onClick={() => setSidebarOpen(true)}
-                style={{
-                  width: 36,
-                  height: 36,
-                  background: "rgba(255,255,255,0.10)",
-                  backdropFilter: "blur(10px)",
-                  WebkitBackdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  borderRadius: 10,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+              <svg
+                width={isDesktop ? 64 : 52}
+                height={isDesktop ? 64 : 52}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={C.greenLight}
+                strokeWidth="1.4"
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="white"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                >
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </svg>
-              </button>
-              <img
-                src={logoImg}
-                alt="Scanity logo"
-                style={{
-                  width: 50,
-                  height: 50,
-                  objectFit: "contain",
-                  mixBlendMode: "screen",
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => go("profile")}
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "50%",
-                  background: "rgba(224,167,46,0.20)",
-                  border: "1.5px solid rgba(224,167,46,0.45)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={C.greenLight}
-                  strokeWidth="2"
-                >
-                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-              </button>
-            </div>
-          )}
-          {/* Greeting + profile shortcut (desktop) */}
-          <div
-            style={{
-              padding: isDesktop ? "28px 40px 16px" : "4px 20px 16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <div>
-              <h2
+                <path d="M3 9V6a1 1 0 011-1h3" />
+                <path d="M3 15v3a1 1 0 001 1h3" />
+                <path d="M15 5h3a1 1 0 011 1v3" />
+                <path d="M15 19h3a1 1 0 001-1v-3" />
+                <line x1="7" y1="8" x2="7" y2="16" />
+                <line x1="10" y1="8" x2="10" y2="16" />
+                <line x1="13" y1="8" x2="13" y2="16" />
+                <line x1="16" y1="8" x2="16" y2="16" />
+              </svg>
+              <span
                 style={{
                   fontFamily: "'Poppins', sans-serif",
-                  fontWeight: 800,
-                  fontSize: isDesktop ? 26 : 22,
+                  fontWeight: 700,
+                  fontSize: isDesktop ? 18 : 16,
                   color: C.textOnDark,
-                  margin: 0,
-                  marginBottom: 2,
                 }}
               >
-                Hello, User!
-              </h2>
-              <p
-                style={{
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: 12,
-                  color: "rgba(255,255,255,0.50)",
-                  margin: 0,
-                }}
-              >
-                See It. Know It. Eat It.
-              </p>
-            </div>
-            {isDesktop && (
-              <button
-                type="button"
-                onClick={() => go("profile")}
-                style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: "50%",
-                  background: "rgba(224,167,46,0.20)",
-                  border: "1.5px solid rgba(224,167,46,0.45)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={C.greenLight}
-                  strokeWidth="2"
-                >
-                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-              </button>
-            )}
-          </div>
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              padding: isDesktop ? "0 40px 40px" : "0 16px 24px",
-              minHeight: 0,
-            }}
-          >
-            <Center maxWidth={isDesktop ? 900 : undefined}>
-              {/* SCAN BARCODE HERO */}
-              <button
-                type="button"
-                onClick={() => go("barcode")}
-                style={{
-                  width: "100%",
-                  height: 150,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 14,
-                  borderRadius: 20,
-                  background: "rgba(40,90,55,0.88)",
-                  backdropFilter: "blur(20px)",
-                  WebkitBackdropFilter: "blur(20px)",
-                  border: "2px solid rgba(224,167,46,0.70)",
-                  boxShadow:
-                    "0 8px 32px rgba(224,167,46,0.20), inset 0 1px 0 rgba(255,255,255,0.10)",
-                  cursor: "pointer",
-                  marginBottom: 12,
-                  boxSizing: "border-box",
-                }}
-              >
-                <svg
-                  width="52"
-                  height="52"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={C.greenLight}
-                  strokeWidth="1.4"
-                >
-                  <path d="M3 9V6a1 1 0 011-1h3" />
-                  <path d="M3 15v3a1 1 0 001 1h3" />
-                  <path d="M15 5h3a1 1 0 011 1v3" />
-                  <path d="M15 19h3a1 1 0 001-1v-3" />
-                  <line x1="7" y1="8" x2="7" y2="16" />
-                  <line x1="10" y1="8" x2="10" y2="16" />
-                  <line x1="13" y1="8" x2="13" y2="16" />
-                  <line x1="16" y1="8" x2="16" y2="16" />
-                </svg>
-                <span
+                Scan Barcode
+              </span>
+            </button>
+
+            {/* SMALL CARDS — now stretch full width (1fr each) to align with the hero above */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                rowGap: 14,
+                columnGap: isDesktop ? 14 : 10,
+                marginBottom: 18,
+              }}
+            >
+              {cards.map((card) => (
+                <button
+                  type="button"
+                  key={card.label}
+                  onClick={card.action}
                   style={{
-                    fontFamily: "'Poppins', sans-serif",
-                    fontWeight: 700,
-                    fontSize: 16,
-                    color: C.textOnDark,
+                    minHeight: isDesktop ? 100 : 76,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    background: "rgba(20,70,40,0.75)",
+                    border: "1px solid #E0A72E",
+                    borderRadius: 12,
+                    padding: "10px 6px",
+                    boxSizing: "border-box",
+                    cursor: "pointer",
+                    width: "100%",
                   }}
                 >
-                  Scan Barcode
-                </span>
-              </button>
-              {/* SMALL CARDS */}
+                  <div
+                    style={{
+                      width: isDesktop ? 34 : 30,
+                      height: isDesktop ? 34 : 30,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: C.greenLight,
+                      fontSize: isDesktop ? 22 : 20,
+                    }}
+                  >
+                    {card.icon}
+                  </div>
+                  <span
+                    style={{
+                      fontFamily: "'Poppins', sans-serif",
+                      fontWeight: 600,
+                      fontSize: isDesktop ? 12 : 9,
+                      lineHeight: "13px",
+                      color: C.greenLight,
+                      textAlign: "center",
+                    }}
+                  >
+                    {card.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* RECENT SCANS */}
+            <div
+              style={{
+                marginTop: 16,
+                padding: 14,
+                borderRadius: 16,
+                background: "rgba(12,45,25,0.92)",
+                border: "1px solid rgba(224,167,46,0.35)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
+                boxSizing: "border-box",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "0 6px 8px",
+                }}
+              >
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: 700,
+                    fontSize: 12,
+                    color: "#FFFFFF",
+                  }}
+                >
+                  Recent Scans
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => go("history")}
+                  style={{
+                    border: "none",
+                    background: "none",
+                    padding: 0,
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: 700,
+                    fontSize: 10,
+                    color: C.greenLight,
+                    cursor: "pointer",
+                  }}
+                >
+                  View All
+                </button>
+              </div>
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: isDesktop
-                    ? "repeat(3, minmax(140px, 220px))"
-                    : "repeat(3, minmax(0px, 1fr))",
-                  rowGap: 14,
-                  columnGap: isDesktop ? 14 : 20,
-                  marginBottom: 18,
+                  gridTemplateColumns: isDesktop ? "1fr 1fr" : "1fr",
+                  gap: 8,
                 }}
               >
-                {cards.map((card) => (
+                {RECENT_SCANS.map((scan) => (
                   <button
                     type="button"
-                    key={card.label}
-                    onClick={card.action}
+                    key={`${scan.name}-${scan.time}`}
+                    onClick={() => go("productResult")}
                     style={{
-                      minHeight: isDesktop ? 92 : 76,
+                      width: "100%",
+                      minHeight: 68,
                       display: "flex",
-                      flexDirection: "column",
                       alignItems: "center",
-                      justifyContent: "center",
-                      gap: 5,
-                      background: "rgba(20,70,40,0.75)",
-                      border: "1px solid #E0A72E",
+                      gap: 10,
+                      padding: "9px 10px",
+                      background: "#2F6B42",
+                      border: "1px solid rgba(224,167,46,0.35)",
                       borderRadius: 12,
-                      padding: "8px 4px",
+                      boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
                       boxSizing: "border-box",
                       cursor: "pointer",
+                      textAlign: "left",
                     }}
                   >
                     <div
                       style={{
-                        width: 30,
-                        height: 30,
+                        width: 40,
+                        height: 40,
+                        borderRadius: 10,
+                        background: "rgba(224,167,46,0.16)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: C.greenLight,
-                        fontSize: 20,
+                        flexShrink: 0,
                       }}
                     >
-                      {card.icon}
+                      <i
+                        className="fa fa-shopping-bag"
+                        style={{
+                          fontSize: 18,
+                          color: C.greenLight,
+                        }}
+                      />
                     </div>
-                    <span
+                    <div
                       style={{
-                        fontFamily: "'Poppins', sans-serif",
-                        fontWeight: 600,
-                        fontSize: isDesktop ? 11 : 8,
-                        lineHeight: "13px",
-                        color: C.greenLight,
-                        textAlign: "center",
+                        flex: 1,
+                        minWidth: 0,
                       }}
                     >
-                      {card.label}
-                    </span>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontFamily: "'Poppins', sans-serif",
+                          fontWeight: 700,
+                          fontSize: 13,
+                          color: C.textOnDark,
+                        }}
+                      >
+                        {scan.name}
+                      </p>
+                      <p
+                        style={{
+                          margin: "2px 0 0",
+                          fontFamily: "'Poppins', sans-serif",
+                          fontSize: 8,
+                          color: "rgba(255,255,255,0.55)",
+                        }}
+                      >
+                        {scan.date} • {scan.time}
+                      </p>
+                    </div>
+                    <div
+                      style={{
+                        textAlign: "right",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <p
+                        style={{
+                          margin: 0,
+                          fontFamily: "'Poppins', sans-serif",
+                          fontWeight: 800,
+                          fontSize: 20,
+                          color: C.textOnDark,
+                          lineHeight: 1,
+                        }}
+                      >
+                        {scan.score}
+                      </p>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "flex-end",
+                          gap: 4,
+                          marginTop: 3,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 7,
+                            height: 7,
+                            borderRadius: "50%",
+                            background: scan.safe ? "#4CAF50" : "#E53E3E",
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontFamily: "'Poppins', sans-serif",
+                            fontSize: 8,
+                            color: "rgba(255,255,255,0.60)",
+                          }}
+                        >
+                          {scan.safe ? "Safe" : "Unsafe"}
+                        </span>
+                      </div>
+                    </div>
+                    <i
+                      className="fa fa-angle-right"
+                      style={{
+                        fontSize: 16,
+                        color: "rgba(255,255,255,0.45)",
+                      }}
+                    />
                   </button>
                 ))}
               </div>
-              {/* RECENT SCANS */}
-              <div
-                style={{
-                  marginTop: 16,
-                  padding: 14,
-                  borderRadius: 16,
-                  background: "rgba(12,45,25,0.92)",
-                  border: "1px solid rgba(224,167,46,0.35)",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
-                  boxSizing: "border-box",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "0 6px 8px",
-                  }}
-                >
-                  <h3
-                    style={{
-                      margin: 0,
-                      fontFamily: "'Poppins', sans-serif",
-                      fontWeight: 700,
-                      fontSize: 12,
-                      color: "#FFFFFF",
-                    }}
-                  >
-                    Recent Scans
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => go("history")}
-                    style={{
-                      border: "none",
-                      background: "none",
-                      padding: 0,
-                      fontFamily: "'Poppins', sans-serif",
-                      fontWeight: 700,
-                      fontSize: 10,
-                      color: C.greenLight,
-                      cursor: "pointer",
-                    }}
-                  >
-                    View All
-                  </button>
-                </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: isDesktop ? "1fr 1fr" : "1fr",
-                    gap: 8,
-                  }}
-                >
-                  {RECENT_SCANS.map((scan) => (
-                    <button
-                      type="button"
-                      key={`${scan.name}-${scan.time}`}
-                      onClick={() => go("productResult")}
-                      style={{
-                        width: "100%",
-                        minHeight: 68,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        padding: "9px 10px",
-                        background: "#2F6B42",
-                        border: "1px solid rgba(224,167,46,0.35)",
-                        borderRadius: 12,
-                        boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
-                        boxSizing: "border-box",
-                        cursor: "pointer",
-                        textAlign: "left",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 10,
-                          background: "rgba(224,167,46,0.16)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <i
-                          className="fa fa-shopping-bag"
-                          style={{
-                            fontSize: 18,
-                            color: C.greenLight,
-                          }}
-                        />
-                      </div>
-                      <div
-                        style={{
-                          flex: 1,
-                          minWidth: 0,
-                        }}
-                      >
-                        <p
-                          style={{
-                            margin: 0,
-                            fontFamily: "'Poppins', sans-serif",
-                            fontWeight: 700,
-                            fontSize: 13,
-                            color: C.textOnDark,
-                          }}
-                        >
-                          {scan.name}
-                        </p>
-                        <p
-                          style={{
-                            margin: "2px 0 0",
-                            fontFamily: "'Poppins', sans-serif",
-                            fontSize: 8,
-                            color: "rgba(255,255,255,0.55)",
-                          }}
-                        >
-                          {scan.date} • {scan.time}
-                        </p>
-                      </div>
-                      <div
-                        style={{
-                          textAlign: "right",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <p
-                          style={{
-                            margin: 0,
-                            fontFamily: "'Poppins', sans-serif",
-                            fontWeight: 800,
-                            fontSize: 20,
-                            color: C.textOnDark,
-                            lineHeight: 1,
-                          }}
-                        >
-                          {scan.score}
-                        </p>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "flex-end",
-                            gap: 4,
-                            marginTop: 3,
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: 7,
-                              height: 7,
-                              borderRadius: "50%",
-                              background: scan.safe ? "#4CAF50" : "#E53E3E",
-                            }}
-                          />
-                          <span
-                            style={{
-                              fontFamily: "'Poppins', sans-serif",
-                              fontSize: 8,
-                              color: "rgba(255,255,255,0.60)",
-                            }}
-                          >
-                            {scan.safe ? "Safe" : "Unsafe"}
-                          </span>
-                        </div>
-                      </div>
-                      <i
-                        className="fa fa-angle-right"
-                        style={{
-                          fontSize: 16,
-                          color: "rgba(255,255,255,0.45)",
-                        }}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </Center>
-          </div>
+            </div>
+          </Center>
         </div>
       </div>
     </div>
@@ -5936,7 +5963,7 @@ function ProfileScreen({ go }: { go: (s: Screen) => void }) {
           display: "flex",
           alignItems: "center",
           gap: 12,
-          paddingTop: SAFE_TOP,
+          paddingTop: 15,
           paddingLeft: 20,
           paddingRight: 20,
           paddingBottom: 13,
@@ -6940,7 +6967,7 @@ function SettingsScreen({ go }: { go: (s: Screen) => void }) {
           display: "flex",
           alignItems: "center",
           gap: 12,
-          paddingTop: SAFE_TOP,
+          paddingTop: 13,
           paddingLeft: 20,
           paddingRight: 20,
           paddingBottom: 13,
@@ -7063,22 +7090,7 @@ function SettingsScreen({ go }: { go: (s: Screen) => void }) {
             </button>
           }
         />
-        {/* Language */}
-        <Row
-          onClick={() => go("language")}
-          icon={
-            <i
-              className="fa fa-globe"
-              style={{
-                fontSize: 17,
-                color: C.greenLight,
-              }}
-            />
-          }
-          label="Language"
-          sub={currentLanguage}
-          right={<Chevron />}
-        />
+       
         {/* ═══════════════════════════════════════════
             SECURITY
         ═══════════════════════════════════════════ */}
@@ -7087,7 +7099,7 @@ function SettingsScreen({ go }: { go: (s: Screen) => void }) {
         </div>
         {/* Change Password */}
         <Row
-          onClick={() => go("resetPassword")}
+          onClick={() => go("forgotPassword")}
           icon={
             <i
               className="fa fa-key"
@@ -7576,6 +7588,8 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
 function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
   const [email, setEmail] = useState("")
   const [pressed, setPressed] = useState(false)
+  const isDesktop = useIsDesktop()
+
   return (
     <div
       style={{
@@ -7623,64 +7637,82 @@ function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
           left: -50,
         }}
       />
-      {/* ── Content ── */}
-      <Center
-        maxWidth={460}
+
+      {/* Back Button — fixed to the viewport corner, not inside the centered card */}
+      <button
+        type="button"
+        onClick={() => go("login")}
+        style={{
+          position: "absolute",
+          top: isDesktop ? 32 : SAFE_TOP,
+          left: isDesktop ? 32 : 18,
+          zIndex: 3,
+          width: 42,
+          height: 42,
+          borderRadius: 12,
+          border: "1px solid rgba(224,167,46,0.30)",
+          background: "rgba(255,255,255,0.08)",
+          color: C.textOnDark,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          transition: "background 0.15s ease, transform 0.15s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.14)"
+          e.currentTarget.style.transform = "translateX(-2px)"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.08)"
+          e.currentTarget.style.transform = "translateX(0)"
+        }}
+      >
+        <i className="fa fa-angle-left" style={{ fontSize: 24 }} />
+      </button>
+
+      {/* ── Content — vertically + horizontally centered in the full viewport ── */}
+      <div
         style={{
           position: "relative",
           zIndex: 2,
-          height: "100%",
+          minHeight: "100%",
           display: "flex",
-          flexDirection: "column",
-          paddingTop: SAFE_TOP,
-          paddingLeft: 18,
-          paddingRight: 18,
-          paddingBottom: 24,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: isDesktop ? "60px 24px" : "80px 18px 24px",
           boxSizing: "border-box",
         }}
       >
-        {/* Back Button */}
-        <button
-          type="button"
-          onClick={() => go("login")}
+        <Center
+          maxWidth={isDesktop ? 480 : 360}
           style={{
-            width: 38,
-            height: 38,
-            borderRadius: 11,
-            border: "1px solid rgba(224,167,46,0.25)",
-            background: "rgba(255,255,255,0.07)",
-            color: C.textOnDark,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-          }}
-        >
-          <i
-            className="fa fa-angle-left"
-            style={{
-              fontSize: 23,
-            }}
-          />
-        </button>
-        {/* Main Card */}
-        <div
-          style={{
-            flex: 1,
+            width: "100%",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
             alignItems: "center",
-            padding: "10px 8px 30px",
+            padding: isDesktop ? "48px 44px" : "0",
+            boxSizing: "border-box",
+            ...(isDesktop
+              ? {
+                  background: "rgba(15, 48, 28, 0.55)",
+                  border: "1px solid rgba(224,167,46,0.20)",
+                  borderRadius: 28,
+                  boxShadow:
+                    "0 24px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)",
+                  backdropFilter: "blur(24px)",
+                  WebkitBackdropFilter: "blur(24px)",
+                }
+              : {}),
           }}
         >
           {/* Icon */}
           <div
             style={{
-              width: 88,
-              height: 88,
+              width: isDesktop ? 96 : 88,
+              height: isDesktop ? 96 : 88,
               borderRadius: "50%",
               display: "flex",
               alignItems: "center",
@@ -7689,23 +7721,24 @@ function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
               border: "1.5px solid rgba(224,167,46,0.45)",
               boxShadow:
                 "0 0 30px rgba(224,167,46,0.10), inset 0 1px rgba(255,255,255,0.08)",
-              marginBottom: 20,
-              marginTop: 40,
+              marginBottom: 22,
+              flexShrink: 0,
             }}
           >
             <i
               className="fa fa-unlock-alt"
               style={{
-                fontSize: 38,
+                fontSize: isDesktop ? 41 : 38,
                 color: C.greenLight,
               }}
             />
           </div>
+
           {/* Title */}
           <h1
             style={{
-              margin: "0 0 8px",
-              fontSize: 21,
+              margin: "0 0 10px",
+              fontSize: isDesktop ? 28 : 21,
               fontWeight: 800,
               color: C.textOnDark,
               textAlign: "center",
@@ -7713,13 +7746,14 @@ function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
           >
             Forgot Password?
           </h1>
+
           {/* Description */}
           <p
             style={{
-              margin: "0 0 25px",
-              maxWidth: 260,
-              fontSize: 10,
-              lineHeight: "15px",
+              margin: "0 0 30px",
+              maxWidth: isDesktop ? 340 : 260,
+              fontSize: isDesktop ? 13 : 10,
+              lineHeight: isDesktop ? "20px" : "15px",
               color: "rgba(255,255,255,0.58)",
               textAlign: "center",
             }}
@@ -7728,19 +7762,20 @@ function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
             <br />
             code to reset your password.
           </p>
+
           {/* Email Label */}
           <div
             style={{
               width: "100%",
-              maxWidth: 300,
-              marginBottom: 8,
+              maxWidth: isDesktop ? 380 : 300,
+              marginBottom: 10,
             }}
           >
             <label
               style={{
                 display: "block",
-                marginBottom: 6,
-                fontSize: 10,
+                marginBottom: 7,
+                fontSize: isDesktop ? 12 : 10,
                 fontWeight: 600,
                 color: C.textOnDark,
               }}
@@ -7750,13 +7785,13 @@ function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
             {/* Email Input */}
             <div
               style={{
-                height: 48,
+                height: isDesktop ? 54 : 48,
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
-                padding: "0 14px",
+                padding: "0 16px",
                 boxSizing: "border-box",
-                borderRadius: 13,
+                borderRadius: 14,
                 background: "rgba(255,255,255,0.08)",
                 border: email
                   ? "1px solid rgba(224,167,46,0.75)"
@@ -7767,7 +7802,7 @@ function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
               <i
                 className="fa fa-envelope-o"
                 style={{
-                  fontSize: 15,
+                  fontSize: isDesktop ? 16 : 15,
                   color: C.greenLight,
                   flexShrink: 0,
                 }}
@@ -7785,11 +7820,12 @@ function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   background: "transparent",
                   color: C.textOnDark,
                   fontFamily: "'Poppins', sans-serif",
-                  fontSize: 11,
+                  fontSize: isDesktop ? 13 : 11,
                 }}
               />
             </div>
           </div>
+
           {/* Continue Button */}
           <button
             type="button"
@@ -7805,17 +7841,17 @@ function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
             }}
             style={{
               width: "100%",
-              maxWidth: 300,
-              height: 48,
-              marginTop: 12,
+              maxWidth: isDesktop ? 380 : 300,
+              height: isDesktop ? 54 : 48,
+              marginTop: 14,
               border: "1px solid rgba(224,167,46,0.55)",
-              borderRadius: 13,
+              borderRadius: 14,
               background: pressed
                 ? "#8B6F5A"
                 : "linear-gradient(135deg, #E0A72E 0%, #C98A1F 100%)",
               color: "#FFFFFF",
               fontFamily: "'Poppins', sans-serif",
-              fontSize: 16,
+              fontSize: isDesktop ? 15 : 16,
               fontWeight: 700,
               cursor: "pointer",
               boxShadow: pressed
@@ -7827,17 +7863,18 @@ function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
           >
             Continue
           </button>
+
           {/* Back to Login */}
           <button
             type="button"
             onClick={() => go("login")}
             style={{
-              marginTop: 20,
+              marginTop: 22,
               border: "none",
               background: "transparent",
               color: "rgba(255,255,255,0.55)",
               fontFamily: "'Poppins', sans-serif",
-              fontSize: 10,
+              fontSize: isDesktop ? 12 : 10,
               cursor: "pointer",
             }}
           >
@@ -7851,19 +7888,20 @@ function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
               Login
             </span>
           </button>
-        </div>
-        {/* Footer */}
-        <p
-          style={{
-            margin: 0,
-            textAlign: "center",
-            fontSize: 12,
-            color: "rgba(255,255,255,0.35)",
-          }}
-        >
-          Scanity • See It. Know It. Eat It.
-        </p>
-      </Center>
+
+          {/* Footer */}
+          <p
+            style={{
+              margin: isDesktop ? "32px 0 0" : "24px 0 0",
+              textAlign: "center",
+              fontSize: isDesktop ? 12 : 10,
+              color: "rgba(255,255,255,0.35)",
+            }}
+          >
+            Scanity • See It. Know It. Eat It.
+          </p>
+        </Center>
+      </div>
     </div>
   )
 }
@@ -7874,10 +7912,12 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [pressed, setPressed] = useState(false)
+  const isDesktop = useIsDesktop()
   const passwordsMatch =
     password.length > 0 &&
     confirmPassword.length > 0 &&
     password === confirmPassword
+
   return (
     <div
       style={{
@@ -7895,82 +7935,112 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(circle at 15% 15%, rgba(224,167,46,0.16), transparent 35%)," +
-            "radial-gradient(circle at 90% 85%, rgba(201,138,31,0.13), transparent 35%)," +
+            "radial-gradient(circle at 20% 15%, rgba(224,167,46,0.16), transparent 35%)," +
+            "radial-gradient(circle at 85% 80%, rgba(201,138,31,0.13), transparent 35%)," +
             "linear-gradient(145deg, #071B10 0%, #0C2D19 50%, #102E1C 100%)",
         }}
       />
-      {/* Decorative glow */}
+      {/* ── Decorative glow ── */}
       <div
         style={{
           position: "absolute",
-          width: 190,
-          height: 190,
+          width: 180,
+          height: 180,
           borderRadius: "50%",
-          background: "rgba(224,167,46,0.07)",
-          filter: "blur(40px)",
-          top: -70,
-          right: -60,
+          background: "rgba(224,167,46,0.08)",
+          filter: "blur(35px)",
+          top: -60,
+          right: -50,
         }}
       />
-      {/* ── Content ── */}
-      <Center
-        maxWidth={460}
+      <div
+        style={{
+          position: "absolute",
+          width: 160,
+          height: 160,
+          borderRadius: "50%",
+          background: "rgba(224,167,46,0.06)",
+          filter: "blur(30px)",
+          bottom: -50,
+          left: -50,
+        }}
+      />
+
+      {/* Back Button — fixed to the viewport corner, not inside the centered card */}
+      <button
+        type="button"
+        onClick={() => go("forgotPassword")}
+        style={{
+          position: "absolute",
+          top: isDesktop ? 32 : SAFE_TOP,
+          left: isDesktop ? 32 : 18,
+          zIndex: 3,
+          width: 42,
+          height: 42,
+          borderRadius: 12,
+          border: "1px solid rgba(224,167,46,0.30)",
+          background: "rgba(255,255,255,0.08)",
+          color: C.textOnDark,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          transition: "background 0.15s ease, transform 0.15s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.14)"
+          e.currentTarget.style.transform = "translateX(-2px)"
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.08)"
+          e.currentTarget.style.transform = "translateX(0)"
+        }}
+      >
+        <i className="fa fa-angle-left" style={{ fontSize: 24 }} />
+      </button>
+
+      {/* ── Content — vertically + horizontally centered in the full viewport ── */}
+      <div
         style={{
           position: "relative",
           zIndex: 2,
-          height: "100%",
+          minHeight: "100%",
           display: "flex",
-          flexDirection: "column",
-          paddingTop: SAFE_TOP,
-          paddingLeft: 18,
-          paddingRight: 18,
-          paddingBottom: 24,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: isDesktop ? "60px 24px" : "80px 18px 24px",
           boxSizing: "border-box",
         }}
       >
-        {/* Back Button */}
-        <button
-          type="button"
-          onClick={() => go("forgotPassword")}
+        <Center
+          maxWidth={isDesktop ? 480 : 360}
           style={{
-            width: 38,
-            height: 38,
-            borderRadius: 11,
-            border: "1px solid rgba(224,167,46,0.25)",
-            background: "rgba(255,255,255,0.07)",
-            color: C.textOnDark,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-          }}
-        >
-          <i
-            className="fa fa-angle-left"
-            style={{
-              fontSize: 23,
-            }}
-          />
-        </button>
-        {/* Main */}
-        <div
-          style={{
-            flex: 1,
+            width: "100%",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
             alignItems: "center",
-            padding: "10px 8px 30px",
+            padding: isDesktop ? "48px 44px" : "0",
+            boxSizing: "border-box",
+            ...(isDesktop
+              ? {
+                  background: "rgba(15, 48, 28, 0.55)",
+                  border: "1px solid rgba(224,167,46,0.20)",
+                  borderRadius: 28,
+                  boxShadow:
+                    "0 24px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)",
+                  backdropFilter: "blur(24px)",
+                  WebkitBackdropFilter: "blur(24px)",
+                }
+              : {}),
           }}
         >
-          {/* Lock Icon */}
+          {/* Icon */}
           <div
             style={{
-              width: 88,
-              height: 88,
+              width: isDesktop ? 96 : 88,
+              height: isDesktop ? 96 : 88,
               borderRadius: "50%",
               display: "flex",
               alignItems: "center",
@@ -7979,22 +8049,24 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
               border: "1.5px solid rgba(224,167,46,0.45)",
               boxShadow:
                 "0 0 30px rgba(224,167,46,0.10), inset 0 1px rgba(255,255,255,0.08)",
-              marginBottom: 20,
+              marginBottom: 22,
+              flexShrink: 0,
             }}
           >
             <i
               className="fa fa-lock"
               style={{
-                fontSize: 35,
+                fontSize: isDesktop ? 41 : 38,
                 color: C.greenLight,
               }}
             />
           </div>
+
           {/* Title */}
           <h1
             style={{
-              margin: "0 0 8px",
-              fontSize: 21,
+              margin: "0 0 10px",
+              fontSize: isDesktop ? 28 : 21,
               fontWeight: 800,
               color: C.textOnDark,
               textAlign: "center",
@@ -8002,13 +8074,14 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
           >
             Reset Password
           </h1>
+
           {/* Description */}
           <p
             style={{
-              margin: "0 0 24px",
-              maxWidth: 270,
-              fontSize: 10,
-              lineHeight: "15px",
+              margin: "0 0 30px",
+              maxWidth: isDesktop ? 340 : 260,
+              fontSize: isDesktop ? 13 : 10,
+              lineHeight: isDesktop ? "20px" : "15px",
               color: "rgba(255,255,255,0.58)",
               textAlign: "center",
             }}
@@ -8017,19 +8090,20 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
             <br />
             Make sure it is strong and secure.
           </p>
-          {/* Password Input */}
+
+          {/* New Password */}
           <div
             style={{
               width: "100%",
-              maxWidth: 300,
-              marginBottom: 12,
+              maxWidth: isDesktop ? 380 : 300,
+              marginBottom: 14,
             }}
           >
             <label
               style={{
                 display: "block",
-                marginBottom: 6,
-                fontSize: 10,
+                marginBottom: 7,
+                fontSize: isDesktop ? 12 : 10,
                 fontWeight: 600,
                 color: C.textOnDark,
               }}
@@ -8038,24 +8112,26 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
             </label>
             <div
               style={{
-                height: 48,
+                height: isDesktop ? 54 : 48,
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
-                padding: "0 14px",
+                padding: "0 16px",
                 boxSizing: "border-box",
-                borderRadius: 13,
+                borderRadius: 14,
                 background: "rgba(255,255,255,0.08)",
                 border: password
                   ? "1px solid rgba(224,167,46,0.75)"
                   : "1px solid rgba(255,255,255,0.14)",
+                boxShadow: password ? "0 0 15px rgba(224,167,46,0.08)" : "none",
               }}
             >
               <i
                 className="fa fa-lock"
                 style={{
-                  fontSize: 15,
+                  fontSize: isDesktop ? 16 : 15,
                   color: C.greenLight,
+                  flexShrink: 0,
                 }}
               />
               <input
@@ -8072,7 +8148,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   background: "transparent",
                   color: C.textOnDark,
                   fontFamily: "'Poppins', sans-serif",
-                  fontSize: 11,
+                  fontSize: isDesktop ? 13 : 11,
                 }}
               />
               <button
@@ -8084,29 +8160,29 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   color: "rgba(255,255,255,0.5)",
                   cursor: "pointer",
                   padding: 2,
+                  flexShrink: 0,
                 }}
               >
                 <i
                   className={showPassword ? "fa fa-eye-slash" : "fa fa-eye"}
-                  style={{
-                    fontSize: 14,
-                  }}
+                  style={{ fontSize: isDesktop ? 15 : 14 }}
                 />
               </button>
             </div>
           </div>
+
           {/* Confirm Password */}
           <div
             style={{
               width: "100%",
-              maxWidth: 300,
+              maxWidth: isDesktop ? 380 : 300,
             }}
           >
             <label
               style={{
                 display: "block",
-                marginBottom: 6,
-                fontSize: 10,
+                marginBottom: 7,
+                fontSize: isDesktop ? 12 : 10,
                 fontWeight: 600,
                 color: C.textOnDark,
               }}
@@ -8115,26 +8191,31 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
             </label>
             <div
               style={{
-                height: 48,
+                height: isDesktop ? 54 : 48,
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
-                padding: "0 14px",
+                padding: "0 16px",
                 boxSizing: "border-box",
-                borderRadius: 13,
+                borderRadius: 14,
                 background: "rgba(255,255,255,0.08)",
                 border: confirmPassword
                   ? passwordsMatch
                     ? "1px solid rgba(224,167,46,0.75)"
                     : "1px solid rgba(220,80,80,0.65)"
                   : "1px solid rgba(255,255,255,0.14)",
+                boxShadow:
+                  confirmPassword && passwordsMatch
+                    ? "0 0 15px rgba(224,167,46,0.08)"
+                    : "none",
               }}
             >
               <i
                 className="fa fa-lock"
                 style={{
-                  fontSize: 15,
+                  fontSize: isDesktop ? 16 : 15,
                   color: C.greenLight,
+                  flexShrink: 0,
                 }}
               />
               <input
@@ -8151,7 +8232,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   background: "transparent",
                   color: C.textOnDark,
                   fontFamily: "'Poppins', sans-serif",
-                  fontSize: 11,
+                  fontSize: isDesktop ? 13 : 11,
                 }}
               />
               <button
@@ -8163,13 +8244,12 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   color: "rgba(255,255,255,0.5)",
                   cursor: "pointer",
                   padding: 2,
+                  flexShrink: 0,
                 }}
               >
                 <i
                   className={showConfirm ? "fa fa-eye-slash" : "fa fa-eye"}
-                  style={{
-                    fontSize: 14,
-                  }}
+                  style={{ fontSize: isDesktop ? 15 : 14 }}
                 />
               </button>
             </div>
@@ -8177,8 +8257,8 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
             {confirmPassword.length > 0 && (
               <p
                 style={{
-                  margin: "6px 0 0 4px",
-                  fontSize: 8,
+                  margin: "8px 0 0 4px",
+                  fontSize: isDesktop ? 10 : 8,
                   color: passwordsMatch ? "#4CAF50" : "#D96C6C",
                 }}
               >
@@ -8188,6 +8268,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
               </p>
             )}
           </div>
+
           {/* Continue Button */}
           <button
             type="button"
@@ -8204,11 +8285,11 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
             }}
             style={{
               width: "100%",
-              maxWidth: 300,
-              height: 48,
-              marginTop: 18,
+              maxWidth: isDesktop ? 380 : 300,
+              height: isDesktop ? 54 : 48,
+              marginTop: 22,
               border: "1px solid rgba(224,167,46,0.55)",
-              borderRadius: 13,
+              borderRadius: 14,
               background: !passwordsMatch
                 ? "rgba(255,255,255,0.12)"
                 : pressed
@@ -8216,7 +8297,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   : "linear-gradient(135deg, #E0A72E 0%, #C98A1F 100%)",
               color: !passwordsMatch ? "rgba(255,255,255,0.35)" : "#FFFFFF",
               fontFamily: "'Poppins', sans-serif",
-              fontSize: 11,
+              fontSize: isDesktop ? 15 : 16,
               fontWeight: 700,
               cursor: !passwordsMatch ? "not-allowed" : "pointer",
               boxShadow: !passwordsMatch
@@ -8230,19 +8311,20 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
           >
             Continue
           </button>
-        </div>
-        {/* Footer */}
-        <p
-          style={{
-            margin: 0,
-            textAlign: "center",
-            fontSize: 10,
-            color: "rgba(255,255,255,0.35)",
-          }}
-        >
-          Scanity • See It. Know It. Eat It.
-        </p>
-      </Center>
+
+          {/* Footer */}
+          <p
+            style={{
+              margin: isDesktop ? "32px 0 0" : "24px 0 0",
+              textAlign: "center",
+              fontSize: isDesktop ? 12 : 10,
+              color: "rgba(255,255,255,0.35)",
+            }}
+          >
+            Scanity • See It. Know It. Eat It.
+          </p>
+        </Center>
+      </div>
     </div>
   )
 }
@@ -8279,21 +8361,7 @@ function ConfirmationPasswordScreen({ go }: { go: (s: Screen) => void }) {
           transform: "translateX(-50%)",
         }}
       />
-      {/* Back */}
-      <Center maxWidth={460} style={{ position: "relative", zIndex: 2, width: "100%" }}>
-      <button
-        onClick={() => go("login")}
-        style={{
-          background: "none",
-          border: "none",
-          color: "rgba(255,255,255,0.7)",
-          fontSize: 22,
-          cursor: "pointer",
-        }}
-      >
-        <i className="fa fa-angle-left" />
-      </button>
-      </Center>
+      
       {/* Success Icon */}
       <div
         style={{
