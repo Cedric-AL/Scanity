@@ -5695,6 +5695,7 @@ function ProductCompareScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+
 type ProfileOption = { id: string; label: string }
 const HISTORY_SCANS = [
   { name: "Athlene", date: "August 3, 10:35 AM", score: 72, favorite: true },
@@ -5702,6 +5703,7 @@ const HISTORY_SCANS = [
   { name: "Athlene", date: "August 3, 10:35 AM", score: 27, favorite: false },
   { name: "Athlene", date: "August 3, 10:35 AM", score: 72, favorite: true },
 ]
+
 function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
   const [filter, setFilter] = useState<"recent" | "favourite">("recent")
   const [searchOpen, setSearchOpen] = useState(false)
