@@ -5732,7 +5732,7 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
           alignItems: "center",
           justifyContent: "space-between",
           gap: 10,
-          paddingTop: SAFE_TOP,
+          paddingTop: 15,
           paddingLeft: 18,
           paddingRight: 18,
           paddingBottom: 12,
@@ -5813,7 +5813,7 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
               type="button"
               onClick={() => setFilter(option)}
               style={{
-                padding: "4px 14px",
+                padding: "10px 14px",
                 borderRadius: 12,
                 border: `1px solid ${
                   filter === option ? C.greenLight : "rgba(255,255,255,0.35)"
@@ -5821,7 +5821,7 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
                 background:
                   filter === option ? "rgba(224,167,46,0.2)" : "transparent",
                 color: filter === option ? C.greenLight : "rgba(255,255,255,0.65)",
-                fontSize: 9,
+                fontSize: 12,
                 cursor: "pointer",
               }}
             >
@@ -5829,7 +5829,7 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
             </button>
           ))}
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 9, }}>
           {scans.map((scan, index) => (
             <button
               key={`${scan.name}-${index}`}
@@ -5841,7 +5841,7 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
                 gap: 10,
                 width: "100%",
                 minHeight: 62,
-                padding: "8px 9px",
+                padding: "20px 40px",
                 borderRadius: 12,
                 border: "1px solid rgba(224,167,46,0.3)",
                 background: "rgba(22,76,41,0.78)",
@@ -5853,8 +5853,8 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
             >
               <div
                 style={{
-                  width: 38,
-                  height: 38,
+                  width: 40,
+                  height: 40,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
