@@ -730,17 +730,20 @@ function RegisterScreen({ go }: { go: (s: Screen) => void }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirm, setConfirm] = useState("")
+  const isDesktop = useIsDesktop()
+
   return (
     <div
       style={{
-        flex: 1,
+        minHeight: "100dvh",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Same background as splash & login */}
+      {/* Background */}
       <img
         src="https://images.unsplash.com/photo-1518843875459-f738682238a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxmcmVzaCUyMGNvbG9yZnVsJTIwZnJ1aXRzJTIwdmVnZXRhYmxlcyUyMGhlYWx0aHklMjBmb29kfGVufDF8fHx8MTc4NjIzOTc1M3ww&ixlib=rb-4.1.0&q=80&w=1080"
         alt=""
@@ -753,190 +756,259 @@ function RegisterScreen({ go }: { go: (s: Screen) => void }) {
           objectPosition: "center",
         }}
       />
+
+      {/* Dark overlay */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(12,32,18,0.82)",
+          background: isDesktop
+            ? "rgba(5, 25, 14, 0.72)"
+            : "rgba(12, 32, 18, 0.82)",
         }}
       />
-      <Center
-        maxWidth={440}
+
+      {/* Main content */}
+      <div
         style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          paddingTop: SAFE_TOP,
-          paddingLeft: 28,
-          paddingRight: 28,
-          paddingBottom: 36,
           position: "relative",
           zIndex: 1,
+          width: "100%",
+          minHeight: "100dvh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          boxSizing: "border-box",
+          padding: isDesktop ? "40px 24px" : "20px 28px 40px",
         }}
       >
-        <div style={{ marginBottom: 16 }}>
-          <BackBtn onPress={() => go("login")} />
-        </div>
-        {/* Logo + brand */}
         <div
           style={{
+            width: "100%",
+            maxWidth: isDesktop ? 560 : 440,
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
-            marginBottom: 8,
+            boxSizing: "border-box",
           }}
         >
-          <Logo
-            size={120}
-            style={{ borderRadius: 0, mixBlendMode: "screen" }}
-          />
-          <p
+          {/* Logo and heading */}
+          <div
             style={{
-              marginTop: -8,
-              fontWeight: 800,
-              fontSize: 24,
-              fontFamily: "'Poppins', sans-serif",
-              letterSpacing: "-0.01em",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              paddingTop: isDesktop ? 0 : 10,
+              paddingBottom: isDesktop ? 28 : 32,
             }}
           >
-            <span style={{ color: C.textOnDark }}>Scan</span>
-            <span style={{ color: C.greenLight }}>ity</span>
-          </p>
-        </div>
-        <h2
-          style={{
-            fontWeight: 800,
-            fontSize: 24,
-            color: C.textOnDark,
-            textAlign: "center",
-            marginTop: 0,
-            marginBottom: 2,
-          }}
-        >
-          Create Account
-        </h2>
-        <p
-          style={{
-            fontSize: 13,
-            color: "rgba(255,255,255,0.6)",
-            textAlign: "center",
-            marginTop: 4,
-            marginBottom: 20,
-          }}
-        >
-          Sign up to get started
-        </p>
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+            <Logo
+              size={isDesktop ? 180 : 200}
+              style={{
+                borderRadius: 0,
+                marginBottom: -12,
+                mixBlendMode: "screen",
+              }}
+            />
+
+            <p
+              style={{
+                marginTop: "-12px",
+                marginBottom: 0,
+                fontWeight: 800,
+                fontSize: isDesktop ? 30 : 32,
+                fontFamily: "'Poppins', sans-serif",
+                letterSpacing: "-0.01em",
+              }}
             >
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          }
-          placeholder="Full Name"
-          value={name}
-          onChange={setName}
-        />
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+              <span style={{ color: C.textOnDark }}>Scan</span>
+              <span style={{ color: C.greenLight }}>ity</span>
+            </p>
+
+            <h2
+              style={{
+                marginTop: 8,
+                marginBottom: 0,
+                fontWeight: 800,
+                fontSize: isDesktop ? 30 : 26,
+                color: C.textOnDark,
+                textAlign: "center",
+              }}
             >
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-              <polyline points="22,6 12,13 2,6" />
-            </svg>
-          }
-          placeholder="Email"
-          type="email"
-          value={email}
-          onChange={setEmail}
-        />
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+              Create Account
+            </h2>
+
+            <p
+              style={{
+                fontSize: isDesktop ? 14 : 13,
+                color: "rgba(255,255,255,0.7)",
+                marginTop: 6,
+                marginBottom: 0,
+                textAlign: "center",
+              }}
             >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0110 0v4" />
-            </svg>
-          }
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={setPassword}
-          hint="Min 8 characters, 1 number"
-        />
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+              Sign up to get started
+            </p>
+          </div>
+
+          {/* Form */}
+          <div>
+            <Field
+              icon={
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              }
+              placeholder="Full Name"
+              value={name}
+              onChange={setName}
+            />
+
+            <Field
+              icon={
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              }
+              placeholder="Email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+            />
+
+            <Field
+              icon={
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0110 0v4" />
+                </svg>
+              }
+              placeholder="Password"
+              type="password"
+              value={password}
+              onChange={setPassword}
+              hint="Min 8 characters, 1 number"
+            />
+
+            <Field
+              icon={
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0110 0v4" />
+                </svg>
+              }
+              placeholder="Confirm Password"
+              type="password"
+              value={confirm}
+              onChange={setConfirm}
+            />
+
+            <div style={{ marginTop: isDesktop ? 8 : 4 }}>
+              <PrimaryBtn
+                label="Register"
+                onClick={() => go("success")}
+                color={C.mocha}
+              />
+            </div>
+
+            {/* Login */}
+            <p
+              style={{
+                textAlign: "center",
+                marginTop: 22,
+                fontSize: isDesktop ? 14 : 13,
+                color: "rgba(255,255,255,0.7)",
+              }}
             >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0110 0v4" />
-            </svg>
-          }
-          placeholder="Confirm Password"
-          type="password"
-          value={confirm}
-          onChange={setConfirm}
-        />
-        <div style={{ marginTop: 8 }}>
-          <PrimaryBtn
-            label="Register"
-            onClick={() => go("success")}
-            color={C.mocha}
-          />
-        </div>
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: 16,
-            fontSize: 13,
-            color: "rgba(255,255,255,0.6)",
-          }}
-        >
-          Already have an account?{" "}
-          <button
-            onClick={() => go("login")}
+              Already have an account?{" "}
+              <button
+                onClick={() => go("login")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: C.greenLight,
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 600,
+                  fontSize: isDesktop ? 14 : 13,
+                  cursor: "pointer",
+                }}
+              >
+                Login
+              </button>
+            </p>
+          </div>
+
+          {/* Bottom accent */}
+          <div
             style={{
-              background: "none",
-              border: "none",
-              color: C.greenLight,
-              fontFamily: "'Poppins', sans-serif",
-              fontWeight: 600,
-              fontSize: 13,
-              cursor: "pointer",
+              display: "flex",
+              justifyContent: "center",
+              gap: 6,
+              marginTop: isDesktop ? 35 : 24,
             }}
           >
-            Login
-          </button>
-        </p>
-      </Center>
+            <div
+              style={{
+                width: 6,
+                height: 3,
+                borderRadius: 2,
+                background: C.gray,
+              }}
+            />
+
+            <div
+              style={{
+                width: 12,
+                height: 3,
+                borderRadius: 2,
+                background: C.mocha,
+              }}
+            />
+
+            <div
+              style={{
+                width: 40,
+                height: 3,
+                borderRadius: 2,
+                background: C.green,
+              }}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
+
 function SuccessScreen({ go }: { go: (s: Screen) => void }) {
   return (
     <div
@@ -3266,10 +3338,12 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
 // ── Barcode Scanner Screen ────────────────────────────────────────────────────
 function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
   const [showHelp, setShowHelp] = useState(false)
+  const isDesktop = useIsDesktop()
   return (
     <div
       style={{
         flex: 1,
+        minHeight: 0,
         display: "flex",
         flexDirection: "column",
         position: "relative",
@@ -3297,60 +3371,28 @@ function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
           background: "rgba(12,32,18,0.86)",
         }}
       />
+
+      {/* ── Header — */}
+      <div style={{ position: "relative", zIndex: 1, marginTop: 10}}>
+        <InfoHeader
+          title="Scan Barcode"
+          subtitle="Align barcode within the frame"
+          go={go}
+        />
+      </div>
+
       {/* Content */}
       <Center
-        maxWidth={640}
+        maxWidth={isDesktop ? 900 : 640}
         style={{
           flex: 1,
           position: "relative",
           zIndex: 1,
           display: "flex",
           flexDirection: "column",
+          width: "100%",
         }}
       >
-        {/* ── Header ── */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingTop: SAFE_TOP,
-            paddingLeft: 20,
-            paddingRight: 20,
-            paddingBottom: 18,
-          }}
-        >
-          {/* Back button */}
-          <BackBtn onPress={() => go("dashboard")} />
-          {/* Title */}
-          <h2
-            style={{
-              margin: 0,
-              fontFamily: "'Poppins', sans-serif",
-              fontWeight: 800,
-              fontSize: 18,
-              color: C.textOnDark,
-            }}
-          >
-            Scan Barcode
-          </h2>
-          {/* Question / Help button */}
-          <button
-            onClick={() => setShowHelp(true)}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              border: "1px solid rgba(224,167,46,0.5)",
-              background: "rgba(40,90,55,0.7)",
-              color: C.textOnDark,
-              fontWeight: 1000,
-              cursor: "pointer",
-            }}
-          >
-            ?
-          </button>
-        </div>
         {/* ── Help Popup ── */}
         {showHelp && (
           <div
@@ -3358,7 +3400,6 @@ function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
               position: "absolute",
               inset: 0,
               zIndex: 20,
-              background: "rgba(0,0,0,0.65)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -3368,13 +3409,37 @@ function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
             <div
               style={{
                 width: "100%",
-                maxWidth: 320,
-                background: C.textOnDark,
-                borderRadius: 18,
-                padding: 24,
-                boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
+                maxWidth: 360,
+                background:
+                  "linear-gradient(145deg, rgba(25,68,39,0.98), rgba(9,39,22,0.98))",
+                border: "1px solid rgba(224,167,46,0.35)",
+                borderRadius: 20,
+                padding: 26,
+                boxShadow:
+                  "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+                boxSizing: "border-box",
               }}
             >
+              {/* Icon */}
+              <div
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: "50%",
+                  background: "rgba(224,167,46,0.14)",
+                  border: "1.5px solid rgba(224,167,46,0.45)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <i
+                  className="fa fa-question-circle"
+                  style={{ color: C.greenLight, fontSize: 22 }}
+                />
+              </div>
+
               {/* Help title */}
               <h3
                 style={{
@@ -3382,44 +3447,79 @@ function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
                   fontFamily: "'Poppins', sans-serif",
                   fontSize: 18,
                   fontWeight: 800,
-                  color: "#2A1D14",
+                  color: C.textOnDark,
                 }}
               >
                 How to Scan a Barcode
               </h3>
+
               {/* Instructions */}
-              <p
+              <div
                 style={{
-                  margin: 0,
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: 13,
-                  lineHeight: 1.6,
-                  color: "#333",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 12,
+                  marginBottom: 22,
                 }}
               >
-                1. Position the barcode inside the frame.
-                <br />
-                <br />
-                2. Keep your phone steady and make sure the barcode is clearly
-                visible.
-                <br />
-                <br />
-                3. Wait for the scanner to recognize the barcode automatically.
-              </p>
+                {[
+                  "Position the barcode inside the frame.",
+                  "Keep your phone steady and make sure the barcode is clearly visible.",
+                  "Wait for the scanner to recognize the barcode automatically.",
+                ].map((step, i) => (
+                  <div
+                    key={i}
+                    style={{ display: "flex", alignItems: "flex-start", gap: 10 }}
+                  >
+                    <span
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        background: "rgba(224,167,46,0.16)",
+                        border: "1px solid rgba(224,167,46,0.4)",
+                        color: C.greenLight,
+                        fontSize: 10,
+                        fontWeight: 800,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        marginTop: 1,
+                      }}
+                    >
+                      {i + 1}
+                    </span>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontFamily: "'Poppins', sans-serif",
+                        fontSize: 12.5,
+                        lineHeight: 1.6,
+                        color: "rgba(255,255,255,0.72)",
+                      }}
+                    >
+                      {step}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
               {/* Close button */}
               <button
                 onClick={() => setShowHelp(false)}
                 style={{
                   width: "100%",
-                  marginTop: 20,
-                  padding: 12,
-                  border: "none",
-                  borderRadius: 12,
-                  background: "#1E5631",
+                  padding: 13,
+                  border: "1px solid rgba(224,167,46,0.55)",
+                  borderRadius: 13,
+                  background: "linear-gradient(135deg, #E0A72E 0%, #C98A1F 100%)",
                   color: "#FFFFFF",
                   fontFamily: "'Poppins', sans-serif",
                   fontWeight: 700,
+                  fontSize: 13,
                   cursor: "pointer",
+                  boxShadow: "0 5px 18px rgba(224,167,46,0.25)",
                 }}
               >
                 Got it
@@ -3427,324 +3527,351 @@ function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
             </div>
           </div>
         )}
-        {/* ── Instruction ── */}
-        <div
-          style={{
-            textAlign: "center",
-            padding: "12px 20px 20px",
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 12,
-              color: "rgba(255,255,255,0.7)",
-            }}
-          >
-            Align barcode within the frame
-          </p>
-        </div>
-        {/* ── Scanner Area ── */}
+
+        {/* ── Main centered block ── */}
         <div
           style={{
             flex: 1,
             display: "flex",
+            flexDirection: "column",
             justifyContent: "center",
-            alignItems: "center",
-            padding: "0 28px 120px",
+            padding: isDesktop ? "0 30px" : "0 20px",
+            filter: showHelp ? "blur(6px)" : "none",      
+            transition: "filter 0.25s ease",               
+            pointerEvents: showHelp ? "none" : "auto",
           }}
         >
+          {/* ── Scan card ── */}
           <div
             style={{
-              width: "100%",
-              maxWidth: 290,
-              height: 300,
               position: "relative",
-              borderRadius: 18,
-              background: "rgba(0,0,0,0.18)",
+              borderRadius: 26,
+              background: "rgba(35,55,40,0.55)",
+              border: "1px solid rgba(224,167,46,0.22)",
+              padding: isDesktop ? "42px 42px 48px" : "26px 20px 32px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
             }}
           >
-            {/* Top Left */}
-            <div
+            {/* Help button — top-right of the card */}
+            <button
+              onClick={() => setShowHelp(true)}
               style={{
                 position: "absolute",
-                top: 0,
-                left: 0,
-                width: 55,
-                height: 55,
-                borderTop: "5px solid #E0A72E",
-                borderLeft: "5px solid #E0A72E",
-                borderRadius: "16px 0 0 0",
-              }}
-            />
-            {/* Top Right */}
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                width: 55,
-                height: 55,
-                borderTop: "5px solid #E0A72E",
-                borderRight: "5px solid #E0A72E",
-                borderRadius: "0 16px 0 0",
-              }}
-            />
-            {/* Bottom Left */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                width: 55,
-                height: 55,
-                borderBottom: "5px solid #E0A72E",
-                borderLeft: "5px solid #E0A72E",
-                borderRadius: "0 0 0 16px",
-              }}
-            />
-            {/* Bottom Right */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                right: 0,
-                width: 55,
-                height: 55,
-                borderBottom: "5px solid #E0A72E",
-                borderRight: "5px solid #E0A72E",
-                borderRadius: "0 0 16px 0",
-              }}
-            />
-            {/* Fake Barcode for Prototype */}
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                display: "flex",
-                alignItems: "stretch",
-                gap: 3,
-                height: 100,
+                top: isDesktop ? 26 : 16,
+                right: isDesktop ? 26 : 16,
+                width: isDesktop ? 40 : 34,
+                height: isDesktop ? 40 : 34,
+                borderRadius: "50%",
+                border: "1px solid rgba(224,167,46,0.5)",
+                background: "rgba(40,90,55,0.7)",
+                color: C.textOnDark,
+                fontWeight: 1000,
+                fontSize: isDesktop ? 16 : 14,
+                cursor: "pointer",
               }}
             >
-              {[3, 6, 2, 8, 3, 5, 2, 7, 3, 5, 8, 2, 4, 6, 3, 7].map(
-                (width, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      width,
-                      height: "100%",
-                      background: C.textOnDark,
-                    }}
-                  />
-                ),
-              )}
+              ?
+            </button>
+
+            {/* Title + subtitle, centered */}
+            <div style={{ textAlign: "center", marginBottom: isDesktop ? 34 : 24 }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 800,
+                  fontSize: isDesktop ? 30 : 20,
+                  color: C.textOnDark,
+                }}
+              >
+                Scan Barcode
+              </h2>
+              <p
+                style={{
+                  margin: isDesktop ? "8px 0 0" : "4px 0 0",
+                  fontFamily: "'Poppins', sans-serif",
+                  fontSize: isDesktop ? 15 : 12,
+                  color: "rgba(255,255,255,0.65)",
+                }}
+              >
+                Align barcode within the frame
+              </p>
             </div>
-            {/* Scanning Line */}
+
+            {/* ── Scanner Area ── */}
             <div
               style={{
-                position: "absolute",
-                left: 25,
-                right: 25,
-                top: "50%",
-                height: 2,
-                background: C.greenLight,
-                boxShadow: "0 0 12px #E0A72E",
+                display: "flex",
+                justifyContent: "center",
               }}
-            />
+            >
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: isDesktop ? 500 : 320,
+                  height: isDesktop ? 400 : 290,
+                  position: "relative",
+                  borderRadius: 20,
+                  background: "rgba(0,0,0,0.18)",
+                }}
+              >
+                {/* Top Left */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: isDesktop ? 60 : 52,
+                    height: isDesktop ? 60 : 52,
+                    borderTop: "6px solid #E0A72E",
+                    borderLeft: "6px solid #E0A72E",
+                    borderRadius: "18px 0 0 0",
+                  }}
+                />
+                {/* Top Right */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    width: isDesktop ? 60 : 52,
+                    height: isDesktop ? 60 : 52,
+                    borderTop: "6px solid #E0A72E",
+                    borderRight: "6px solid #E0A72E",
+                    borderRadius: "0 18px 0 0",
+                  }}
+                />
+                {/* Bottom Left */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    width: isDesktop ? 60 : 52,
+                    height: isDesktop ? 60 : 52,
+                    borderBottom: "6px solid #E0A72E",
+                    borderLeft: "6px solid #E0A72E",
+                    borderRadius: "0 0 0 18px",
+                  }}
+                />
+                {/* Bottom Right */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    width: isDesktop ? 60 : 52,
+                    height: isDesktop ? 60 : 52,
+                    borderBottom: "6px solid #E0A72E",
+                    borderRight: "6px solid #E0A72E",
+                    borderRadius: "0 0 18px 0",
+                  }}
+                />
+                {/* Scanning Line */}
+                <div
+                  style={{
+                    position: "absolute",
+                    left: isDesktop ? 32 : 25,
+                    right: isDesktop ? 32 : 25,
+                    top: "50%",
+                    height: isDesktop ? 3 : 2,
+                    background: C.greenLight,
+                    boxShadow: "0 0 12px #E0A72E",
+                  }}
+                />
+              </div>
+            </div>
           </div>
-        </div>
-        {/* ── Bottom Controls ── */}
-        <div
-          style={{
-            position: "absolute",
-            left: 16,
-            right: 16,
-            bottom: 18,
-            height: 90,
-            borderRadius: 18,
-            background: "rgba(35,55,40,0.94)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-around",
-            border: "1px solid rgba(224,167,46,0.25)",
-            boxShadow: "0 8px 25px rgba(0,0,0,0.25)",
-          }}
-        >
-          {/* Camera */}
-          <button
-            onClick={() => go("productResult")}
+
+          {/* ── Bottom Controls — directly under the card ── */}
+          <div
             style={{
-              border: "none",
-              background: "none",
-              color: C.textOnDark,
-              textAlign: "center",
-              cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 9,
-              minWidth: 60,
+              marginTop: isDesktop ? 26 : 18,
+              height: isDesktop ? 90: 84,
+              borderRadius: 20,
+              background: "rgba(35,55,40,0.94)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-around",
+              border: "1px solid rgba(224,167,46,0.25)",
+              boxShadow: "0 8px 25px rgba(0,0,0,0.25)",
             }}
           >
-            <div
+            {/* Camera */}
+            <button
+              onClick={() => go("productResult")}
               style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 6,
-                color: C.greenLight,
+                border: "none",
+                background: "none",
+                color: C.textOnDark,
+                textAlign: "center",
+                cursor: "pointer",
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: isDesktop ? 12 : 9,
+                minWidth: isDesktop ? 80 : 60,
               }}
             >
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: isDesktop ? 9 : 6,
+                  color: C.greenLight,
+                }}
               >
-                <path d="M4 7h3l2-2h6l2 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" />
-                <circle cx="12" cy="13" r="3.5" />
-              </svg>
-            </div>
-            Camera
-          </button>
-          {/* Rotate Camera */}
-          <button
-            style={{
-              border: "none",
-              background: "none",
-              color: C.textOnDark,
-              textAlign: "center",
-              cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 9,
-              minWidth: 60,
-            }}
-          >
-            <div
+                <svg
+                  width={isDesktop ? 32 : 24}
+                  height={isDesktop ? 32 : 24}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 7h3l2-2h6l2 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" />
+                  <circle cx="12" cy="13" r="3.5" />
+                </svg>
+              </div>
+              Camera
+            </button>
+            {/* Rotate Camera */}
+            <button
               style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 6,
-                color: C.greenLight,
+                border: "none",
+                background: "none",
+                color: C.textOnDark,
+                textAlign: "center",
+                cursor: "pointer",
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: isDesktop ? 12 : 9,
+                minWidth: isDesktop ? 80 : 60,
               }}
             >
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: isDesktop ? 9 : 6,
+                  color: C.greenLight,
+                }}
               >
-                <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
-                <polyline points="21 3 21 8 16 8" />
-                <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
-                <polyline points="3 21 3 16 8 16" />
-              </svg>
-            </div>
-            <div>Rotate</div>
-            <div>Camera</div>
-          </button>
-          {/* Gallery */}
-          <button
-            style={{
-              border: "none",
-              background: "none",
-              color: C.textOnDark,
-              textAlign: "center",
-              cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 9,
-              minWidth: 60,
-            }}
-          >
-            <div
+                <svg
+                  width={isDesktop ? 32 : 24}
+                  height={isDesktop ? 32 : 24}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
+                  <polyline points="21 3 21 8 16 8" />
+                  <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
+                  <polyline points="3 21 3 16 8 16" />
+                </svg>
+              </div>
+              <div>Rotate</div>
+              <div>Camera</div>
+            </button>
+            {/* Gallery */}
+            <button
               style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 6,
-                color: C.greenLight,
+                border: "none",
+                background: "none",
+                color: C.textOnDark,
+                textAlign: "center",
+                cursor: "pointer",
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: isDesktop ? 12 : 9,
+                minWidth: isDesktop ? 80 : 60,
               }}
             >
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: isDesktop ? 9 : 6,
+                  color: C.greenLight,
+                }}
               >
-                <rect x="3" y="3" width="18" height="18" rx="3" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <path d="M21 15l-5-5L5 21" />
-              </svg>
-            </div>
-            Gallery
-          </button>
-          {/* Flash */}
-          <button
-            style={{
-              border: "none",
-              background: "none",
-              color: C.textOnDark,
-              textAlign: "center",
-              cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 9,
-              minWidth: 60,
-            }}
-          >
-            <div
+                <svg
+                  width={isDesktop ? 32 : 24}
+                  height={isDesktop ? 32 : 24}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="3" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <path d="M21 15l-5-5L5 21" />
+                </svg>
+              </div>
+              Gallery
+            </button>
+            {/* Flash */}
+            <button
               style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 6,
-                color: C.greenLight,
+                border: "none",
+                background: "none",
+                color: C.textOnDark,
+                textAlign: "center",
+                cursor: "pointer",
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: isDesktop ? 12 : 9,
+                minWidth: isDesktop ? 80 : 60,
               }}
             >
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: isDesktop ? 9 : 6,
+                  color: C.greenLight,
+                }}
               >
-                <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" />
-              </svg>
-            </div>
-            Flash
-          </button>
+                <svg
+                  width={isDesktop ? 32 : 24}
+                  height={isDesktop ? 32 : 24}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" />
+                </svg>
+              </div>
+              Flash
+            </button>
+          </div>
         </div>
       </Center>
     </div>
   )
 }
+
 // ── Ocr Scanner ─────────────────────────────────────────────────────────────────
 function OCRScannerScreen({ go }: { go: (s: Screen) => void }) {
   const [showHelp, setShowHelp] = useState(false)
+  const isDesktop = useIsDesktop()
   return (
     <div
       style={{
         flex: 1,
+        minHeight: 0,
         display: "flex",
         flexDirection: "column",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Background */}
+      {/* Same background as Dashboard */}
       <img
         src="https://images.unsplash.com/photo-1518843875459-f738682238a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
         alt=""
@@ -3754,67 +3881,39 @@ function OCRScannerScreen({ go }: { go: (s: Screen) => void }) {
           width: "100%",
           height: "100%",
           objectFit: "cover",
+          objectPosition: "center",
         }}
       />
-      {/* Dark overlay */}
+      {/* Dark green overlay */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          background: "rgba(8,30,17,0.88)",
+          background: "rgba(12,32,18,0.86)",
         }}
       />
+
+      {/* ── Header — */}
+      <div style={{ position: "relative", zIndex: 1, marginTop: 10}}>
+        <InfoHeader
+          title="Scan Nutrion Label"
+          subtitle="Align OCR within the frame"
+          go={go}
+        />
+      </div>
+
       {/* Content */}
       <Center
-        maxWidth={640}
+        maxWidth={isDesktop ? 900 : 640}
         style={{
           flex: 1,
           position: "relative",
           zIndex: 1,
           display: "flex",
           flexDirection: "column",
+          width: "100%",
         }}
       >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingTop: SAFE_TOP,
-            paddingLeft: 20,
-            paddingRight: 20,
-            paddingBottom: 18,
-          }}
-        >
-          <BackBtn onPress={() => go("dashboard")} />
-          <h2
-            style={{
-              margin: 0,
-              fontFamily: "'Poppins', sans-serif",
-              fontWeight: 800,
-              fontSize: 18,
-              color: C.textOnDark,
-            }}
-          >
-            Scan Nutrition Label
-          </h2>
-          <button
-            onClick={() => setShowHelp(true)}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              border: "1px solid rgba(224,167,46,0.5)",
-              background: "rgba(40,90,55,0.7)",
-              color: C.textOnDark,
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            ?
-          </button>
-        </div>
         {/* ── Help Popup ── */}
         {showHelp && (
           <div
@@ -3822,7 +3921,6 @@ function OCRScannerScreen({ go }: { go: (s: Screen) => void }) {
               position: "absolute",
               inset: 0,
               zIndex: 20,
-              background: "rgba(0,0,0,0.65)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -3832,13 +3930,37 @@ function OCRScannerScreen({ go }: { go: (s: Screen) => void }) {
             <div
               style={{
                 width: "100%",
-                maxWidth: 320,
-                background: C.textOnDark,
-                borderRadius: 18,
-                padding: 24,
-                boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
+                maxWidth: 360,
+                background:
+                  "linear-gradient(145deg, rgba(25,68,39,0.98), rgba(9,39,22,0.98))",
+                border: "1px solid rgba(224,167,46,0.35)",
+                borderRadius: 20,
+                padding: 26,
+                boxShadow:
+                  "0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+                boxSizing: "border-box",
               }}
             >
+              {/* Icon */}
+              <div
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: "50%",
+                  background: "rgba(224,167,46,0.14)",
+                  border: "1.5px solid rgba(224,167,46,0.45)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <i
+                  className="fa fa-question-circle"
+                  style={{ color: C.greenLight, fontSize: 22 }}
+                />
+              </div>
+
               {/* Help title */}
               <h3
                 style={{
@@ -3846,44 +3968,79 @@ function OCRScannerScreen({ go }: { go: (s: Screen) => void }) {
                   fontFamily: "'Poppins', sans-serif",
                   fontSize: 18,
                   fontWeight: 800,
-                  color: "#2A1D14",
+                  color: C.textOnDark,
                 }}
               >
                 How to Scan a OCR
               </h3>
+
               {/* Instructions */}
-              <p
+              <div
                 style={{
-                  margin: 0,
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: 13,
-                  lineHeight: 1.6,
-                  color: "#333",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 12,
+                  marginBottom: 22,
                 }}
               >
-                1. Position the OCR inside the frame.
-                <br />
-                <br />
-                2. Keep your phone steady and make sure the OCR is clearly
-                visible.
-                <br />
-                <br />
-                3. Wait for the scanner to recognize the OCR automatically.
-              </p>
+                {[
+                  "Position the OCR inside the frame.",
+                  "Keep your phone steady and make sure the OCR is clearly visible.",
+                  "Wait for the scanner to recognize the OCR automatically.",
+                ].map((step, i) => (
+                  <div
+                    key={i}
+                    style={{ display: "flex", alignItems: "flex-start", gap: 10 }}
+                  >
+                    <span
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        background: "rgba(224,167,46,0.16)",
+                        border: "1px solid rgba(224,167,46,0.4)",
+                        color: C.greenLight,
+                        fontSize: 10,
+                        fontWeight: 800,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        marginTop: 1,
+                      }}
+                    >
+                      {i + 1}
+                    </span>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontFamily: "'Poppins', sans-serif",
+                        fontSize: 12.5,
+                        lineHeight: 1.6,
+                        color: "rgba(255,255,255,0.72)",
+                      }}
+                    >
+                      {step}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
               {/* Close button */}
               <button
                 onClick={() => setShowHelp(false)}
                 style={{
                   width: "100%",
-                  marginTop: 20,
-                  padding: 12,
-                  border: "none",
-                  borderRadius: 12,
-                  background: "#1E5631",
+                  padding: 13,
+                  border: "1px solid rgba(224,167,46,0.55)",
+                  borderRadius: 13,
+                  background: "linear-gradient(135deg, #E0A72E 0%, #C98A1F 100%)",
                   color: "#FFFFFF",
                   fontFamily: "'Poppins', sans-serif",
                   fontWeight: 700,
+                  fontSize: 13,
                   cursor: "pointer",
+                  boxShadow: "0 5px 18px rgba(224,167,46,0.25)",
                 }}
               >
                 Got it
@@ -3891,334 +4048,338 @@ function OCRScannerScreen({ go }: { go: (s: Screen) => void }) {
             </div>
           </div>
         )}
-        {/* Instruction */}
-        <div
-          style={{
-            textAlign: "center",
-            padding: "12px 20px 20px",
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 12,
-              color: "rgba(255,255,255,0.75)",
-            }}
-          >
-            Align nutrition label within the frame
-          </p>
-        </div>
-        {/* OCR Scanning Area */}
+
+        {/* ── Main centered block ── */}
         <div
           style={{
             flex: 1,
             display: "flex",
+            flexDirection: "column",
             justifyContent: "center",
-            alignItems: "center",
-            padding: "0 28px 120px",
+            padding: isDesktop ? "0 30px" : "0 20px",
+            filter: showHelp ? "blur(6px)" : "none",       
+            transition: "filter 0.25s ease",               
+            pointerEvents: showHelp ? "none" : "auto",
           }}
         >
+          {/* ── Scan card ── */}
           <div
             style={{
-              width: "100%",
-              maxWidth: 310,
-              height: 330,
               position: "relative",
-              borderRadius: 18,
-              background: "rgba(0,0,0,0.18)",
+              borderRadius: 26,
+              background: "rgba(35,55,40,0.55)",
+              border: "1px solid rgba(224,167,46,0.22)",
+              padding: isDesktop ? "42px 42px 48px" : "26px 20px 32px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
             }}
           >
-            {/* Top Left */}
-            <div
+            {/* Help button — top-right of the card */}
+            <button
+              onClick={() => setShowHelp(true)}
               style={{
                 position: "absolute",
-                top: 0,
-                left: 0,
-                width: 55,
-                height: 55,
-                borderTop: "5px solid #E0A72E",
-                borderLeft: "5px solid #E0A72E",
-                borderRadius: "16px 0 0 0",
+                top: isDesktop ? 26 : 16,
+                right: isDesktop ? 26 : 16,
+                width: isDesktop ? 40 : 34,
+                height: isDesktop ? 40 : 34,
+                borderRadius: "50%",
+                border: "1px solid rgba(224,167,46,0.5)",
+                background: "rgba(40,90,55,0.7)",
+                color: C.textOnDark,
+                fontWeight: 1000,
+                fontSize: isDesktop ? 16 : 14,
+                cursor: "pointer",
               }}
-            />
-            {/* Top Right */}
+            >
+              ?
+            </button>
+
+            {/* Title + subtitle, centered */}
+            <div style={{ textAlign: "center", marginBottom: isDesktop ? 34 : 24 }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 800,
+                  fontSize: isDesktop ? 30 : 20,
+                  color: C.textOnDark,
+                }}
+              >
+                Scan OCR
+              </h2>
+              <p
+                style={{
+                  margin: isDesktop ? "8px 0 0" : "4px 0 0",
+                  fontFamily: "'Poppins', sans-serif",
+                  fontSize: isDesktop ? 15 : 12,
+                  color: "rgba(255,255,255,0.65)",
+                }}
+              >
+                Align OCR within the frame
+              </p>
+            </div>
+
+            {/* ── Scanner Area ── */}
             <div
               style={{
-                position: "absolute",
-                top: 0,
-                right: 0,
-                width: 55,
-                height: 55,
-                borderTop: "5px solid #E0A72E",
-                borderRight: "5px solid #E0A72E",
-                borderRadius: "0 16px 0 0",
-              }}
-            />
-            {/* Bottom Left */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                width: 55,
-                height: 55,
-                borderBottom: "5px solid #E0A72E",
-                borderLeft: "5px solid #E0A72E",
-                borderRadius: "0 0 0 16px",
-              }}
-            />
-            {/* Bottom Right */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                right: 0,
-                width: 55,
-                height: 55,
-                borderBottom: "5px solid #E0A72E",
-                borderRight: "5px solid #E0A72E",
-                borderRadius: "0 0 16px 0",
-              }}
-            />
-            {/* Nutrition Label Preview */}
-            <div
-              style={{
-                position: "absolute",
-                left: "50%",
-                top: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 170,
-                height: 210,
-                background: C.textOnDark,
-                borderRadius: 6,
-                padding: 12,
-                boxSizing: "border-box",
-                color: "#222",
+                display: "flex",
+                justifyContent: "center",
               }}
             >
               <div
                 style={{
-                  fontWeight: 800,
-                  fontSize: 15,
-                  borderBottom: "3px solid #222",
-                  paddingBottom: 5,
-                  marginBottom: 7,
+                  width: "100%",
+                  maxWidth: isDesktop ? 500 : 320,
+                  height: isDesktop ? 400 : 290,
+                  position: "relative",
+                  borderRadius: 20,
+                  background: "rgba(0,0,0,0.18)",
                 }}
               >
-                Nutrition Facts
-              </div>
-              <div
-                style={{
-                  fontSize: 9,
-                  fontWeight: 700,
-                  borderBottom: "1px solid #222",
-                  paddingBottom: 4,
-                }}
-              >
-                Serving Size 1 cup
-              </div>
-              {[1, 2, 3, 4, 5, 6].map((item) => (
+                {/* Top Left */}
                 <div
-                  key={item}
                   style={{
-                    height: 14,
-                    borderBottom: "1px solid #777",
-                    marginTop: 3,
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: isDesktop ? 60 : 52,
+                    height: isDesktop ? 60 : 52,
+                    borderTop: "6px solid #E0A72E",
+                    borderLeft: "6px solid #E0A72E",
+                    borderRadius: "18px 0 0 0",
                   }}
                 />
-              ))}
+                {/* Top Right */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    width: isDesktop ? 60 : 52,
+                    height: isDesktop ? 60 : 52,
+                    borderTop: "6px solid #E0A72E",
+                    borderRight: "6px solid #E0A72E",
+                    borderRadius: "0 18px 0 0",
+                  }}
+                />
+                {/* Bottom Left */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    width: isDesktop ? 60 : 52,
+                    height: isDesktop ? 60 : 52,
+                    borderBottom: "6px solid #E0A72E",
+                    borderLeft: "6px solid #E0A72E",
+                    borderRadius: "0 0 0 18px",
+                  }}
+                />
+                {/* Bottom Right */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    width: isDesktop ? 60 : 52,
+                    height: isDesktop ? 60 : 52,
+                    borderBottom: "6px solid #E0A72E",
+                    borderRight: "6px solid #E0A72E",
+                    borderRadius: "0 0 18px 0",
+                  }}
+                />
+                {/* Scanning Line */}
+                <div
+                  style={{
+                    position: "absolute",
+                    left: isDesktop ? 32 : 25,
+                    right: isDesktop ? 32 : 25,
+                    top: "50%",
+                    height: isDesktop ? 3 : 2,
+                    background: C.greenLight,
+                    boxShadow: "0 0 12px #E0A72E",
+                  }}
+                />
+              </div>
             </div>
-            {/* OCR Scanning Line */}
-            <div
-              style={{
-                position: "absolute",
-                left: 22,
-                right: 22,
-                top: "50%",
-                height: 2,
-                background: C.greenLight,
-                boxShadow: "0 0 12px #E0A72E",
-              }}
-            />
           </div>
-        </div>
-        {/* Bottom Controls */}
-        <div
-          style={{
-            position: "absolute",
-            left: 16,
-            right: 16,
-            bottom: 18,
-            height: 90,
-            borderRadius: 18,
-            background: "rgba(35,55,40,0.94)",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-around",
-            border: "1px solid rgba(224,167,46,0.25)",
-            boxShadow: "0 8px 25px rgba(0,0,0,0.25)",
-          }}
-        >
-          {/* Camera */}
-          <button
+
+          {/* ── Bottom Controls — directly under the card ── */}
+          <div
             style={{
-              border: "none",
-              background: "none",
-              color: C.textOnDark,
-              textAlign: "center",
-              cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 9,
-              minWidth: 60,
+              marginTop: isDesktop ? 26 : 18,
+              height: isDesktop ? 90: 84,
+              borderRadius: 20,
+              background: "rgba(35,55,40,0.94)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-around",
+              border: "1px solid rgba(224,167,46,0.25)",
+              boxShadow: "0 8px 25px rgba(0,0,0,0.25)",
             }}
           >
-            <div
+            {/* Camera */}
+            <button
+              onClick={() => go("productResult")}
               style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 6,
-                color: C.greenLight,
+                border: "none",
+                background: "none",
+                color: C.textOnDark,
+                textAlign: "center",
+                cursor: "pointer",
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: isDesktop ? 12 : 9,
+                minWidth: isDesktop ? 80 : 60,
               }}
             >
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: isDesktop ? 9 : 6,
+                  color: C.greenLight,
+                }}
               >
-                <path d="M4 7h3l2-2h6l2 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" />
-                <circle cx="12" cy="13" r="3.5" />
-              </svg>
-            </div>
-            Camera
-          </button>
-          {/* Rotate Camera */}
-          <button
-            style={{
-              border: "none",
-              background: "none",
-              color: C.textOnDark,
-              textAlign: "center",
-              cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 9,
-              minWidth: 60,
-            }}
-          >
-            <div
+                <svg
+                  width={isDesktop ? 32 : 24}
+                  height={isDesktop ? 32 : 24}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 7h3l2-2h6l2 2h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" />
+                  <circle cx="12" cy="13" r="3.5" />
+                </svg>
+              </div>
+              Camera
+            </button>
+            {/* Rotate Camera */}
+            <button
               style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 6,
-                color: C.greenLight,
+                border: "none",
+                background: "none",
+                color: C.textOnDark,
+                textAlign: "center",
+                cursor: "pointer",
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: isDesktop ? 12 : 9,
+                minWidth: isDesktop ? 80 : 60,
               }}
             >
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: isDesktop ? 9 : 6,
+                  color: C.greenLight,
+                }}
               >
-                <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
-                <polyline points="21 3 21 8 16 8" />
-                <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
-                <polyline points="3 21 3 16 8 16" />
-              </svg>
-            </div>
-            <div>Rotate</div>
-            <div>Camera</div>
-          </button>
-          {/* Gallery */}
-          <button
-            style={{
-              border: "none",
-              background: "none",
-              color: C.textOnDark,
-              textAlign: "center",
-              cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 9,
-              minWidth: 60,
-            }}
-          >
-            <div
+                <svg
+                  width={isDesktop ? 32 : 24}
+                  height={isDesktop ? 32 : 24}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
+                  <polyline points="21 3 21 8 16 8" />
+                  <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
+                  <polyline points="3 21 3 16 8 16" />
+                </svg>
+              </div>
+              <div>Rotate</div>
+              <div>Camera</div>
+            </button>
+            {/* Gallery */}
+            <button
               style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 6,
-                color: C.greenLight,
+                border: "none",
+                background: "none",
+                color: C.textOnDark,
+                textAlign: "center",
+                cursor: "pointer",
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: isDesktop ? 12 : 9,
+                minWidth: isDesktop ? 80 : 60,
               }}
             >
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: isDesktop ? 9 : 6,
+                  color: C.greenLight,
+                }}
               >
-                <rect x="3" y="3" width="18" height="18" rx="3" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <path d="M21 15l-5-5L5 21" />
-              </svg>
-            </div>
-            Gallery
-          </button>
-          {/* Flash */}
-          <button
-            style={{
-              border: "none",
-              background: "none",
-              color: C.textOnDark,
-              textAlign: "center",
-              cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 9,
-              minWidth: 60,
-            }}
-          >
-            <div
+                <svg
+                  width={isDesktop ? 32 : 24}
+                  height={isDesktop ? 32 : 24}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="3" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <path d="M21 15l-5-5L5 21" />
+                </svg>
+              </div>
+              Gallery
+            </button>
+            {/* Flash */}
+            <button
               style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 6,
-                color: C.greenLight,
+                border: "none",
+                background: "none",
+                color: C.textOnDark,
+                textAlign: "center",
+                cursor: "pointer",
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: isDesktop ? 12 : 9,
+                minWidth: isDesktop ? 80 : 60,
               }}
             >
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: isDesktop ? 9 : 6,
+                  color: C.greenLight,
+                }}
               >
-                <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" />
-              </svg>
-            </div>
-            Flash
-          </button>
+                <svg
+                  width={isDesktop ? 32 : 24}
+                  height={isDesktop ? 32 : 24}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" />
+                </svg>
+              </div>
+              Flash
+            </button>
+          </div>
         </div>
       </Center>
     </div>
   )
 }
+
 // ── Product Result Screen ─────────────────────────────────────────────────────
 function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
+  const isDesktop = useIsDesktop()
   const score = 68
   const scoreColor =
     score >= 71 ? "#4CAF50" : score >= 42 ? "#F5C518" : "#E8453C"
@@ -4231,62 +4392,28 @@ function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
     <div
       style={{
         flex: 1,
+        minHeight: 0,
         display: "flex",
         flexDirection: "column",
         background: "#071A0F",
         overflow: "hidden",
       }}
     >
-      {/* Header */}
-      <Center maxWidth={640} style={{ width: "100%" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            paddingTop: SAFE_TOP,
-            paddingLeft: 18,
-            paddingRight: 18,
-            paddingBottom: 12,
-            flexShrink: 0,
-          }}
+      {/* ── Header —  */}
+      <div style={{ paddingTop: 12 }}>
+  <InfoHeader
+    title="Product Result"
+    subtitle="Scan analysis complete"
+    go={go}
+    backTo="barcode"
+  />
+</div>
+
+      <div style={{ flex: 1, overflowY: "auto", marginTop: 15 }}>
+        <Center
+          maxWidth={isDesktop ? 900 : 640}
+          style={{ padding: isDesktop ? "30px 40px 40px" : "30 16px 24px" }}
         >
-          <button
-            type="button"
-            onClick={() => go("barcode")}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 4,
-            }}
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke={C.textOnDark}
-              strokeWidth="2.2"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <p
-            style={{
-              margin: 0,
-              fontFamily: "'Poppins', sans-serif",
-              fontWeight: 700,
-              fontSize: 18,
-              color: C.textOnDark,
-            }}
-          >
-            Product Result
-          </p>
-        </div>
-      </Center>
-      <div style={{ flex: 1, overflowY: "auto" }}>
-        <Center maxWidth={640} style={{ padding: "0 16px 24px" }}>
         {/* Product image */}
         <div
           style={{
@@ -4569,6 +4696,7 @@ function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+
 // ── Product Compare Screen ────────────────────────────────────────────────────
 // Drop-in replacement for the existing COMPARE_PRODUCTS constant and
 // ProductCompareScreen function in App.tsx. Uses the same C palette, Center,
@@ -5963,7 +6091,7 @@ function ProfileScreen({ go }: { go: (s: Screen) => void }) {
           display: "flex",
           alignItems: "center",
           gap: 12,
-          paddingTop: 15,
+          paddingTop: 13,
           paddingLeft: 20,
           paddingRight: 20,
           paddingBottom: 13,
@@ -6304,8 +6432,10 @@ function InfoHeader({
     </div>
   )
 }
+
 function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
   const [openQuestion, setOpenQuestion] = useState(0)
+
   return (
     <div
       style={{
@@ -6317,149 +6447,403 @@ function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
         overflow: "hidden",
       }}
     >
-      <InfoHeader
-        title="Help & FAQ"
-        subtitle="Answers for a safer scan"
-        go={go}
-      />
-      <div style={{ flex: 1, overflowY: "auto" }}>
-        <Center maxWidth={640} style={{ padding: "18px 16px 24px" }}>
+      <div
+  style={{
+    paddingTop: 12,
+    paddingLeft: 12,
+    paddingRight: 12,
+    background: "#071A0F",
+  }}
+>
+  <InfoHeader
+    title="Help & FAQ"
+    subtitle="Answers for a safer scan"
+    go={go}
+  />
         <div
           style={{
-            padding: "16px",
-            marginBottom: 18,
-            borderRadius: 13,
-            border: "1px solid rgba(224,167,46,0.28)",
-            background: "rgba(22,76,41,0.78)",
+            width: "100%",
+            maxWidth: 820,
+            margin: "0 auto",
+            padding: "28px 22px 40px",
+            boxSizing: "border-box",
           }}
         >
-          <i
-            className="fa fa-question-circle"
-            style={{ color: C.greenLight, fontSize: 24, marginBottom: 8 }}
-          />
-          <p
+          {/* HERO SECTION */}
+          <div
             style={{
-              margin: 0,
-              color: C.textOnDark,
-              fontSize: 14,
-              fontWeight: 700,
+              position: "relative",
+              overflow: "hidden",
+              padding: "26px 26px",
+              marginBottom: 30,
+              borderRadius: 20,
+              border: "1px solid rgba(224,167,46,0.30)",
+              background:
+                "linear-gradient(135deg, rgba(22,76,41,0.95), rgba(10,48,27,0.95))",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
             }}
           >
-            How can we help?
-          </p>
-          <p
-            style={{
-              margin: "4px 0 0",
-              color: "rgba(255,255,255,0.55)",
-              fontSize: 10,
-              lineHeight: 1.5,
-            }}
-          >
-            Find quick answers about scanning products and managing your
-            nutrition profile.
-          </p>
-        </div>
-        <p
-          style={{
-            margin: "0 0 8px 2px",
-            color: "rgba(255,255,255,0.55)",
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-          }}
-        >
-          Frequently asked questions
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {FAQ_ITEMS.map((item, index) => {
-            const open = openQuestion === index
-            return (
-              <div
-                key={item.question}
+            {/* Decorative circle */}
+            <div
+              style={{
+                position: "absolute",
+                width: 150,
+                height: 150,
+                borderRadius: "50%",
+                right: -55,
+                top: -65,
+                background: "rgba(224,167,46,0.08)",
+              }}
+            />
+
+            <div
+              style={{
+                position: "absolute",
+                width: 90,
+                height: 90,
+                borderRadius: "50%",
+                right: 45,
+                bottom: -55,
+                background: "rgba(91,170,110,0.08)",
+              }}
+            />
+
+            {/* Icon */}
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 14,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(224,167,46,0.15)",
+                border: "1px solid rgba(224,167,46,0.25)",
+                marginBottom: 16,
+              }}
+            >
+              <i
+                className="fa fa-question-circle"
                 style={{
-                  borderRadius: 13,
-                  border: "1px solid rgba(224,167,46,0.28)",
-                  background: "rgba(22,76,41,0.78)",
-                  overflow: "hidden",
+                  color: C.greenLight,
+                  fontSize: 25,
+                }}
+              />
+            </div>
+
+            <p
+              style={{
+                margin: "0 0 6px",
+                color: C.textOnDark,
+                fontSize: 21,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              How can we help?
+            </p>
+
+            <p
+              style={{
+                margin: 0,
+                maxWidth: 560,
+                color: "rgba(255,255,255,0.62)",
+                fontSize: 12,
+                lineHeight: 1.6,
+              }}
+            >
+              Find quick answers about scanning products, understanding
+              product scores, allergy alerts, and managing your preferences.
+            </p>
+          </div>
+
+          {/* FAQ HEADER */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              marginBottom: 13,
+              padding: "0 3px",
+            }}
+          >
+            <div>
+              <p
+                style={{
+                  margin: 0,
+                  color: C.textOnDark,
+                  fontSize: 15,
+                  fontWeight: 800,
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => setOpenQuestion(open ? -1 : index)}
+                Frequently asked questions
+              </p>
+
+              <p
+                style={{
+                  margin: "4px 0 0",
+                  color: "rgba(255,255,255,0.42)",
+                  fontSize: 10,
+                }}
+              >
+                Tap a question to view the answer
+              </p>
+            </div>
+
+            <div
+              style={{
+                padding: "5px 9px",
+                borderRadius: 20,
+                background: "rgba(224,167,46,0.10)",
+                color: C.greenLight,
+                fontSize: 9,
+                fontWeight: 700,
+              }}
+            >
+              {FAQ_ITEMS.length} questions
+            </div>
+          </div>
+
+          {/* FAQ LIST */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
+          >
+            {FAQ_ITEMS.map((item, index) => {
+              const open = openQuestion === index
+
+              return (
+                <div
+                  key={item.question}
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 10,
-                    width: "100%",
-                    padding: "13px",
-                    border: "none",
-                    background: "none",
-                    color: C.textOnDark,
-                    textAlign: "left",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    cursor: "pointer",
+                    borderRadius: 16,
+                    border: open
+                      ? "1px solid rgba(224,167,46,0.45)"
+                      : "1px solid rgba(224,167,46,0.20)",
+                    background: open
+                      ? "rgba(22,76,41,0.92)"
+                      : "rgba(15,55,30,0.72)",
+                    overflow: "hidden",
+                    transition: "all 0.2s ease",
+                    boxShadow: open
+                      ? "0 8px 24px rgba(0,0,0,0.16)"
+                      : "none",
                   }}
                 >
-                  {item.question}
-                  <i
-                    className={`fa fa-angle-${open ? "up" : "down"}`}
-                    style={{ color: C.greenLight, fontSize: 16 }}
-                  />
-                </button>
-                {open && (
-                  <p
+                  <button
+                    type="button"
+                    onClick={() => setOpenQuestion(open ? -1 : index)}
                     style={{
-                      margin: "0",
-                      padding: "0 13px 13px",
-                      color: "rgba(255,255,255,0.58)",
-                      fontSize: 10,
-                      lineHeight: 1.55,
+                      display: "flex",
+                      alignItems: "center",
+                      width: "100%",
+                      gap: 13,
+                      padding: "16px 17px",
+                      border: "none",
+                      background: "transparent",
+                      color: C.textOnDark,
+                      textAlign: "left",
+                      cursor: "pointer",
                     }}
                   >
-                    {item.answer}
-                  </p>
-                )}
+                    {/* Number */}
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        width: 31,
+                        height: 31,
+                        borderRadius: 10,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: open
+                          ? "rgba(224,167,46,0.16)"
+                          : "rgba(255,255,255,0.05)",
+                        color: open
+                          ? C.greenLight
+                          : "rgba(255,255,255,0.45)",
+                        fontSize: 10,
+                        fontWeight: 800,
+                      }}
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </div>
+
+                    {/* Question */}
+                    <span
+                      style={{
+                        flex: 1,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {item.question}
+                    </span>
+
+                    {/* Arrow */}
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        width: 27,
+                        height: 27,
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: open
+                          ? "rgba(224,167,46,0.13)"
+                          : "rgba(255,255,255,0.04)",
+                      }}
+                    >
+                      <i
+                        className={`fa fa-angle-${open ? "up" : "down"}`}
+                        style={{
+                          color: C.greenLight,
+                          fontSize: 14,
+                        }}
+                      />
+                    </div>
+                  </button>
+
+                  {/* ANSWER */}
+                  {open && (
+                    <div
+                      style={{
+                        padding: "0 17px 18px 61px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: 1,
+                          marginBottom: 13,
+                          background: "rgba(255,255,255,0.07)",
+                        }}
+                      />
+
+                      <p
+                        style={{
+                          margin: 0,
+                          color: "rgba(255,255,255,0.62)",
+                          fontSize: 11,
+                          lineHeight: 1.7,
+                        }}
+                      >
+                        {item.answer}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* SUPPORT CARD */}
+          <div
+            style={{
+              position: "relative",
+              overflow: "hidden",
+              marginTop: 28,
+              padding: "21px",
+              borderRadius: 18,
+              border: "1px solid rgba(91,170,110,0.18)",
+              background: "rgba(7,35,19,0.85)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+              }}
+            >
+              {/* Support icon */}
+              <div
+                style={{
+                  flexShrink: 0,
+                  width: 43,
+                  height: 43,
+                  borderRadius: 13,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "rgba(91,170,110,0.12)",
+                }}
+              >
+                <i
+                  className="fa fa-headphones"
+                  style={{
+                    color: C.greenLight,
+                    fontSize: 19,
+                  }}
+                />
               </div>
-            )
-          })}
+
+              <div style={{ flex: 1 }}>
+                <p
+                  style={{
+                    margin: 0,
+                    color: C.textOnDark,
+                    fontSize: 12,
+                    fontWeight: 800,
+                  }}
+                >
+                  Still need help?
+                </p>
+
+                <p
+                  style={{
+                    margin: "4px 0 0",
+                    color: "rgba(255,255,255,0.48)",
+                    fontSize: 10,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Our support team is here to help you.
+                </p>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 9,
+                marginTop: 16,
+                padding: "11px 13px",
+                borderRadius: 11,
+                background: "rgba(255,255,255,0.035)",
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
+            >
+              <i
+                className="fa fa-envelope"
+                style={{
+                  color: C.greenLight,
+                  fontSize: 12,
+                }}
+              />
+
+              <span
+                style={{
+                  color: "rgba(255,255,255,0.62)",
+                  fontSize: 10,
+                }}
+              >
+                scanityapp@gmail.com
+              </span>
+            </div>
+          </div>
         </div>
-        <div
-          style={{
-            marginTop: 18,
-            padding: "14px",
-            borderRadius: 13,
-            border: "1px solid rgba(224,167,46,0.2)",
-            background: "rgba(7,35,19,0.7)",
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              color: C.textOnDark,
-              fontSize: 11,
-              fontWeight: 700,
-            }}
-          >
-            Still need help?
-          </p>
-          <p
-            style={{
-              margin: "4px 0 0",
-              color: "rgba(255,255,255,0.52)",
-              fontSize: 10,
-            }}
-          >
-            Contact us at support@scanity.app
-          </p>
-        </div>
-        </Center>
       </div>
     </div>
   )
 }
+
 function AboutScreen({ go }: { go: (s: Screen) => void }) {
   const features = [
     {
@@ -6488,6 +6872,7 @@ function AboutScreen({ go }: { go: (s: Screen) => void }) {
       text: "Understand why Scanity gives each recommendation.",
     },
   ]
+
   return (
     <div
       style={{
@@ -6499,149 +6884,287 @@ function AboutScreen({ go }: { go: (s: Screen) => void }) {
         overflow: "hidden",
       }}
     >
-      <InfoHeader title="About" subtitle="" go={go} />
-      <div style={{ flex: 1, overflowY: "auto" }}>
-        <Center maxWidth={640} style={{ padding: "18px 16px 24px" }}>
+      {/* HEADER */}
+      <div
+        style={{
+          paddingTop: 12,
+          paddingLeft: 12,
+          paddingRight: 12,
+          background: "#071A0F",
+        }}
+      >
+        <InfoHeader
+          title="About Scanity"
+          subtitle="Smarter choices. Safer food."
+          go={go}
+        />
+      </div>
+
+      {/* SCROLLABLE CONTENT */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          paddingBottom: 30,
+        }}
+      >
         <div
           style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: "8px 0 18px",
+            width: "100%",
+            maxWidth: 820,
+            margin: "0 auto",
+            padding: "28px 22px 40px",
+            boxSizing: "border-box",
           }}
         >
-          <img
-            src={logoImg}
-            alt="Scanity logo"
+          {/* LOGO SECTION */}
+          <div
             style={{
-              width: 72,
-              height: 58,
-              objectFit: "contain",
-              mixBlendMode: "screen",
-              filter: "brightness(1.15) saturate(1.2)",
-              marginBottom: 8,
-            }}
-          />
-          <h3
-            style={{
-              margin: 0,
-              color: C.textOnDark,
-              fontSize: 20,
-              fontWeight: 800,
-              letterSpacing: "0.08em",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              width: "100%",
+              marginBottom: 24,
             }}
           >
-            SCAN<span style={{ color: C.greenLight }}>ITY</span>
-          </h3>
-          <p
-            style={{
-              margin: "8px 0 0",
-              color: C.greenLight,
-              fontSize: 11,
-              fontWeight: 600,
-            }}
-          >
-            Smarter choices. Safer food.
-          </p>
-        </div>
-        <p
-          style={{
-            margin: "0 0 18px",
-            color: "rgba(255,255,255,0.65)",
-            fontSize: 11,
-            lineHeight: 1.65,
-            textAlign: "center",
-          }}
-        >
-          Scanity is designed to help you determine whether packaged food is
-          personally safe and suitable for you.
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-          {features.map((feature) => (
-            <div
-              key={feature.title}
+            <img
+              src={logoImg}
+              alt="Scanity logo"
               style={{
-                padding: "13px 14px",
-                borderRadius: 13,
-                border: "1px solid rgba(224,167,46,0.28)",
-                background: "rgba(22,76,41,0.78)",
-                boxShadow: "0 3px 10px rgba(0,0,0,0.18)",
+                width: 72,
+                height: 58,
+                objectFit: "contain",
+                mixBlendMode: "screen",
+                filter: "brightness(1.15) saturate(1.2)",
+                marginBottom: 8,
+              }}
+            />
+
+            <h3
+              style={{
+                margin: 0,
+                color: C.textOnDark,
+                fontSize: 20,
+                fontWeight: 800,
+                letterSpacing: "0.08em",
+                textAlign: "center",
               }}
             >
+              SCAN<span style={{ color: C.greenLight }}>ITY</span>
+            </h3>
+
+            <p
+              style={{
+                margin: "8px 0 0",
+                color: C.greenLight,
+                fontSize: 11,
+                fontWeight: 600,
+                textAlign: "center",
+              }}
+            >
+              Smarter choices. Safer food.
+            </p>
+          </div>
+
+          {/* INTRODUCTION */}
+          <div
+            style={{
+              padding: "18px 18px",
+              marginBottom: 24,
+              borderRadius: 16,
+              border: "1px solid rgba(224,167,46,0.25)",
+              background: "rgba(22,76,41,0.72)",
+              boxShadow: "0 5px 18px rgba(0,0,0,0.15)",
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                color: C.textOnDark,
+                fontSize: 13,
+                fontWeight: 700,
+                marginBottom: 7,
+              }}
+            >
+              About Scanity
+            </p>
+
+            <p
+              style={{
+                margin: 0,
+                color: "rgba(255,255,255,0.62)",
+                fontSize: 11,
+                lineHeight: 1.65,
+              }}
+            >
+              Scanity is designed to help you determine whether packaged food
+              is personally safe and suitable for you.
+            </p>
+          </div>
+
+          {/* FEATURES TITLE */}
+          <div
+            style={{
+              marginBottom: 12,
+              paddingLeft: 3,
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                color: C.textOnDark,
+                fontSize: 15,
+                fontWeight: 800,
+              }}
+            >
+              What Scanity can do
+            </p>
+
+            <p
+              style={{
+                margin: "4px 0 0",
+                color: "rgba(255,255,255,0.42)",
+                fontSize: 10,
+              }}
+            >
+              Tools designed to make food choices easier
+            </p>
+          </div>
+
+          {/* FEATURES */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
+          >
+            {features.map((feature, index) => (
               <div
+                key={feature.title}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  marginBottom: 6,
+                  padding: "16px",
+                  borderRadius: 16,
+                  border: "1px solid rgba(224,167,46,0.22)",
+                  background: "rgba(15,55,30,0.78)",
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.14)",
                 }}
               >
-                <i
-                  className={`fa ${feature.icon}`}
+                <div
                   style={{
-                    width: 22,
-                    color: C.greenLight,
-                    fontSize: 16,
-                    textAlign: "center",
-                  }}
-                />
-                <p
-                  style={{
-                    margin: 0,
-                    color: C.textOnDark,
-                    fontSize: 11,
-                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
                   }}
                 >
-                  {feature.title}
-                </p>
+                  {/* ICON */}
+                  <div
+                    style={{
+                      flexShrink: 0,
+                      width: 38,
+                      height: 38,
+                      borderRadius: 12,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "rgba(91,170,110,0.10)",
+                      border: "1px solid rgba(91,170,110,0.16)",
+                    }}
+                  >
+                    <i
+                      className={`fa ${feature.icon}`}
+                      style={{
+                        color: C.greenLight,
+                        fontSize: 16,
+                      }}
+                    />
+                  </div>
+
+                  {/* FEATURE TEXT */}
+                  <div style={{ flex: 1 }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        color: C.textOnDark,
+                        fontSize: 12,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {feature.title}
+                    </p>
+
+                    <p
+                      style={{
+                        margin: "4px 0 0",
+                        color: "rgba(255,255,255,0.52)",
+                        fontSize: 10,
+                        lineHeight: 1.55,
+                      }}
+                    >
+                      {feature.text}
+                    </p>
+                  </div>
+
+                  {/* FEATURE NUMBER */}
+                  <span
+                    style={{
+                      alignSelf: "flex-start",
+                      color: "rgba(255,255,255,0.22)",
+                      fontSize: 9,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
               </div>
-              <p
-                style={{
-                  margin: "0 0 0 32px",
-                  color: "rgba(255,255,255,0.56)",
-                  fontSize: 9,
-                  lineHeight: 1.55,
-                }}
-              >
-                {feature.text}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* BOTTOM DIVIDER */}
+          <div
+            style={{
+              height: 1,
+              margin: "28px 0 18px",
+              background: "rgba(224,167,46,0.20)",
+            }}
+          />
+
+          {/* FOOTER */}
+          <div
+            style={{
+              textAlign: "center",
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                color: C.greenLight,
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              Your health. Your choice.
+            </p>
+
+            <p
+              style={{
+                margin: "7px 0 0",
+                color: "rgba(255,255,255,0.40)",
+                fontSize: 9,
+              }}
+            >
+              Scanity 
+            </p>
+          </div>
         </div>
-        <div
-          style={{
-            height: 1,
-            margin: "20px 0 16px",
-            background: "rgba(224,167,46,0.22)",
-          }}
-        />
-        <p
-          style={{
-            margin: 0,
-            color: C.greenLight,
-            fontSize: 11,
-            fontWeight: 600,
-            textAlign: "center",
-          }}
-        >
-          Your health. Your choice.
-        </p>
-        <p
-          style={{
-            margin: "8px 0 0",
-            color: "rgba(255,255,255,0.42)",
-            fontSize: 9,
-            textAlign: "center",
-          }}
-        >
-          Scanity · Version 1.0
-        </p>
-        </Center>
       </div>
     </div>
   )
 }
+
 function LegalScreen({
   go,
   kind,
@@ -8361,7 +8884,6 @@ function ConfirmationPasswordScreen({ go }: { go: (s: Screen) => void }) {
           transform: "translateX(-50%)",
         }}
       />
-      
       {/* Success Icon */}
       <div
         style={{
