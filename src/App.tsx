@@ -301,6 +301,38 @@ function SplashScreen({ go }: { go: (s: Screen) => void }) {
         overflow: "hidden",
       }}
     >
+      {/* Keyframes for entrance animations + button interactions */}
+      <style>{`
+        @keyframes scanitySplashBg {
+          from { transform: scale(1.08); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes scanityLogoIn {
+          0% { opacity: 0; transform: scale(0.7) translateY(10px); }
+          60% { opacity: 1; transform: scale(1.05) translateY(0); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes scanityFadeUp {
+          from { opacity: 0; transform: translateY(18px); }
+          to { opacity: 1; transform: translateY(0); }
+        
+        }
+        .scanity-btn {
+          transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        }
+        .scanity-btn:hover {
+          transform: translateY(-2px) scale(1.015);
+          filter: brightness(1.06);
+        }
+        .scanity-btn:active {
+          transform: translateY(0) scale(0.97);
+          filter: brightness(0.96);
+        }
+        .scanity-signin:hover {
+          text-decoration: underline;
+        }
+      `}</style>
+
       {/* Background photo */}
       <img
         src="https://images.unsplash.com/photo-1518843875459-f738682238a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxmcmVzaCUyMGNvbG9yZnVsJTIwZnJ1aXRzJTIwdmVnZXRhYmxlcyUyMGhlYWx0aHklMjBmb29kfGVufDF8fHx8MTc4NjIzOTc1M3ww&ixlib=rb-4.1.0&q=80&w=1080"
@@ -312,6 +344,7 @@ function SplashScreen({ go }: { go: (s: Screen) => void }) {
           height: "100%",
           objectFit: "cover",
           objectPosition: "center",
+          animation: "scanitySplashBg 1.4s ease-out both",
         }}
       />
       {/* Dark gradient overlay for readability */}
@@ -344,11 +377,18 @@ function SplashScreen({ go }: { go: (s: Screen) => void }) {
             height: 220,
             objectFit: "contain",
             mixBlendMode: "screen",
-            filter: "brightness(1.15) saturate(1.25)",
+            animation:
+              "scanityLogoIn 0.9s cubic-bezier(0.22,1,0.36,1) both, scanityPulseGlow 3.2s ease-in-out 1s infinite",
           }}
         />
         {/* Brand name */}
-        <div style={{ textAlign: "center", marginTop: -16 }}>
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: -16,
+            animation: "scanityFadeUp 0.7s ease-out 0.35s both",
+          }}
+        >
           <h1
             style={{
               fontWeight: 800,
@@ -393,6 +433,7 @@ function SplashScreen({ go }: { go: (s: Screen) => void }) {
             textAlign: "center",
             fontWeight: 500,
             marginBottom: 40,
+            animation: "scanityFadeUp 0.7s ease-out 0.5s both",
           }}
         >
           Your personal{" "}
@@ -404,6 +445,7 @@ function SplashScreen({ go }: { go: (s: Screen) => void }) {
           instantly know if it fits your dietary needs
         </p>
         <button
+          className="scanity-btn"
           onClick={() => go("login")}
           style={{
             width: "100%",
@@ -418,6 +460,7 @@ function SplashScreen({ go }: { go: (s: Screen) => void }) {
             cursor: "pointer",
             boxShadow: `0 8px 24px ${C.mocha}50`,
             letterSpacing: "0.02em",
+            animation: "scanityFadeUp 0.7s ease-out 0.65s both",
           }}
         >
           Get Started
@@ -429,10 +472,12 @@ function SplashScreen({ go }: { go: (s: Screen) => void }) {
             fontSize: 12,
             color: "rgba(255,255,255,0.6)",
             fontFamily: "'Poppins', sans-serif",
+            animation: "scanityFadeUp 0.7s ease-out 0.75s both",
           }}
         >
           Already have an account?{" "}
           <button
+            className="scanity-signin"
             onClick={() => go("login")}
             style={{
               background: "none",
@@ -451,6 +496,7 @@ function SplashScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+
 function LoginScreen({ go }: { go: (s: Screen) => void }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -467,6 +513,30 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
         overflow: "hidden",
       }}
     >
+      <style>{`
+        @keyframes scanityLogoIn {
+          0% { opacity: 0; transform: scale(0.7) translateY(10px); }
+          60% { opacity: 1; transform: scale(1.05) translateY(0); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes scanityFadeUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .scanity-login-form input:focus {
+          outline: none;
+          box-shadow: 0 0 0 2px rgba(224,167,46,0.5);
+          transition: box-shadow 0.2s ease;
+        }
+        .scanity-link {
+          transition: color 0.15s ease, transform 0.15s ease;
+        }
+        .scanity-link:hover {
+          transform: translateY(-1px);
+          text-decoration: underline;
+        }
+      `}</style>
+
       {/* Background */}
       <img
         src="https://images.unsplash.com/photo-1518843875459-f738682238a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxmcmVzaCUyMGNvbG9yZnVsJTIwZnJ1aXRzJTIwdmVnZXRhYmxlcyUyMGhlYWx0aHklMjBmb29kfGVufDF8fHx8MTc4NjIzOTc1M3ww&ixlib=rb-4.1.0&q=80&w=1080"
@@ -480,8 +550,6 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
           objectPosition: "center",
         }}
       />
-
-      {/* Dark overlay */}
       <div
         style={{
           position: "absolute",
@@ -492,7 +560,6 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
         }}
       />
 
-      {/* Main content */}
       <div
         style={{
           position: "relative",
@@ -515,7 +582,6 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
             boxSizing: "border-box",
           }}
         >
-          {/* Logo and heading */}
           <div
             style={{
               display: "flex",
@@ -525,27 +591,32 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
               paddingBottom: isDesktop ? 28 : 32,
             }}
           >
-            <Logo
-              size={isDesktop ? 180 : 200}
-              style={{
-                borderRadius: 0,
-                marginBottom: -12,
-                mixBlendMode: "screen",
-              }}
-            />
+            <div style={{ animation: "scanityLogoIn 0.8s cubic-bezier(0.22,1,0.36,1) both" }}>
+              <Logo
+                size={isDesktop ? 180 : 200}
+                style={{
+                  borderRadius: 0,
+                  marginBottom: -12,
+                  mixBlendMode: "screen",
+                }}
+              />
+            </div>
 
             <p
               style={{
-                marginTop: "-12px",
-                marginBottom: 0,
-                fontWeight: 800,
-                fontSize: isDesktop ? 30 : 32,
-                fontFamily: "'Poppins', sans-serif",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              <span style={{ color: C.textOnDark }}>Scan</span>
-              <span style={{ color: C.greenLight }}>ity</span>
+              fontWeight: 800,
+              fontSize: isDesktop ? 30 : 32,
+              letterSpacing: "-0.01em",
+              lineHeight: 1,
+              marginTop: 0,
+              marginBottom: 0,
+              marginLeft: 0,
+              marginRight: 0,
+              fontFamily: "'Poppins', sans-serif",
+            }}
+          >
+            <span style={{ color: C.textOnDark }}>Scan</span>
+            <span style={{ color: C.greenLight }}>ity</span>
             </p>
 
             <h2
@@ -556,6 +627,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                 fontSize: isDesktop ? 30 : 26,
                 color: C.textOnDark,
                 textAlign: "center",
+                animation: "scanityFadeUp 0.6s ease-out 0.3s both",
               }}
             >
               Welcome Back!
@@ -568,71 +640,55 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                 marginTop: 6,
                 marginBottom: 0,
                 textAlign: "center",
+                animation: "scanityFadeUp 0.6s ease-out 0.4s both",
               }}
             >
               Please login to continue
             </p>
           </div>
 
-          {/* Form */}
-          <div>
-            <Field
-              icon={
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-              }
-              placeholder="Email"
-              type="email"
-              value={email}
-              onChange={setEmail}
-            />
+          <div className="scanity-login-form">
+            <div style={{ animation: "scanityFadeUp 0.5s ease-out 0.45s both" }}>
+              <Field
+                icon={
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                }
+                placeholder="Email"
+                type="email"
+                value={email}
+                onChange={setEmail}
+              />
+            </div>
 
-            <Field
-              icon={
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <rect
-                    x="3"
-                    y="11"
-                    width="18"
-                    height="11"
-                    rx="2"
-                    ry="2"
-                  />
-                  <path d="M7 11V7a5 5 0 0110 0v4" />
-                </svg>
-              }
-              placeholder="Password"
-              type="password"
-              value={password}
-              onChange={setPassword}
-            />
+            <div style={{ animation: "scanityFadeUp 0.5s ease-out 0.55s both" }}>
+              <Field
+                icon={
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0110 0v4" />
+                  </svg>
+                }
+                placeholder="Password"
+                type="password"
+                value={password}
+                onChange={setPassword}
+              />
+            </div>
 
-            {/* Forgot password */}
             <div
               style={{
                 textAlign: "right",
                 marginTop: 4,
                 marginBottom: isDesktop ? 32 : 28,
+                animation: "scanityFadeUp 0.5s ease-out 0.6s both",
               }}
             >
               <button
                 type="button"
+                className="scanity-link"
                 onClick={() => go("forgotPassword")}
                 style={{
                   border: "none",
@@ -649,24 +705,22 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
               </button>
             </div>
 
-            {/* Login button */}
-            <PrimaryBtn
-              label="LOGIN"
-              onClick={() => go("success")}
-              color={C.mocha}
-            />
+            <div style={{ animation: "scanityFadeUp 0.5s ease-out 0.7s both" }}>
+              <PrimaryBtn label="LOGIN" onClick={() => go("success")} color={C.mocha} />
+            </div>
 
-            {/* Register */}
             <p
               style={{
                 textAlign: "center",
                 marginTop: 22,
                 fontSize: isDesktop ? 14 : 13,
                 color: "rgba(255,255,255,0.7)",
+                animation: "scanityFadeUp 0.5s ease-out 0.8s both",
               }}
             >
               Don't have an account?{" "}
               <button
+                className="scanity-link"
                 onClick={() => go("register")}
                 style={{
                   background: "none",
@@ -683,41 +737,18 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
             </p>
           </div>
 
-          {/* Bottom accent */}
           <div
             style={{
               display: "flex",
               justifyContent: "center",
               gap: 6,
               marginTop: isDesktop ? 35 : 24,
+              animation: "scanityFadeUp 0.5s ease-out 0.9s both",
             }}
           >
-            <div
-              style={{
-                width: 40,
-                height: 3,
-                borderRadius: 2,
-                background: C.green,
-              }}
-            />
-
-            <div
-              style={{
-                width: 12,
-                height: 3,
-                borderRadius: 2,
-                background: C.mocha,
-              }}
-            />
-
-            <div
-              style={{
-                width: 6,
-                height: 3,
-                borderRadius: 2,
-                background: C.gray,
-              }}
-            />
+            <div style={{ width: 40, height: 3, borderRadius: 2, background: C.green }} />
+            <div style={{ width: 12, height: 3, borderRadius: 2, background: C.mocha }} />
+            <div style={{ width: 6, height: 3, borderRadius: 2, background: C.gray }} />
           </div>
         </div>
       </div>
@@ -2347,6 +2378,7 @@ function AllSetScreen({ go }: { go: (s: Screen) => void }) {
   )
 }
 // ── Dashboard ────────────────────────────────────────────────────────────────
+
 const RECENT_SCANS = [
   {
     name: "Milk",
@@ -2356,42 +2388,176 @@ const RECENT_SCANS = [
     safe: true,
   },
   {
-    name: "Juice",
+    name: "Orange Juice",
     date: "Aug 5, 2026",
     time: "6:30 PM",
     score: 72,
     safe: true,
   },
+  {
+    name: "Chocolate Bar",
+    date: "Aug 7, 2026",
+    time: "10:15 AM",
+    score: 58,
+    safe: false,
+  },
+  {
+    name: "Corn Flakes",
+    date: "Aug 9, 2026",
+    time: "8:45 AM",
+    score: 81,
+    safe: true,
+  },
+  {
+    name: "Potato Chips",
+    date: "Aug 12, 2026",
+    time: "3:20 PM",
+    score: 64,
+    safe: true,
+  },
+  {
+    name: "Yogurt",
+    date: "Aug 15, 2026",
+    time: "9:10 AM",
+    score: 91,
+    safe: true,
+  },
+  {
+    name: "Instant Noodles",
+    date: "Aug 18, 2026",
+    time: "12:40 PM",
+    score: 55,
+    safe: false,
+  },
+  {
+    name: "Tuna Sandwich",
+    date: "Aug 22, 2026",
+    time: "1:15 PM",
+    score: 84,
+    safe: true,
+  },
 ]
-function DashboardScreen({ go }: { go: (s: Screen) => void }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
-  const [showLogoutLoading, setShowLogoutLoading] = useState(false)
+
+function DashboardScreen({
+  go,
+}: {
+  go: (s: Screen) => void
+}) {
+  const [sidebarOpen, setSidebarOpen] =
+    useState(false)
+
+  const [showLogoutConfirm, setShowLogoutConfirm] =
+    useState(false)
+
+  const [showLogoutLoading, setShowLogoutLoading] =
+    useState(false)
+
   const isDesktop = useIsDesktop()
 
-  // ── Dashboard Small Cards ────────────────────────────────────────────────
+  const FONT = "'Poppins', sans-serif"
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COLORS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const PALETTE = {
+    pageBg: "#e8e5e0",
+
+    // Green gradient
+    sidebarBg: "#176B3A",
+    green: "#176B3A",
+    greenDark: "#155B32",
+    greenLight: "#2E8B57",
+    greenText: "#2E7D4F",
+
+    cardWhite: "#FFFFFF",
+
+    textDark: "#1A1A1A",
+    textMuted: "#6B6B6B",
+
+    border: "#E5E3DC",
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SCORE STATUS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const getScoreStatus = (score: number) => {
+    if (score >= 80) {
+      return {
+        label: "Safe",
+        color: "#4CAF50",
+        background: "#E8F5E9",
+      }
+    }
+
+    if (score >= 60) {
+      return {
+        label: "Fair",
+        color: "#D99A00",
+        background: "#FFF5D9",
+      }
+    }
+
+    return {
+      label: "Caution",
+      color: "#E53935",
+      background: "#FDEAEA",
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ACTION CARDS
+  // ═══════════════════════════════════════════════════════════════════════════
+
   const cards = [
     {
       label: "Scan OCR",
-      icon: <i className="fa fa-file-text-o" />,
+      icon: (
+        <i className="fa fa-file-text-o" />
+      ),
       action: () => go("ocr"),
     },
     {
-      label: "Scan History",
-      icon: <i className="fa fa-history" />,
-      action: () => go("history"),
-    },
-    {
       label: "Compare Products",
-      icon: <i className="fa fa-users" />,
-      action: () => go("productCompare"),
+      icon: (
+        <i className="fa fa-balance-scale" />
+      ),
+      action: () =>
+        go("productCompare"),
     },
   ]
 
-  // ── Logout ───────────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SIDEBAR ITEMS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  const sidebarItems = [
+    {
+      icon: "fa-home",
+      label: "Dashboard",
+      screen: "dashboard" as Screen,
+    },
+    {
+      icon: "fa-gear",
+      label: "Settings",
+      screen: "settings" as Screen,
+    },
+    {
+      icon: "fa-question-circle",
+      label: "Help & FAQ",
+      screen: "help" as Screen,
+    },
+  ]
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LOGOUT
+  // ═══════════════════════════════════════════════════════════════════════════
+
   const handleLogout = () => {
     setShowLogoutConfirm(false)
     setShowLogoutLoading(true)
+
     setTimeout(() => {
       setShowLogoutLoading(false)
       setSidebarOpen(false)
@@ -2399,76 +2565,92 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
     }, 1800)
   }
 
-  // Shared sidebar menu content — used inside the slide-out drawer on
-  // every screen size.
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SIDEBAR MENU
+  // ═══════════════════════════════════════════════════════════════════════════
+
   const sidebarMenu = (
     <>
-      {/* ── User Information ── */}
+      {/* LOGO */}
+
       <div
         style={{
           display: "flex",
           alignItems: "center",
           gap: 12,
-          padding: "0 20px 24px",
-          borderBottom: "1px solid rgba(255,255,255,0.10)",
-          marginBottom: 8,
+
+          padding: isDesktop
+            ? "20px 20px 24px"
+            : "18px 16px 22px",
         }}
       >
-        <div
+        <img
+          src={logoImg}
+          alt="Scanity"
           style={{
-            width: 42,
-            height: 42,
-            borderRadius: "50%",
-            background: "rgba(224,167,46,0.16)",
-            border: "1px solid rgba(224,167,46,0.35)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            width: isDesktop ? 48 : 42,
+            height: isDesktop ? 48 : 42,
+            objectFit: "contain",
             flexShrink: 0,
           }}
+        />
+
+        <span
+          style={{
+            fontFamily: FONT,
+            fontWeight: 800,
+            fontSize: isDesktop ? 22 : 18,
+            letterSpacing: "-0.01em",
+            color: "#FFFFFF",
+            lineHeight: 1,
+            whiteSpace: "nowrap",
+          }}
         >
-          <i
-            className="fa fa-user"
-            style={{
-              fontSize: 18,
-              color: C.greenLight,
-            }}
-          />
-        </div>
-        <div style={{ minWidth: 0 }}>
-          <p
-            style={{
-              margin: 0,
-              fontFamily: "'Poppins', sans-serif",
-              fontWeight: 700,
-              fontSize: 14,
-              color: C.textOnDark,
-            }}
-          >
-            Hello, User!
-          </p>
-          <p
-            style={{
-              margin: "2px 0 0",
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 10,
-              color: "rgba(255,255,255,0.50)",
-            }}
-          >
-            user@email.com
-          </p>
-        </div>
+        <span style={{ color: C.textOnDark }}>Scan</span>
+        <span style={{ color: C.greenLight }}>ity</span>      
+        </span>
       </div>
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {[
-          { icon: "fa-user", label: "My Profile", screen: "profile" as Screen },
-          { icon: "fa-gear", label: "Settings", screen: "settings" as Screen },
-          { icon: "fa-question-circle", label: "Help & FAQ", screen: "help" as Screen },
-          { icon: "fa-info-circle", label: "About", screen: "about" as Screen },
-        ].map((item) => (
+
+      {/* MENU TITLE */}
+
+      <p
+        style={{
+          margin: 0,
+
+          padding: isDesktop
+            ? "0 20px 10px"
+            : "0 16px 10px",
+
+          fontFamily: FONT,
+          fontWeight: 600,
+          fontSize: 10,
+          letterSpacing: "0.14em",
+
+          color:
+            "rgba(255,255,255,0.50)",
+        }}
+      >
+        MENU
+      </p>
+
+      {/* MENU */}
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 6,
+
+          padding: isDesktop
+            ? "0 10px"
+            : "0 9px",
+        }}
+      >
+        {sidebarItems.map((item) => (
           <button
             key={item.screen}
             type="button"
+            className="scanity-sidebar-item"
             onClick={() => {
               setSidebarOpen(false)
               go(item.screen)
@@ -2476,91 +2658,110 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 14,
-              padding: "14px 20px",
-              background: "transparent",
+              gap: 12,
+
+              padding: isDesktop
+                ? "12px 14px"
+                : "11px 12px",
+
+              background:
+                "transparent",
+
               border: "none",
+              borderRadius: 14,
+
               cursor: "pointer",
+
               width: "100%",
+
               textAlign: "left",
             }}
           >
-            <span
+            <i
+              className={`fa ${item.icon}`}
               style={{
-                width: 22,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                fontSize: 15,
+                width: 19,
+                textAlign: "center",
+                color: "#FFFFFF",
               }}
-            >
-              <i
-                className={`fa ${item.icon}`}
-                style={{
-                  fontSize: 17,
-                  color: C.greenLight,
-                }}
-              />
-            </span>
+            />
+
             <span
               style={{
-                fontFamily: "'Poppins', sans-serif",
+                fontFamily: FONT,
                 fontWeight: 500,
-                fontSize: 13,
-                color: C.textOnDark,
+
+                fontSize:
+                  isDesktop ? 13 : 12,
+
+                color: "#FFFFFF",
               }}
             >
               {item.label}
             </span>
           </button>
         ))}
-      </div>
-      <div style={{ flex: 1 }} />
-      <button
-        type="button"
-        onClick={() => setShowLogoutConfirm(true)}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-          margin: "0 14px",
-          padding: "13px 14px",
-          background: "rgba(224,167,46,0.08)",
-          border: "1px solid rgba(224,167,46,0.18)",
-          borderRadius: 12,
-          cursor: "pointer",
-          textAlign: "left",
-        }}
-      >
-        <span
+
+        {/* LOGOUT */}
+
+        <button
+          type="button"
+          className="scanity-sidebar-item"
+          onClick={() =>
+            setShowLogoutConfirm(true)
+          }
           style={{
-            width: 24,
-            height: 24,
-            borderRadius: 7,
-            background: "rgba(224,167,46,0.14)",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
+            gap: 12,
+
+            padding: isDesktop
+              ? "12px 14px"
+              : "11px 12px",
+
+            background:
+              "transparent",
+
+            border: "none",
+            borderRadius: 14,
+
+            cursor: "pointer",
+
+            width: "100%",
+
+            textAlign: "left",
           }}
         >
           <i
             className="fa fa-sign-out"
             style={{
               fontSize: 15,
-              color: C.greenLight,
+              width: 19,
+              textAlign: "center",
+
+              color: "#FFFFFF",
+
+              transform:
+                "scaleX(-1)",
             }}
           />
-        </span>
-        <span
-          style={{
-            fontFamily: "'Poppins', sans-serif",
-            fontWeight: 600,
-            fontSize: 13,
-            color: C.textOnDark,
-          }}
-        >
-          Logout
-        </span>
-      </button>
+
+          <span
+            style={{
+              fontFamily: FONT,
+              fontWeight: 500,
+
+              fontSize:
+                isDesktop ? 13 : 12,
+
+              color: "#FFFFFF",
+            }}
+          >
+            Logout
+          </span>
+        </button>
+      </div>
     </>
   )
 
@@ -2568,166 +2769,477 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
     <div
       style={{
         flex: 1,
+
         display: "flex",
         flexDirection: "column",
+
         position: "relative",
+
         overflow: "hidden",
-        background: "#071C10",
+
+        backgroundColor:
+          PALETTE.pageBg,
+
+        fontFamily: FONT,
       }}
     >
-      <img
-        src="https://images.unsplash.com/photo-1518843875459-f738682238a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-        alt=""
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          objectPosition: "center",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "rgba(5, 28, 15, 0.84)",
-        }}
-      />
+      {/* ═════════════════════════════════════════════════════════════════════
+          ANIMATIONS
+      ═════════════════════════════════════════════════════════════════════ */}
 
-      {/* Slide-out sidebar — same behavior on every screen size, opened only via the hamburger button */}
+      <style>
+        {`
+          @keyframes logoutProgress {
+            from {
+              width: 0%;
+            }
+
+            to {
+              width: 100%;
+            }
+          }
+
+          @keyframes scanityFadeUp {
+            from {
+              opacity: 0;
+              transform: translateY(14px);
+            }
+
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes scanitySidebarSlideIn {
+            from {
+              opacity: 0;
+              transform: translateX(-45px);
+            }
+
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          @keyframes scanityBackdropIn {
+            from {
+              opacity: 0;
+            }
+
+            to {
+              opacity: 1;
+            }
+          }
+
+          @keyframes scanityCardIn {
+            from {
+              opacity: 0;
+              transform: translateY(10px) scale(0.98);
+            }
+
+            to {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
+          }
+
+          .scanity-sidebar-item {
+            transition:
+              background 0.18s ease,
+              transform 0.15s ease;
+          }
+
+          .scanity-sidebar-item:hover {
+            background:
+              rgba(255,255,255,0.10) !important;
+
+            transform:
+              translateX(3px);
+          }
+
+          .scanity-sidebar-item:active {
+            transform: scale(0.97);
+          }
+
+          .scanity-hero-card,
+          .scanity-action-card,
+          .scanity-scan-row {
+            transition:
+              transform 0.18s ease,
+              box-shadow 0.18s ease;
+          }
+
+          .scanity-hero-card:hover {
+            transform:
+              translateY(-4px);
+
+            box-shadow:
+              0 20px 45px
+              rgba(0,0,0,0.09) !important;
+          }
+
+          .scanity-action-card:hover {
+            transform:
+              translateY(-5px);
+
+            box-shadow:
+              0 20px 40px
+              rgba(21,91,50,0.30) !important;
+          }
+
+          .scanity-scan-row:hover {
+            transform:
+              translateY(-2px);
+
+            box-shadow:
+              0 10px 22px
+              rgba(0,0,0,0.10) !important;
+          }
+
+          .scanity-hero-card:active,
+          .scanity-action-card:active,
+          .scanity-scan-row:active {
+            transform:
+              scale(0.98);
+          }
+
+          .scanity-viewall {
+            transition:
+              opacity 0.15s ease,
+              transform 0.15s ease;
+          }
+
+          .scanity-viewall:hover {
+            opacity: 0.7;
+            transform:
+              translateX(2px);
+          }
+
+          .scanity-hamburger {
+            transition:
+              transform 0.15s ease,
+              box-shadow 0.15s ease;
+          }
+
+          .scanity-hamburger:hover {
+            transform:
+              translateY(-2px);
+
+            box-shadow:
+              0 8px 20px
+              rgba(0,0,0,0.08) !important;
+          }
+
+          .scanity-hamburger:active {
+            transform:
+              scale(0.94);
+          }
+
+          .scanity-profile {
+            transition:
+              transform 0.15s ease,
+              opacity 0.15s ease;
+          }
+
+          .scanity-profile:hover {
+            transform:
+              translateY(-1px);
+
+            opacity: 0.8;
+          }
+
+          .scanity-action-arrow {
+            transition:
+              transform 0.18s ease,
+              background 0.18s ease;
+          }
+
+          .scanity-action-card:hover
+          .scanity-action-arrow {
+            transform:
+              translateX(4px);
+
+            background:
+              rgba(255,255,255,0.20);
+          }
+        `}
+      </style>
+
+      {/* ═════════════════════════════════════════════════════════════════════
+          SIDEBAR
+      ═════════════════════════════════════════════════════════════════════ */}
+
       {sidebarOpen && (
         <div
           style={{
             position: "absolute",
             inset: 0,
-            zIndex: 20,
+
+            zIndex: 50,
+
             display: "flex",
           }}
         >
+          {/* BACKDROP */}
+
           <div
-            onClick={() => setSidebarOpen(false)}
+            onClick={() =>
+              setSidebarOpen(false)
+            }
             style={{
               position: "absolute",
               inset: 0,
-              background: "rgba(0, 0, 0, 0.55)",
-              backdropFilter: "blur(3px)",
-              WebkitBackdropFilter: "blur(3px)",
+
+              background:
+                "rgba(0,0,0,0.40)",
+
+              backdropFilter:
+                "blur(4px)",
+
+              WebkitBackdropFilter:
+                "blur(4px)",
+
+              animation:
+                "scanityBackdropIn 0.2s ease-out both",
             }}
           />
+
+          {/* SIDEBAR */}
+
           <div
             style={{
               position: "relative",
-              zIndex: 21,
-              width: isDesktop ? 300 : 260,
-              height: "100%",
-              background: "rgba(7, 35, 19, 0.97)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              boxShadow: "6px 0 35px rgba(0,0,0,0.45)",
+
+              zIndex: 51,
+
+              width:
+                isDesktop ? 245 : 220,
+
+              height:
+                `calc(100% - ${
+                  isDesktop ? 32 : 20
+                }px)`,
+
+              margin:
+                isDesktop
+                  ? "16px"
+                  : "10px",
+
+              // GRADIENT SIDEBAR
+              background:
+                `linear-gradient(
+                  160deg,
+                  #155B32 0%,
+                  #176B3A 45%,
+                  #2E8B57 100%
+                )`,
+
+              borderRadius: 26,
+
+              boxShadow:
+                "0 25px 55px rgba(0,0,0,0.28)",
+
               display: "flex",
               flexDirection: "column",
+
               paddingTop: SAFE_TOP,
-              paddingLeft: 0,
-              paddingRight: 0,
               paddingBottom: 24,
-              borderRight: "1px solid rgba(224,167,46,0.18)",
-              boxSizing: "border-box",
+
+              boxSizing:
+                "border-box",
+
+              overflow: "hidden",
+
+              animation:
+                "scanitySidebarSlideIn 0.28s cubic-bezier(0.22,1,0.36,1) both",
             }}
           >
-            {isDesktop && (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  marginBottom: 18,
-                }}
-              >
-              </div>
-            )}
+            {/* DECORATIVE CIRCLE */}
+
+            <div
+              style={{
+                position: "absolute",
+
+                width: 160,
+                height: 160,
+
+                borderRadius: "50%",
+
+                top: -90,
+                right: -80,
+
+                background:
+                  "rgba(255,255,255,0.06)",
+
+                pointerEvents: "none",
+              }}
+            />
+
+            <div
+              style={{
+                position: "absolute",
+
+                width: 120,
+                height: 120,
+
+                borderRadius: "50%",
+
+                bottom: 10,
+                left: -75,
+
+                background:
+                  "rgba(255,255,255,0.04)",
+
+                pointerEvents: "none",
+              }}
+            />
+
             {sidebarMenu}
           </div>
         </div>
       )}
+
+      {/* ═════════════════════════════════════════════════════════════════════
+          LOGOUT CONFIRMATION
+      ═════════════════════════════════════════════════════════════════════ */}
 
       {showLogoutConfirm && (
         <div
           style={{
             position: "absolute",
             inset: 0,
+
             zIndex: 100,
+
             display: "flex",
+
             alignItems: "center",
+
             justifyContent: "center",
+
             padding: 20,
-            background: "rgba(2, 18, 9, 0.78)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
+
+            background:
+              "rgba(20,20,20,0.5)",
+
+            backdropFilter:
+              "blur(10px)",
+
+            WebkitBackdropFilter:
+              "blur(10px)",
           }}
         >
           <div
             style={{
               width: "100%",
+
               maxWidth: 310,
-              padding: "28px 22px 22px",
-              borderRadius: 24,
+
+              padding:
+                "28px 22px 22px",
+
+              borderRadius: 28,
+
               background:
-                "linear-gradient(145deg, rgba(25,68,39,0.98), rgba(9,39,22,0.98))",
-              border: "1px solid rgba(224,167,46,0.38)",
+                PALETTE.cardWhite,
+
               boxShadow:
-                "0 20px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)",
+                "0 25px 65px rgba(0,0,0,0.20)",
+
               textAlign: "center",
-              boxSizing: "border-box",
+
+              boxSizing:
+                "border-box",
+
+              fontFamily: FONT,
             }}
           >
+            {/* ICON */}
+
             <div
               style={{
                 width: 70,
                 height: 70,
-                margin: "0 auto 16px",
+
+                margin:
+                  "0 auto 16px",
+
                 borderRadius: "50%",
-                background: "rgba(224,167,46,0.12)",
-                border: "2px solid rgba(224,167,46,0.55)",
+
+                background:
+                  "rgba(23,107,58,0.10)",
+
+                border:
+                  `2px solid ${PALETTE.green}`,
+
                 display: "flex",
+
                 alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 0 25px rgba(224,167,46,0.12)",
+
+                justifyContent:
+                  "center",
               }}
             >
               <i
                 className="fa fa-sign-out"
                 style={{
                   fontSize: 30,
-                  color: C.greenLight,
+
+                  color:
+                    PALETTE.green,
                 }}
               />
             </div>
+
             <h2
               style={{
-                margin: "0 0 8px",
-                fontFamily: "'Poppins', sans-serif",
-                fontWeight: 800,
+                margin:
+                  "0 0 8px",
+
+                fontFamily: FONT,
+
+                fontWeight: 700,
+
                 fontSize: 18,
-                color: C.textOnDark,
+
+                letterSpacing:
+                  "-0.01em",
+
+                color:
+                  PALETTE.textDark,
+
                 lineHeight: 1.35,
               }}
             >
               Are you sure you want to logout?
             </h2>
+
             <p
               style={{
-                margin: "0 auto 20px",
+                margin:
+                  "0 auto 20px",
+
                 maxWidth: 240,
-                fontFamily: "'Poppins', sans-serif",
-                fontSize: 9,
-                lineHeight: "14px",
-                color: "rgba(255,255,255,0.60)",
+
+                fontFamily: FONT,
+
+                fontWeight: 400,
+
+                fontSize: 11,
+
+                lineHeight: "16px",
+
+                color:
+                  PALETTE.textMuted,
               }}
             >
               You will need to login again
               <br />
               to access your account.
             </p>
+
             <div
               style={{
                 display: "flex",
@@ -2737,38 +3249,72 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
             >
               <button
                 type="button"
-                onClick={() => setShowLogoutConfirm(false)}
+
+                onClick={() =>
+                  setShowLogoutConfirm(false)
+                }
+
                 style={{
                   flex: 1,
-                  height: 42,
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  borderRadius: 12,
-                  background: "rgba(255,255,255,0.10)",
-                  color: C.textOnDark,
-                  fontFamily: "'Poppins', sans-serif",
-                  fontWeight: 600,
-                  fontSize: 10,
+
+                  height: 44,
+
+                  border:
+                    "1px solid #DADADA",
+
+                  borderRadius: 14,
+
+                  background:
+                    "#F5F5F5",
+
+                  color:
+                    PALETTE.textDark,
+
+                  fontFamily: FONT,
+
+                  fontWeight: 500,
+
+                  fontSize: 12,
+
                   cursor: "pointer",
                 }}
               >
                 Cancel
               </button>
+
               <button
                 type="button"
+
                 onClick={handleLogout}
+
                 style={{
                   flex: 1,
-                  height: 42,
+
+                  height: 44,
+
                   border: "none",
-                  borderRadius: 12,
+
+                  borderRadius: 14,
+
                   background:
-                    "linear-gradient(135deg, #E0A72E 0%, #C98A1F 100%)",
+                    `linear-gradient(
+                      135deg,
+                      ${PALETTE.greenDark},
+                      ${PALETTE.greenLight}
+                    )`,
+
                   color: "#FFFFFF",
-                  fontFamily: "'Poppins', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 10,
+
+                  fontFamily: FONT,
+
+                  fontWeight: 600,
+
+                  fontSize: 12,
+
                   cursor: "pointer",
-                  boxShadow: "0 5px 18px rgba(224,167,46,0.25)",
+
+                  boxShadow:
+                    "0 8px 22px rgba(21,91,50,0.28)",
                 }}
               >
                 Logout
@@ -2778,104 +3324,182 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
         </div>
       )}
 
+      {/* ═════════════════════════════════════════════════════════════════════
+          LOGOUT LOADING
+      ═════════════════════════════════════════════════════════════════════ */}
+
       {showLogoutLoading && (
         <div
           style={{
             position: "absolute",
             inset: 0,
+
             zIndex: 110,
+
             display: "flex",
+
             alignItems: "center",
+
             justifyContent: "center",
+
             padding: 20,
-            background: "rgba(2,18,9,0.84)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
+
+            background:
+              "rgba(20,20,20,0.55)",
+
+            backdropFilter:
+              "blur(10px)",
+
+            WebkitBackdropFilter:
+              "blur(10px)",
           }}
         >
           <div
             style={{
               width: "100%",
+
               maxWidth: 300,
-              padding: "30px 22px 24px",
-              borderRadius: 24,
+
+              padding:
+                "30px 22px 24px",
+
+              borderRadius: 28,
+
               background:
-                "linear-gradient(145deg, rgba(25,68,39,0.98), rgba(9,39,22,0.98))",
-              border: "1px solid rgba(224,167,46,0.32)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.55)",
+                PALETTE.cardWhite,
+
+              boxShadow:
+                "0 25px 65px rgba(0,0,0,0.20)",
+
               textAlign: "center",
-              boxSizing: "border-box",
+
+              boxSizing:
+                "border-box",
+
+              fontFamily: FONT,
             }}
           >
             <div
               style={{
                 width: 70,
                 height: 70,
-                margin: "0 auto 16px",
+
+                margin:
+                  "0 auto 16px",
+
                 borderRadius: "50%",
-                background: "rgba(224,167,46,0.10)",
-                border: "2px solid rgba(224,167,46,0.38)",
+
+                background:
+                  "rgba(23,107,58,0.08)",
+
+                border:
+                  `2px solid ${PALETTE.green}`,
+
                 display: "flex",
+
                 alignItems: "center",
-                justifyContent: "center",
+
+                justifyContent:
+                  "center",
               }}
             >
               <i
                 className="fa fa-sign-out"
                 style={{
                   fontSize: 29,
-                  color: C.greenLight,
+
+                  color:
+                    PALETTE.green,
                 }}
               />
             </div>
+
             <h2
               style={{
-                margin: "0 0 7px",
-                fontFamily: "'Poppins', sans-serif",
-                fontWeight: 800,
+                margin:
+                  "0 0 7px",
+
+                fontFamily: FONT,
+
+                fontWeight: 700,
+
                 fontSize: 17,
-                color: C.textOnDark,
+
+                color:
+                  PALETTE.textDark,
               }}
             >
               Logging Out
             </h2>
+
             <p
               style={{
-                margin: "0 0 19px",
-                fontFamily: "'Poppins', sans-serif",
-                fontSize: 9,
-                color: "rgba(255,255,255,0.55)",
+                margin:
+                  "0 0 19px",
+
+                fontFamily: FONT,
+
+                fontWeight: 400,
+
+                fontSize: 11,
+
+                color:
+                  PALETTE.textMuted,
               }}
             >
               Please wait...
             </p>
+
             <div
               style={{
                 width: "100%",
+
                 height: 8,
+
                 borderRadius: 8,
+
                 overflow: "hidden",
-                background: "rgba(255,255,255,0.10)",
-                border: "1px solid rgba(255,255,255,0.18)",
+
+                background: "#EDEDED",
+
+                border:
+                  "1px solid #DADADA",
               }}
             >
               <div
                 style={{
                   width: "0%",
+
                   height: "100%",
+
                   borderRadius: 8,
-                  background: "linear-gradient(90deg, #E0A72E, #C98A1F)",
-                  animation: "logoutProgress 1.8s linear forwards",
+
+                  background:
+                    `linear-gradient(
+                      90deg,
+                      ${PALETTE.greenDark},
+                      ${PALETTE.greenLight}
+                    )`,
+
+                  animation:
+                    "logoutProgress 1.8s linear forwards",
                 }}
               />
             </div>
+
             <p
               style={{
-                margin: "11px 0 0",
-                fontFamily: "'Poppins', sans-serif",
-                fontWeight: 600,
-                fontSize: 8,
-                color: "rgba(255,255,255,0.60)",
+                margin:
+                  "11px 0 0",
+
+                fontFamily: FONT,
+
+                fontWeight: 500,
+
+                fontSize: 10,
+
+                color:
+                  PALETTE.textMuted,
               }}
             >
               Please wait a moment.
@@ -2884,457 +3508,1190 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
         </div>
       )}
 
-      <style>
-        {`
-          @keyframes logoutProgress {
-            from {
-              width: 0%;
-            }
-            to {
-              width: 100%;
-            }
-          }
-        `}
-      </style>
+      {/* ═════════════════════════════════════════════════════════════════════
+          MAIN CONTENT
+      ═════════════════════════════════════════════════════════════════════ */}
 
-      {/* ═══════ Content shell — full width; sidebar is always an overlay drawer ═══════ */}
       <div
         style={{
           flex: 1,
+
           display: "flex",
+
           flexDirection: "column",
+
           position: "relative",
+
           zIndex: 1,
+
           minHeight: 0,
         }}
       >
-        {/* Nav bar — always visible, hamburger opens the drawer on every screen size */}
-        <div
-          style={{
-            paddingTop: SAFE_TOP,
-            paddingLeft: isDesktop ? 40 : 20,
-            paddingRight: isDesktop ? 40 : 20,
-            paddingBottom: 14,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginTop: 15,
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            style={{
-              width: 36,
-              height: 36,
-              background: "rgba(255,255,255,0.10)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              border: "1px solid rgba(255,255,255,0.15)",
-              borderRadius: 10,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            >
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
-          <img
-            src={logoImg}
-            alt="Scanity logo"
-            style={{
-              width: 60,
-              height: 60,
-              objectFit: "contain",
-              mixBlendMode: "screen",
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => go("profile")}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              background: "rgba(224,167,46,0.20)",
-              border: "1.5px solid rgba(224,167,46,0.45)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-            }}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke={C.greenLight}
-              strokeWidth="2"
-            >
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </button>
-        </div>
+        {/* ═══════════════════════════════════════════════════════════════════
+            TOP BAR
+        ═══════════════════════════════════════════════════════════════════ */}
 
-        {/* Greeting */}
         <div
           style={{
-            padding: isDesktop ? "8px 40px 16px" : "4px 20px 16px",
+            paddingTop:
+              SAFE_TOP,
+
+            paddingLeft:
+              isDesktop ? 40 : 20,
+
+            paddingRight:
+              isDesktop ? 40 : 20,
+
+            paddingBottom: 10,
+
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+
+            alignItems:
+              "flex-start",
+
+            justifyContent:
+              "space-between",
+
+            marginTop:
+              isDesktop ? 18 : 12,
+
+            animation:
+              "scanityFadeUp 0.5s ease-out both",
           }}
         >
-          <div>
+          {/* HAMBURGER */}
+
+          <button
+            type="button"
+
+            className="scanity-hamburger"
+
+            aria-label="Open navigation"
+
+            onClick={() =>
+              setSidebarOpen(true)
+            }
+
+            style={{
+              width: 42,
+              height: 42,
+
+              background:
+                PALETTE.cardWhite,
+
+              border:
+                "1px solid #E0E0E0",
+
+              borderRadius: 15,
+
+              cursor: "pointer",
+
+              display: "flex",
+
+              alignItems: "center",
+
+              justifyContent:
+                "center",
+
+              flexShrink: 0,
+
+              boxShadow:
+                "0 6px 16px rgba(0,0,0,0.05)",
+
+              padding: 0,
+            }}
+          >
+            <div
+              style={{
+                width: 20,
+
+                display: "flex",
+
+                flexDirection:
+                  "column",
+
+                gap: 5,
+              }}
+            >
+              <span
+                style={{
+                  display: "block",
+
+                  width: 20,
+
+                  height: 2.5,
+
+                  borderRadius: 5,
+
+                  background:
+                    PALETTE.textDark,
+                }}
+              />
+
+              <span
+                style={{
+                  display: "block",
+
+                  width: 20,
+
+                  height: 2.5,
+
+                  borderRadius: 5,
+
+                  background:
+                    PALETTE.textDark,
+                }}
+              />
+
+              <span
+                style={{
+                  display: "block",
+
+                  width: 20,
+
+                  height: 2.5,
+
+                  borderRadius: 5,
+
+                  background:
+                    PALETTE.textDark,
+                }}
+              />
+            </div>
+          </button>
+
+          {/* GREETING */}
+
+          <div
+            style={{
+              flex: 1,
+
+              marginLeft: 18,
+            }}
+          >
             <h2
               style={{
-                fontFamily: "'Poppins', sans-serif",
-                fontWeight: 800,
-                fontSize: isDesktop ? 26 : 22,
-                color: C.textOnDark,
-                marginBottom: 2,
-                marginTop: 2,
+                fontFamily: FONT,
+
+                fontWeight: 700,
+
+                fontSize:
+                  isDesktop ? 28 : 20,
+
+                color:
+                  PALETTE.textDark,
+
+                margin: 0,
+
+                letterSpacing:
+                  "-0.02em",
               }}
             >
               Hello, User!
             </h2>
+
             <p
               style={{
-                fontFamily: "'Poppins', sans-serif",
+                fontFamily: FONT,
+
+                fontWeight: 500,
+
                 fontSize: 12,
-                color: "rgba(255,255,255,0.50)",
-                margin: 0,
+
+                color:
+                  PALETTE.greenText,
+
+                margin:
+                  "4px 0 0",
               }}
             >
               See It. Know It. Eat It.
             </p>
           </div>
+
+          {/* PROFILE */}
+
+          <button
+            type="button"
+
+            className="scanity-profile"
+
+            onClick={() =>
+              go("profile")
+            }
+
+            style={{
+              display: "flex",
+
+              alignItems: "center",
+
+              gap: 9,
+
+              border: "none",
+
+              background:
+                "transparent",
+
+              cursor: "pointer",
+
+              padding: 0,
+
+              flexShrink: 0,
+            }}
+          >
+            <div
+              style={{
+                width: 34,
+                height: 34,
+
+                borderRadius:
+                  "50%",
+
+                background:
+                  "#ECECE9",
+
+                border:
+                  "1px solid #DADAD5",
+
+                display: "flex",
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+              }}
+            >
+              <i
+                className="fa fa-user"
+
+                style={{
+                  fontSize: 14,
+
+                  color:
+                    PALETTE.textDark,
+                }}
+              />
+            </div>
+
+            {isDesktop && (
+              <span
+                style={{
+                  fontFamily: FONT,
+
+                  fontWeight: 500,
+
+                  fontSize: 13,
+
+                  color:
+                    PALETTE.textDark,
+                }}
+              >
+                Username
+              </span>
+            )}
+          </button>
         </div>
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            BODY
+        ═══════════════════════════════════════════════════════════════════ */}
 
         <div
           style={{
             flex: 1,
+
             overflowY: "auto",
-            padding: isDesktop ? "0 40px 40px" : "0 16px 24px",
+
+            padding:
+              isDesktop
+                ? "12px 40px 40px"
+                : "6px 16px 24px",
+
             minHeight: 0,
+
+            boxSizing:
+              "border-box",
           }}
         >
-          <Center maxWidth={isDesktop ? 900 : undefined}>
-            {/* SCAN BARCODE HERO — now taller on desktop so it reads as the primary action */}
-            <button
-              type="button"
-              onClick={() => go("barcode")}
+          {/* MAIN GRID */}
+
+          <div
+            style={{
+              display: "grid",
+
+              gridTemplateColumns:
+                isDesktop
+                  ? "1.7fr 1fr"
+                  : "1fr",
+
+              gap: 24,
+
+              alignItems:
+                "start",
+
+              width: "100%",
+            }}
+          >
+            {/* ═══════════════════════════════════════════════════════════════
+                LEFT COLUMN
+            ═══════════════════════════════════════════════════════════════ */}
+
+            <div
               style={{
-                width: "100%",
-                height: isDesktop ? 220 : 150,
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 14,
-                borderRadius: 20,
-                background: "rgba(40,90,55,0.88)",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-                border: "2px solid rgba(224,167,46,0.70)",
-                boxShadow:
-                  "0 8px 32px rgba(224,167,46,0.20), inset 0 1px 0 rgba(255,255,255,0.10)",
-                cursor: "pointer",
-                marginBottom: 16,
-                boxSizing: "border-box",
+
+                flexDirection:
+                  "column",
+
+                gap: 18,
               }}
             >
-              <svg
-                width={isDesktop ? 64 : 52}
-                height={isDesktop ? 64 : 52}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={C.greenLight}
-                strokeWidth="1.4"
-              >
-                <path d="M3 9V6a1 1 0 011-1h3" />
-                <path d="M3 15v3a1 1 0 001 1h3" />
-                <path d="M15 5h3a1 1 0 011 1v3" />
-                <path d="M15 19h3a1 1 0 001-1v-3" />
-                <line x1="7" y1="8" x2="7" y2="16" />
-                <line x1="10" y1="8" x2="10" y2="16" />
-                <line x1="13" y1="8" x2="13" y2="16" />
-                <line x1="16" y1="8" x2="16" y2="16" />
-              </svg>
-              <span
+              {/* ═════════════════════════════════════════════════════════════
+                  SCAN BARCODE
+              ═════════════════════════════════════════════════════════════ */}
+
+              <button
+                type="button"
+
+                className="scanity-hero-card"
+
+                onClick={() =>
+                  go("barcode")
+                }
+
                 style={{
-                  fontFamily: "'Poppins', sans-serif",
-                  fontWeight: 700,
-                  fontSize: isDesktop ? 18 : 16,
-                  color: C.textOnDark,
+                  width: "100%",
+
+                  minHeight:
+                    isDesktop
+                      ? 300
+                      : 250,
+
+                  display: "flex",
+
+                  flexDirection:
+                    "column",
+
+                  alignItems:
+                    "center",
+
+                  justifyContent:
+                    "center",
+
+                  // FIXED PADDING
+                  padding:
+                    isDesktop
+                      ? "38px 48px 32px"
+                      : "28px 24px",
+
+                  borderRadius: 26,
+
+                  background:
+                    PALETTE.cardWhite,
+
+                  border:
+                    `1px solid ${PALETTE.border}`,
+
+                  boxShadow:
+                    "0 14px 34px rgba(0,0,0,0.06)",
+
+                  cursor: "pointer",
+
+                  boxSizing:
+                    "border-box",
+
+                  animation:
+                    "scanityCardIn 0.5s ease-out 0.05s both",
+
+                  textAlign: "left",
                 }}
               >
-                Scan Barcode
-              </span>
-            </button>
+                {/* TEXT CONTAINER */}
 
-            {/* SMALL CARDS — now stretch full width (1fr each) to align with the hero above */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                rowGap: 14,
-                columnGap: isDesktop ? 14 : 10,
-                marginBottom: 18,
-              }}
-            >
-              {cards.map((card) => (
-                <button
-                  type="button"
-                  key={card.label}
-                  onClick={card.action}
+                <div
                   style={{
-                    minHeight: isDesktop ? 100 : 76,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    background: "rgba(20,70,40,0.75)",
-                    border: "1px solid #E0A72E",
-                    borderRadius: 12,
-                    padding: "10px 6px",
-                    boxSizing: "border-box",
-                    cursor: "pointer",
                     width: "100%",
+
+                    maxWidth: 900,
+
+                    margin: "0 auto",
+
+                    textAlign: "left",
                   }}
                 >
-                  <div
+                  <h3
                     style={{
-                      width: isDesktop ? 34 : 30,
-                      height: isDesktop ? 34 : 30,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: C.greenLight,
-                      fontSize: isDesktop ? 22 : 20,
+                      margin: 0,
+
+                      fontFamily: FONT,
+
+                      fontWeight: 700,
+
+                      fontSize:
+                        isDesktop
+                          ? 25
+                          : 19,
+
+                      lineHeight: 1.25,
+
+                      letterSpacing:
+                        "-0.02em",
+
+                      color:
+                        PALETTE.textDark,
                     }}
                   >
-                    {card.icon}
-                  </div>
-                  <span
+                    Scan Barcode
+                  </h3>
+
+                  <p
                     style={{
-                      fontFamily: "'Poppins', sans-serif",
-                      fontWeight: 600,
-                      fontSize: isDesktop ? 12 : 9,
-                      lineHeight: "13px",
-                      color: C.greenLight,
-                      textAlign: "center",
+                      margin:
+                        "10px 0 0",
+
+                      fontFamily: FONT,
+
+                      fontWeight: 400,
+
+                      fontSize:
+                        isDesktop
+                          ? 14
+                          : 12,
+
+                      lineHeight: 1.5,
+
+                      color:
+                        PALETTE.textMuted,
                     }}
                   >
-                    {card.label}
-                  </span>
-                </button>
-              ))}
+                    Scan barcodes to get the product information from the food.
+                  </p>
+                </div>
+
+                {/* BARCODE */}
+
+                <div
+                  style={{
+                    width: "100%",
+
+                    display: "flex",
+
+                    justifyContent:
+                      "center",
+
+                    alignItems:
+                      "center",
+
+                    marginTop:
+                      isDesktop
+                        ? 24
+                        : 20,
+
+                    marginBottom: 2,
+                  }}
+                >
+                  <svg
+                    width={
+                      isDesktop
+                        ? 360
+                        : 230
+                    }
+
+                    height={
+                      isDesktop
+                        ? 105
+                        : 75
+                    }
+
+                    viewBox="0 0 360 105"
+
+                    fill="none"
+                  >
+                    {[
+                      5, 10, 15, 20,
+                      25, 30, 37, 42,
+                      47, 53, 59, 64,
+                      70, 76, 82, 88,
+                      94, 100, 106, 112,
+                      118, 124, 130, 136,
+                      142, 148, 154, 160,
+                      166, 172, 178, 184,
+                      190, 196, 202, 208,
+                      214, 220, 226, 232,
+                      238, 244, 250, 256,
+                      262, 268, 274, 280,
+                      286, 292, 298, 304,
+                      310, 316, 322, 328,
+                      334, 340, 346,
+                    ].map(
+                      (x, i) => (
+                        <rect
+                          key={i}
+
+                          x={x}
+
+                          y={4}
+
+                          width={
+                            i % 3 === 0
+                              ? 3.2
+                              : 1.7
+                          }
+
+                          height={68}
+
+                          fill={
+                            PALETTE.textDark
+                          }
+                        />
+                      )
+                    )}
+
+                    <text
+                      x="180"
+
+                      y="94"
+
+                      textAnchor="middle"
+
+                      fontFamily={FONT}
+
+                      fontSize="15"
+
+                      fontWeight="600"
+
+                      fill={
+                        PALETTE.textDark
+                      }
+                    >
+                      1234567890000
+                    </text>
+                  </svg>
+                </div>
+              </button>
+
+              {/* ═════════════════════════════════════════════════════════════
+                  ACTION CARDS
+              ═════════════════════════════════════════════════════════════ */}
+
+              <div
+                style={{
+                  display: "grid",
+
+                  gridTemplateColumns:
+                    "1fr 1fr",
+
+                  gap: 18,
+                }}
+              >
+                {cards.map(
+                  (card, i) => (
+                    <button
+                      type="button"
+
+                      key={card.label}
+
+                      className="scanity-action-card"
+
+                      onClick={
+                        card.action
+                      }
+
+                      style={{
+                        minHeight:
+                          isDesktop
+                            ? 170
+                            : 140,
+
+                        display: "flex",
+
+                        flexDirection:
+                          "column",
+
+                        alignItems:
+                          "center",
+
+                        justifyContent:
+                          "center",
+
+                        gap: 13,
+
+                        // GREEN GRADIENT
+                        background:
+                          `linear-gradient(
+                            145deg,
+                            ${PALETTE.greenDark} 0%,
+                            ${PALETTE.green} 45%,
+                            ${PALETTE.greenLight} 100%
+                          )`,
+
+                        border: "none",
+
+                        borderRadius: 24,
+
+                        padding:
+                          "18px 10px",
+
+                        boxSizing:
+                          "border-box",
+
+                        cursor:
+                          "pointer",
+
+                        width: "100%",
+
+                        boxShadow:
+                          "0 14px 30px rgba(21,91,50,0.24)",
+
+                        animation:
+                          `scanityCardIn 0.5s ease-out ${
+                            0.12 +
+                            i * 0.06
+                          }s both`,
+                      }}
+                    >
+                      {/* ICON */}
+
+                      <div
+                        style={{
+                          width:
+                            isDesktop
+                              ? 55
+                              : 43,
+
+                          height:
+                            isDesktop
+                              ? 55
+                              : 43,
+
+                          borderRadius:
+                            "50%",
+
+                          display:
+                            "flex",
+
+                          alignItems:
+                            "center",
+
+                          justifyContent:
+                            "center",
+
+                          color:
+                            "#FFFFFF",
+
+                          background:
+                            "rgba(255,255,255,0.12)",
+
+                          fontSize:
+                            isDesktop
+                              ? 31
+                              : 24,
+                        }}
+                      >
+                        {card.icon}
+                      </div>
+
+                      {/* LABEL */}
+
+                      <span
+                        style={{
+                          fontFamily:
+                            FONT,
+
+                          fontWeight: 600,
+
+                          fontSize:
+                            isDesktop
+                              ? 15
+                              : 12,
+
+                          color:
+                            "#FFFFFF",
+
+                          textAlign:
+                            "center",
+                        }}
+                      >
+                        {card.label}
+                      </span>
+
+                      {/* ARROW */}
+
+                      <div
+                        className="scanity-action-arrow"
+
+                        style={{
+                          width: 30,
+                          height: 30,
+
+                          borderRadius:
+                            "50%",
+
+                          background:
+                            "rgba(255,255,255,0.12)",
+
+                          display:
+                            "flex",
+
+                          alignItems:
+                            "center",
+
+                          justifyContent:
+                            "center",
+
+                          color:
+                            "#FFFFFF",
+
+                          fontSize: 16,
+                        }}
+                      >
+                        <i className="fa fa-angle-right" />
+                      </div>
+                    </button>
+                  )
+                )}
+              </div>
             </div>
 
-            {/* RECENT SCANS */}
+            {/* ═══════════════════════════════════════════════════════════════
+                RECENT SCANS
+            ═══════════════════════════════════════════════════════════════ */}
+
             <div
+              className="scanity-recent-panel"
+
               style={{
-                marginTop: 16,
-                padding: 14,
-                borderRadius: 16,
-                background: "rgba(12,45,25,0.92)",
-                border: "1px solid rgba(224,167,46,0.35)",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
-                boxSizing: "border-box",
+                // GREEN GRADIENT
+                background:
+                  `linear-gradient(
+                    145deg,
+                    ${PALETTE.greenDark} 0%,
+                    ${PALETTE.green} 45%,
+                    ${PALETTE.greenLight} 100%
+                  )`,
+
+                borderRadius: 26,
+
+                padding: 18,
+
+                boxSizing:
+                  "border-box",
+
+                boxShadow:
+                  "0 14px 32px rgba(21,91,50,0.24)",
+
+                animation:
+                  "scanityCardIn 0.5s ease-out 0.2s both",
               }}
             >
+              {/* HEADER */}
+
               <div
                 style={{
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "0 6px 8px",
+
+                  alignItems:
+                    "center",
+
+                  justifyContent:
+                    "space-between",
+
+                  padding:
+                    "0 4px 14px",
                 }}
               >
                 <h3
                   style={{
                     margin: 0,
-                    fontFamily: "'Poppins', sans-serif",
+
+                    fontFamily: FONT,
+
                     fontWeight: 700,
-                    fontSize: 12,
+
+                    fontSize: 16,
+
+                    letterSpacing:
+                      "-0.01em",
+
                     color: "#FFFFFF",
                   }}
                 >
-                  Recent Scans
+                  Scan History
                 </h3>
+
                 <button
                   type="button"
-                  onClick={() => go("history")}
+
+                  className="scanity-viewall"
+
+                  onClick={() =>
+                    go("history")
+                  }
+
                   style={{
+                    display: "flex",
+
+                    alignItems:
+                      "center",
+
+                    gap: 5,
+
                     border: "none",
-                    background: "none",
+
+                    background:
+                      "transparent",
+
                     padding: 0,
-                    fontFamily: "'Poppins', sans-serif",
-                    fontWeight: 700,
-                    fontSize: 10,
-                    color: C.greenLight,
-                    cursor: "pointer",
+
+                    fontFamily: FONT,
+
+                    fontWeight: 600,
+
+                    fontSize: 11,
+
+                    color: "#FFFFFF",
+
+                    cursor:
+                      "pointer",
                   }}
                 >
                   View All
+
+                  <i
+                    className="fa fa-angle-right"
+
+                    style={{
+                      fontSize: 13,
+                    }}
+                  />
                 </button>
               </div>
+
+              {/* SCANS */}
+
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: isDesktop ? "1fr 1fr" : "1fr",
-                  gap: 8,
+                  display: "flex",
+
+                  flexDirection:
+                    "column",
+
+                  gap: 9,
                 }}
               >
-                {RECENT_SCANS.map((scan) => (
-                  <button
-                    type="button"
-                    key={`${scan.name}-${scan.time}`}
-                    onClick={() => go("productResult")}
-                    style={{
-                      width: "100%",
-                      minHeight: 68,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      padding: "9px 10px",
-                      background: "#2F6B42",
-                      border: "1px solid rgba(224,167,46,0.35)",
-                      borderRadius: 12,
-                      boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
-                      boxSizing: "border-box",
-                      cursor: "pointer",
-                      textAlign: "left",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 10,
-                        background: "rgba(224,167,46,0.16)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <i
-                        className="fa fa-shopping-bag"
+                {RECENT_SCANS.map(
+                  (scan, i) => {
+                    const status =
+                      getScoreStatus(
+                        scan.score
+                      )
+
+                    return (
+                      <button
+                        type="button"
+
+                        key={`${scan.name}-${scan.date}-${scan.time}`}
+
+                        className="scanity-scan-row"
+
+                        onClick={() =>
+                          go(
+                            "productResult"
+                          )
+                        }
+
                         style={{
-                          fontSize: 18,
-                          color: C.greenLight,
-                        }}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        flex: 1,
-                        minWidth: 0,
-                      }}
-                    >
-                      <p
-                        style={{
-                          margin: 0,
-                          fontFamily: "'Poppins', sans-serif",
-                          fontWeight: 700,
-                          fontSize: 13,
-                          color: C.textOnDark,
-                        }}
-                      >
-                        {scan.name}
-                      </p>
-                      <p
-                        style={{
-                          margin: "2px 0 0",
-                          fontFamily: "'Poppins', sans-serif",
-                          fontSize: 8,
-                          color: "rgba(255,255,255,0.55)",
-                        }}
-                      >
-                        {scan.date} • {scan.time}
-                      </p>
-                    </div>
-                    <div
-                      style={{
-                        textAlign: "right",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <p
-                        style={{
-                          margin: 0,
-                          fontFamily: "'Poppins', sans-serif",
-                          fontWeight: 800,
-                          fontSize: 20,
-                          color: C.textOnDark,
-                          lineHeight: 1,
-                        }}
-                      >
-                        {scan.score}
-                      </p>
-                      <div
-                        style={{
+                          width: "100%",
+
                           display: "flex",
-                          alignItems: "center",
-                          justifyContent: "flex-end",
-                          gap: 4,
-                          marginTop: 3,
+
+                          alignItems:
+                            "center",
+
+                          gap: 10,
+
+                          padding:
+                            "9px 10px",
+
+                          background:
+                            PALETTE.cardWhite,
+
+                          border: "none",
+
+                          borderRadius: 16,
+
+                          boxSizing:
+                            "border-box",
+
+                          cursor:
+                            "pointer",
+
+                          textAlign:
+                            "left",
+
+                          boxShadow:
+                            "0 4px 12px rgba(0,0,0,0.08)",
+
+                          animation:
+                            `scanityCardIn 0.4s ease-out ${
+                              0.25 +
+                              i * 0.06
+                            }s both`,
                         }}
                       >
-                        <span
+                        {/* PRODUCT ICON */}
+
+                        <div
                           style={{
-                            width: 7,
-                            height: 7,
-                            borderRadius: "50%",
-                            background: scan.safe ? "#4CAF50" : "#E53E3E",
-                          }}
-                        />
-                        <span
-                          style={{
-                            fontFamily: "'Poppins', sans-serif",
-                            fontSize: 8,
-                            color: "rgba(255,255,255,0.60)",
+                            width: 38,
+                            height: 38,
+
+                            borderRadius: 12,
+
+                            background:
+                              "#E8F0EA",
+
+                            display:
+                              "flex",
+
+                            alignItems:
+                              "center",
+
+                            justifyContent:
+                              "center",
+
+                            flexShrink: 0,
                           }}
                         >
-                          {scan.safe ? "Safe" : "Unsafe"}
-                        </span>
-                      </div>
-                    </div>
-                    <i
-                      className="fa fa-angle-right"
-                      style={{
-                        fontSize: 16,
-                        color: "rgba(255,255,255,0.45)",
-                      }}
-                    />
-                  </button>
-                ))}
+                          <i
+                            className="fa fa-shopping-bag"
+
+                            style={{
+                              fontSize: 16,
+
+                              color:
+                                PALETTE.green,
+                            }}
+                          />
+                        </div>
+
+                        {/* PRODUCT INFO */}
+
+                        <div
+                          style={{
+                            flex: 1,
+
+                            minWidth: 0,
+
+                            overflow:
+                              "hidden",
+                          }}
+                        >
+                          <p
+                            style={{
+                              margin: 0,
+
+                              fontFamily:
+                                FONT,
+
+                              fontWeight: 600,
+
+                              fontSize: 12,
+
+                              color:
+                                PALETTE.textDark,
+
+                              whiteSpace:
+                                "nowrap",
+
+                              overflow:
+                                "hidden",
+
+                              textOverflow:
+                                "ellipsis",
+                            }}
+                          >
+                            {scan.name}
+                          </p>
+
+                          <p
+                            style={{
+                              margin:
+                                "3px 0 0",
+
+                              fontFamily:
+                                FONT,
+
+                              fontWeight: 400,
+
+                              fontSize: 9,
+
+                              color:
+                                PALETTE.textMuted,
+
+                              whiteSpace:
+                                "nowrap",
+                            }}
+                          >
+                            {scan.date} •{" "}
+                            {scan.time}
+                          </p>
+                        </div>
+
+                        {/* SCORE + STATUS */}
+
+                        <div
+                          style={{
+                            display: "flex",
+
+                            flexDirection:
+                              "column",
+
+                            alignItems:
+                              "flex-end",
+
+                            justifyContent:
+                              "center",
+
+                            gap: 5,
+
+                            flexShrink: 0,
+
+                            minWidth: 67,
+                          }}
+                        >
+                          {/* SCORE */}
+
+                          <div
+                            style={{
+                              display:
+                                "flex",
+
+                              alignItems:
+                                "baseline",
+
+                              gap: 2,
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontFamily:
+                                  FONT,
+
+                                fontWeight: 700,
+
+                                fontSize: 17,
+
+                                lineHeight: 1,
+
+                                color:
+                                  PALETTE.textDark,
+                              }}
+                            >
+                              {scan.score}
+                            </span>
+
+                            <span
+                              style={{
+                                fontFamily:
+                                  FONT,
+
+                                fontWeight: 400,
+
+                                fontSize: 8,
+
+                                color:
+                                  PALETTE.textMuted,
+                              }}
+                            >
+                              /100
+                            </span>
+                          </div>
+
+                          {/* STATUS LABEL */}
+
+                          <div
+                            style={{
+                              display:
+                                "flex",
+
+                              alignItems:
+                                "center",
+
+                              gap: 5,
+
+                              padding:
+                                "3px 7px",
+
+                              borderRadius: 8,
+
+                              background:
+                                status.background,
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: 6,
+                                height: 6,
+
+                                borderRadius:
+                                  "50%",
+
+                                background:
+                                  status.color,
+
+                                flexShrink: 0,
+                              }}
+                            />
+
+                            <span
+                              style={{
+                                fontFamily:
+                                  FONT,
+
+                                fontWeight: 600,
+
+                                fontSize: 8,
+
+                                lineHeight: 1,
+
+                                color:
+                                  status.color,
+                              }}
+                            >
+                              {status.label}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* CHEVRON */}
+
+                        <i
+                          className="fa fa-angle-right"
+
+                          style={{
+                            fontSize: 14,
+
+                            color:
+                              "#BDBDBD",
+
+                            flexShrink: 0,
+                          }}
+                        />
+                      </button>
+                    )
+                  }
+                )}
               </div>
             </div>
-          </Center>
+          </div>
         </div>
       </div>
     </div>
   )
 }
+
 // ── Barcode Scanner Screen ────────────────────────────────────────────────────
 function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
   const [showHelp, setShowHelp] = useState(false)
@@ -3535,7 +4892,7 @@ function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
-            padding: isDesktop ? "0 30px" : "0 20px",
+            padding: isDesktop ? "0 30px" : "0 40px",
             filter: showHelp ? "blur(6px)" : "none",      
             transition: "filter 0.25s ease",               
             pointerEvents: showHelp ? "none" : "auto",
@@ -5920,6 +7277,7 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+
 const PROFILE_ALLERGIES: ProfileOption[] = [
   { id: "peanuts", label: "Peanuts" },
   { id: "dairy", label: "Dairy" },
@@ -6344,6 +7702,7 @@ function ProfileScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+
 const FAQ_ITEMS = [
   {
     question: "How do I scan a product?",
@@ -6385,7 +7744,7 @@ function InfoHeader({
         paddingLeft: 20,
         paddingRight: 20,
         paddingBottom: 13,
-        borderBottom: "1px solid rgba(224,167,46,0.18)",
+        borderBottom: "1px solid rgba(13, 13, 11, 0.18)",
         flexShrink: 0,
       }}
     >
@@ -6402,7 +7761,7 @@ function InfoHeader({
           borderRadius: 10,
           border: "1px solid rgba(255,255,255,0.16)",
           background: "rgba(255,255,255,0.07)",
-          color: "#fff",
+          color: "#1c4221",
           cursor: "pointer",
           fontSize: 20,
         }}
@@ -6416,7 +7775,7 @@ function InfoHeader({
             fontFamily: "'Poppins', sans-serif",
             fontSize: 17,
             fontWeight: 800,
-            color: C.textOnDark,
+            color: "#0c0c0c",
           }}
         >
           {title}
@@ -6425,7 +7784,7 @@ function InfoHeader({
           style={{
             margin: "1px 0 0",
             fontSize: 8,
-            color: "rgba(255,255,255,0.48)",
+            color: "rgba(23, 22, 22, 0.48)",
           }}
         >
           {subtitle}
@@ -6437,303 +7796,316 @@ function InfoHeader({
 
 function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
   const [openQuestion, setOpenQuestion] = useState(0)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [showLogoutLoading, setShowLogoutLoading] = useState(false)
+  const isDesktop = useIsDesktop()
 
-  return (
-    <div
-      style={{
-        flex: 1,
-        minHeight: 0,
-        display: "flex",
-        flexDirection: "column",
-        background: "#071A0F",
-        overflow: "hidden",
-      }}
-    >
-      <div
-  style={{
-    paddingTop: 12,
-    paddingLeft: 12,
-    paddingRight: 12,
-    background: "#071A0F",
-  }}
->
-  <InfoHeader
-    title="Help & FAQ"
-    subtitle="Answers for a safer scan"
-    go={go}
-  />
-        <div
+  const FONT = "'Poppins', sans-serif"
+
+  const PALETTE = {
+    pageBg: "#e8e5e0",
+    sidebarBg: "#176B3A",
+    green: "#176B3A",
+    greenDark: "#155B32",
+    greenLight: "#2E8B57",
+    greenText: "#2E7D4F",
+    cardWhite: "#FFFFFF",
+    textDark: "#1A1A1A",
+    textMuted: "#6B6B6B",
+    border: "#E5E3DC",
+  }
+
+  const sidebarItems = [
+    { icon: "fa-home", label: "Dashboard", screen: "dashboard" as Screen },
+    { icon: "fa-gear", label: "Settings", screen: "settings" as Screen },
+    { icon: "fa-question-circle", label: "Help & FAQ", screen: "help" as Screen },
+  ]
+
+  const handleLogout = () => {
+    setShowLogoutConfirm(false)
+    setShowLogoutLoading(true)
+    setTimeout(() => {
+      setShowLogoutLoading(false)
+      setSidebarOpen(false)
+      go("splash")
+    }, 1800)
+  }
+
+  const sidebarMenu = (
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: isDesktop ? "20px 20px 24px" : "18px 16px 22px" }}>
+        <img src={logoImg} alt="Scanity" style={{ width: isDesktop ? 48 : 42, height: isDesktop ? 48 : 42, objectFit: "contain", flexShrink: 0 }} />
+        <span style={{ fontFamily: FONT, fontWeight: 800, fontSize: isDesktop ? 22 : 18, letterSpacing: "-0.01em", lineHeight: 1, whiteSpace: "nowrap" }}>
+          <span style={{ color: "#FFFFFF" }}>Scan</span>
+          <span style={{ color: PALETTE.greenLight === "#2E8B57" ? "#9CE6B8" : PALETTE.greenLight }}>ity</span>
+        </span>
+      </div>
+
+      <p style={{ margin: 0, padding: isDesktop ? "0 20px 10px" : "0 16px 10px", fontFamily: FONT, fontWeight: 600, fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.50)" }}>
+        MENU
+      </p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: isDesktop ? "0 10px" : "0 9px" }}>
+        {sidebarItems.map((item) => (
+          <button
+            key={item.screen}
+            type="button"
+            className="scanity-sidebar-item"
+            onClick={() => {
+              setSidebarOpen(false)
+              go(item.screen)
+            }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: isDesktop ? "12px 14px" : "11px 12px",
+              background: item.screen === "help" ? "rgba(255,255,255,0.14)" : "transparent",
+              border: "none",
+              borderRadius: 14,
+              cursor: "pointer",
+              width: "100%",
+              textAlign: "left",
+            }}
+          >
+            <i className={`fa ${item.icon}`} style={{ fontSize: 15, width: 19, textAlign: "center", color: "#FFFFFF" }} />
+            <span style={{ fontFamily: FONT, fontWeight: 500, fontSize: isDesktop ? 13 : 12, color: "#FFFFFF" }}>
+              {item.label}
+            </span>
+          </button>
+        ))}
+
+        <button
+          type="button"
+          className="scanity-sidebar-item"
+          onClick={() => setShowLogoutConfirm(true)}
           style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: isDesktop ? "12px 14px" : "11px 12px",
+            background: "transparent",
+            border: "none",
+            borderRadius: 14,
+            cursor: "pointer",
             width: "100%",
-            maxWidth: 820,
-            margin: "0 auto",
-            padding: "28px 22px 40px",
-            boxSizing: "border-box",
+            textAlign: "left",
           }}
         >
-          {/* HERO SECTION */}
+          <i className="fa fa-sign-out" style={{ fontSize: 15, width: 19, textAlign: "center", color: "#FFFFFF", transform: "scaleX(-1)" }} />
+          <span style={{ fontFamily: FONT, fontWeight: 500, fontSize: isDesktop ? 13 : 12, color: "#FFFFFF" }}>
+            Logout
+          </span>
+        </button>
+      </div>
+    </>
+  )
+
+  return (
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden", background: PALETTE.pageBg, fontFamily: FONT }}>
+      <style>
+        {`
+          @keyframes scanityFadeUp { from { opacity: 0; transform: translateY(14px);} to { opacity: 1; transform: translateY(0);} }
+          @keyframes scanitySidebarSlideIn { from { opacity: 0; transform: translateX(-45px);} to { opacity: 1; transform: translateX(0);} }
+          @keyframes scanityBackdropIn { from { opacity: 0;} to { opacity: 1;} }
+          @keyframes scanityCardIn { from { opacity: 0; transform: translateY(10px) scale(0.98);} to { opacity: 1; transform: translateY(0) scale(1);} }
+          @keyframes logoutProgress { from { width: 0%; } to { width: 100%; } }
+          .scanity-sidebar-item { transition: background 0.18s ease, transform 0.15s ease; }
+          .scanity-sidebar-item:hover { background: rgba(255,255,255,0.10) !important; transform: translateX(3px); }
+          .scanity-sidebar-item:active { transform: scale(0.97); }
+          .scanity-faq-item, .scanity-hamburger { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+          .scanity-faq-item:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(0,0,0,0.08) !important; }
+          .scanity-hamburger:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important; }
+          .scanity-hamburger:active { transform: scale(0.94); }
+        `}
+      </style>
+
+      {/* SIDEBAR */}
+      {sidebarOpen && (
+        <div style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex" }}>
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.40)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", animation: "scanityBackdropIn 0.2s ease-out both" }}
+          />
+          <div
+            style={{
+              position: "relative",
+              zIndex: 51,
+              width: isDesktop ? 245 : 220,
+              height: `calc(100% - ${isDesktop ? 32 : 20}px)`,
+              margin: isDesktop ? "16px" : "10px",
+              background: `linear-gradient(160deg, #155B32 0%, #176B3A 45%, #2E8B57 100%)`,
+              borderRadius: 26,
+              boxShadow: "0 25px 55px rgba(0,0,0,0.28)",
+              display: "flex",
+              flexDirection: "column",
+              paddingTop: SAFE_TOP,
+              paddingBottom: 24,
+              boxSizing: "border-box",
+              overflow: "hidden",
+              animation: "scanitySidebarSlideIn 0.28s cubic-bezier(0.22,1,0.36,1) both",
+            }}
+          >
+            <div style={{ position: "absolute", width: 160, height: 160, borderRadius: "50%", top: -90, right: -80, background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", width: 120, height: 120, borderRadius: "50%", bottom: 10, left: -75, background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
+            {sidebarMenu}
+          </div>
+        </div>
+      )}
+
+      {/* LOGOUT CONFIRM */}
+      {showLogoutConfirm && (
+        <div style={{ position: "absolute", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "rgba(20,20,20,0.5)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
+          <div style={{ width: "100%", maxWidth: 310, padding: "28px 22px 22px", borderRadius: 28, background: PALETTE.cardWhite, boxShadow: "0 25px 65px rgba(0,0,0,0.20)", textAlign: "center", boxSizing: "border-box", fontFamily: FONT }}>
+            <div style={{ width: 70, height: 70, margin: "0 auto 16px", borderRadius: "50%", background: "rgba(23,107,58,0.10)", border: `2px solid ${PALETTE.green}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <i className="fa fa-sign-out" style={{ fontSize: 30, color: PALETTE.green }} />
+            </div>
+            <h2 style={{ margin: "0 0 8px", fontFamily: FONT, fontWeight: 700, fontSize: 18, letterSpacing: "-0.01em", color: PALETTE.textDark, lineHeight: 1.35 }}>
+              Are you sure you want to logout?
+            </h2>
+            <p style={{ margin: "0 auto 20px", maxWidth: 240, fontFamily: FONT, fontWeight: 400, fontSize: 11, lineHeight: "16px", color: PALETTE.textMuted }}>
+              You will need to login again<br />to access your account.
+            </p>
+            <div style={{ display: "flex", gap: 10, width: "100%" }}>
+              <button type="button" onClick={() => setShowLogoutConfirm(false)} style={{ flex: 1, height: 44, border: "1px solid #DADADA", borderRadius: 14, background: "#F5F5F5", color: PALETTE.textDark, fontFamily: FONT, fontWeight: 500, fontSize: 12, cursor: "pointer" }}>
+                Cancel
+              </button>
+              <button type="button" onClick={handleLogout} style={{ flex: 1, height: 44, border: "none", borderRadius: 14, background: `linear-gradient(135deg, ${PALETTE.greenDark}, ${PALETTE.greenLight})`, color: "#FFFFFF", fontFamily: FONT, fontWeight: 600, fontSize: 12, cursor: "pointer", boxShadow: "0 8px 22px rgba(21,91,50,0.28)" }}>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LOGOUT LOADING */}
+      {showLogoutLoading && (
+        <div style={{ position: "absolute", inset: 0, zIndex: 110, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "rgba(20,20,20,0.55)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
+          <div style={{ width: "100%", maxWidth: 300, padding: "30px 22px 24px", borderRadius: 28, background: PALETTE.cardWhite, boxShadow: "0 25px 65px rgba(0,0,0,0.20)", textAlign: "center", boxSizing: "border-box", fontFamily: FONT }}>
+            <div style={{ width: 70, height: 70, margin: "0 auto 16px", borderRadius: "50%", background: "rgba(23,107,58,0.08)", border: `2px solid ${PALETTE.green}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <i className="fa fa-sign-out" style={{ fontSize: 29, color: PALETTE.green }} />
+            </div>
+            <h2 style={{ margin: "0 0 7px", fontFamily: FONT, fontWeight: 700, fontSize: 17, color: PALETTE.textDark }}>Logging Out</h2>
+            <p style={{ margin: "0 0 19px", fontFamily: FONT, fontWeight: 400, fontSize: 11, color: PALETTE.textMuted }}>Please wait...</p>
+            <div style={{ width: "100%", height: 8, borderRadius: 8, overflow: "hidden", background: "#EDEDED", border: "1px solid #DADADA" }}>
+              <div style={{ width: "0%", height: "100%", borderRadius: 8, background: `linear-gradient(90deg, ${PALETTE.greenDark}, ${PALETTE.greenLight})`, animation: "logoutProgress 1.8s linear forwards" }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TOP BAR */}
+      <div style={{ paddingTop: SAFE_TOP, paddingLeft: isDesktop ? 40 : 20, paddingRight: isDesktop ? 40 : 20, paddingBottom: 10, display: "flex", alignItems: "center", gap: 14, marginTop: isDesktop ? 18 : 12, animation: "scanityFadeUp 0.5s ease-out both", flexShrink: 0 }}>
+        <button
+          type="button"
+          className="scanity-hamburger"
+          aria-label="Open navigation"
+          onClick={() => setSidebarOpen(true)}
+          style={{ width: 42, height: 42, background: PALETTE.cardWhite, border: "1px solid #E0E0E0", borderRadius: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 6px 16px rgba(0,0,0,0.05)", padding: 0 }}
+        >
+          <div style={{ width: 20, display: "flex", flexDirection: "column", gap: 5 }}>
+            <span style={{ display: "block", width: 20, height: 2.5, borderRadius: 5, background: PALETTE.textDark }} />
+            <span style={{ display: "block", width: 20, height: 2.5, borderRadius: 5, background: PALETTE.textDark }} />
+            <span style={{ display: "block", width: 20, height: 2.5, borderRadius: 5, background: PALETTE.textDark }} />
+          </div>
+        </button>
+
+        <div>
+          <h2 style={{ margin: 0, fontFamily: FONT, fontSize: isDesktop ? 24 : 19, fontWeight: 800, color: PALETTE.textDark, letterSpacing: "-0.02em" }}>
+            Help &amp; FAQ
+          </h2>
+          <p style={{ margin: "3px 0 0", fontSize: 11, color: PALETTE.greenText, fontWeight: 500 }}>
+            Answers for a safer scan
+          </p>
+        </div>
+      </div>
+
+      {/* SCROLLABLE BODY */}
+      <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+        <div style={{ width: "100%", maxWidth: 820, margin: "0 auto", padding: isDesktop ? "8px 40px 40px" : "4px 16px 30px", boxSizing: "border-box" }}>
+
+          {/* HERO */}
           <div
             style={{
               position: "relative",
               overflow: "hidden",
               padding: "26px 26px",
-              marginBottom: 30,
-              borderRadius: 20,
-              border: "1px solid rgba(224,167,46,0.30)",
-              background:
-                "linear-gradient(135deg, rgba(22,76,41,0.95), rgba(10,48,27,0.95))",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+              marginBottom: 24,
+              borderRadius: 26,
+              background: `linear-gradient(145deg, ${PALETTE.greenDark} 0%, ${PALETTE.green} 45%, ${PALETTE.greenLight} 100%)`,
+              boxShadow: "0 14px 34px rgba(21,91,50,0.24)",
+              animation: "scanityCardIn 0.5s ease-out 0.05s both",
             }}
           >
-            {/* Decorative circle */}
-            <div
-              style={{
-                position: "absolute",
-                width: 150,
-                height: 150,
-                borderRadius: "50%",
-                right: -55,
-                top: -65,
-                background: "rgba(224,167,46,0.08)",
-              }}
-            />
+            <div style={{ position: "absolute", width: 150, height: 150, borderRadius: "50%", right: -55, top: -65, background: "rgba(255,255,255,0.08)" }} />
+            <div style={{ position: "absolute", width: 90, height: 90, borderRadius: "50%", right: 45, bottom: -55, background: "rgba(255,255,255,0.06)" }} />
 
-            <div
-              style={{
-                position: "absolute",
-                width: 90,
-                height: 90,
-                borderRadius: "50%",
-                right: 45,
-                bottom: -55,
-                background: "rgba(91,170,110,0.08)",
-              }}
-            />
-
-            {/* Icon */}
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 14,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "rgba(224,167,46,0.15)",
-                border: "1px solid rgba(224,167,46,0.25)",
-                marginBottom: 16,
-              }}
-            >
-              <i
-                className="fa fa-question-circle"
-                style={{
-                  color: C.greenLight,
-                  fontSize: 25,
-                }}
-              />
+            <div style={{ width: 48, height: 48, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.16)", marginBottom: 16 }}>
+              <i className="fa fa-question-circle" style={{ color: "#FFFFFF", fontSize: 25 }} />
             </div>
 
-            <p
-              style={{
-                margin: "0 0 6px",
-                color: C.textOnDark,
-                fontSize: 21,
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
-              }}
-            >
+            <p style={{ margin: "0 0 6px", color: "#FFFFFF", fontSize: 21, fontWeight: 800, letterSpacing: "-0.02em" }}>
               How can we help?
             </p>
 
-            <p
-              style={{
-                margin: 0,
-                maxWidth: 560,
-                color: "rgba(255,255,255,0.62)",
-                fontSize: 12,
-                lineHeight: 1.6,
-              }}
-            >
-              Find quick answers about scanning products, understanding
-              product scores, allergy alerts, and managing your preferences.
+            <p style={{ margin: 0, maxWidth: 560, color: "rgba(255,255,255,0.85)", fontSize: 12, lineHeight: 1.6 }}>
+              Find quick answers about scanning products, understanding product scores, allergy alerts, and managing your preferences.
             </p>
           </div>
 
           {/* FAQ HEADER */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "space-between",
-              marginBottom: 13,
-              padding: "0 3px",
-            }}
-          >
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 13, padding: "0 3px" }}>
             <div>
-              <p
-                style={{
-                  margin: 0,
-                  color: C.textOnDark,
-                  fontSize: 15,
-                  fontWeight: 800,
-                }}
-              >
+              <p style={{ margin: 0, color: PALETTE.textDark, fontSize: 15, fontWeight: 800 }}>
                 Frequently asked questions
               </p>
-
-              <p
-                style={{
-                  margin: "4px 0 0",
-                  color: "rgba(255,255,255,0.42)",
-                  fontSize: 10,
-                }}
-              >
+              <p style={{ margin: "4px 0 0", color: PALETTE.textMuted, fontSize: 10 }}>
                 Tap a question to view the answer
               </p>
             </div>
-
-            <div
-              style={{
-                padding: "5px 9px",
-                borderRadius: 20,
-                background: "rgba(224,167,46,0.10)",
-                color: C.greenLight,
-                fontSize: 9,
-                fontWeight: 700,
-              }}
-            >
+            <div style={{ padding: "5px 9px", borderRadius: 20, background: "rgba(23,107,58,0.10)", color: PALETTE.greenText, fontSize: 9, fontWeight: 700 }}>
               {FAQ_ITEMS.length} questions
             </div>
           </div>
 
           {/* FAQ LIST */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-            }}
-          >
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {FAQ_ITEMS.map((item, index) => {
               const open = openQuestion === index
-
               return (
                 <div
                   key={item.question}
+                  className="scanity-faq-item"
                   style={{
-                    borderRadius: 16,
-                    border: open
-                      ? "1px solid rgba(224,167,46,0.45)"
-                      : "1px solid rgba(224,167,46,0.20)",
-                    background: open
-                      ? "rgba(22,76,41,0.92)"
-                      : "rgba(15,55,30,0.72)",
+                    borderRadius: 18,
+                    border: open ? `1px solid ${PALETTE.greenLight}` : `1px solid ${PALETTE.border}`,
+                    background: PALETTE.cardWhite,
                     overflow: "hidden",
-                    transition: "all 0.2s ease",
-                    boxShadow: open
-                      ? "0 8px 24px rgba(0,0,0,0.16)"
-                      : "none",
+                    boxShadow: open ? "0 10px 26px rgba(21,91,50,0.14)" : "0 4px 12px rgba(0,0,0,0.05)",
+                    animation: `scanityCardIn 0.4s ease-out ${0.1 + index * 0.05}s both`,
                   }}
                 >
                   <button
                     type="button"
                     onClick={() => setOpenQuestion(open ? -1 : index)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      width: "100%",
-                      gap: 13,
-                      padding: "16px 17px",
-                      border: "none",
-                      background: "transparent",
-                      color: C.textOnDark,
-                      textAlign: "left",
-                      cursor: "pointer",
-                    }}
+                    style={{ display: "flex", alignItems: "center", width: "100%", gap: 13, padding: "16px 17px", border: "none", background: "transparent", color: PALETTE.textDark, textAlign: "left", cursor: "pointer" }}
                   >
-                    {/* Number */}
-                    <div
-                      style={{
-                        flexShrink: 0,
-                        width: 31,
-                        height: 31,
-                        borderRadius: 10,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: open
-                          ? "rgba(224,167,46,0.16)"
-                          : "rgba(255,255,255,0.05)",
-                        color: open
-                          ? C.greenLight
-                          : "rgba(255,255,255,0.45)",
-                        fontSize: 10,
-                        fontWeight: 800,
-                      }}
-                    >
+                    <div style={{ flexShrink: 0, width: 31, height: 31, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: open ? PALETTE.green : "#EFEFEA", color: open ? "#FFFFFF" : PALETTE.textMuted, fontSize: 10, fontWeight: 800 }}>
                       {String(index + 1).padStart(2, "0")}
                     </div>
-
-                    {/* Question */}
-                    <span
-                      style={{
-                        flex: 1,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        lineHeight: 1.4,
-                      }}
-                    >
+                    <span style={{ flex: 1, fontSize: 12, fontWeight: 700, lineHeight: 1.4 }}>
                       {item.question}
                     </span>
-
-                    {/* Arrow */}
-                    <div
-                      style={{
-                        flexShrink: 0,
-                        width: 27,
-                        height: 27,
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: open
-                          ? "rgba(224,167,46,0.13)"
-                          : "rgba(255,255,255,0.04)",
-                      }}
-                    >
-                      <i
-                        className={`fa fa-angle-${open ? "up" : "down"}`}
-                        style={{
-                          color: C.greenLight,
-                          fontSize: 14,
-                        }}
-                      />
+                    <div style={{ flexShrink: 0, width: 27, height: 27, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: open ? "rgba(23,107,58,0.10)" : "#F5F5F0" }}>
+                      <i className={`fa fa-angle-${open ? "up" : "down"}`} style={{ color: PALETTE.greenText, fontSize: 14 }} />
                     </div>
                   </button>
 
-                  {/* ANSWER */}
                   {open && (
-                    <div
-                      style={{
-                        padding: "0 17px 18px 61px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: 1,
-                          marginBottom: 13,
-                          background: "rgba(255,255,255,0.07)",
-                        }}
-                      />
-
-                      <p
-                        style={{
-                          margin: 0,
-                          color: "rgba(255,255,255,0.62)",
-                          fontSize: 11,
-                          lineHeight: 1.7,
-                        }}
-                      >
+                    <div style={{ padding: "0 17px 18px 61px" }}>
+                      <div style={{ height: 1, marginBottom: 13, background: PALETTE.border }} />
+                      <p style={{ margin: 0, color: PALETTE.textMuted, fontSize: 11, lineHeight: 1.7 }}>
                         {item.answer}
                       </p>
                     </div>
@@ -6748,94 +8120,31 @@ function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
             style={{
               position: "relative",
               overflow: "hidden",
-              marginTop: 28,
+              marginTop: 24,
               padding: "21px",
-              borderRadius: 18,
-              border: "1px solid rgba(91,170,110,0.18)",
-              background: "rgba(7,35,19,0.85)",
+              borderRadius: 20,
+              background: PALETTE.cardWhite,
+              border: `1px solid ${PALETTE.border}`,
+              boxShadow: "0 10px 26px rgba(0,0,0,0.06)",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
-              }}
-            >
-              {/* Support icon */}
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: 43,
-                  height: 43,
-                  borderRadius: 13,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "rgba(91,170,110,0.12)",
-                }}
-              >
-                <i
-                  className="fa fa-headphones"
-                  style={{
-                    color: C.greenLight,
-                    fontSize: 19,
-                  }}
-                />
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ flexShrink: 0, width: 43, height: 43, borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(23,107,58,0.10)" }}>
+                <i className="fa fa-headphones" style={{ color: PALETTE.greenText, fontSize: 19 }} />
               </div>
-
               <div style={{ flex: 1 }}>
-                <p
-                  style={{
-                    margin: 0,
-                    color: C.textOnDark,
-                    fontSize: 12,
-                    fontWeight: 800,
-                  }}
-                >
+                <p style={{ margin: 0, color: PALETTE.textDark, fontSize: 12, fontWeight: 800 }}>
                   Still need help?
                 </p>
-
-                <p
-                  style={{
-                    margin: "4px 0 0",
-                    color: "rgba(255,255,255,0.48)",
-                    fontSize: 10,
-                    lineHeight: 1.5,
-                  }}
-                >
+                <p style={{ margin: "4px 0 0", color: PALETTE.textMuted, fontSize: 10, lineHeight: 1.5 }}>
                   Our support team is here to help you.
                 </p>
               </div>
             </div>
 
-            {/* Email */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 9,
-                marginTop: 16,
-                padding: "11px 13px",
-                borderRadius: 11,
-                background: "rgba(255,255,255,0.035)",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <i
-                className="fa fa-envelope"
-                style={{
-                  color: C.greenLight,
-                  fontSize: 12,
-                }}
-              />
-
-              <span
-                style={{
-                  color: "rgba(255,255,255,0.62)",
-                  fontSize: 10,
-                }}
-              >
+            <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 16, padding: "11px 13px", borderRadius: 12, background: "#F7F6F2", border: `1px solid ${PALETTE.border}` }}>
+              <i className="fa fa-envelope" style={{ color: PALETTE.greenText, fontSize: 12 }} />
+              <span style={{ color: PALETTE.textDark, fontSize: 10, fontWeight: 500 }}>
                 scanityapp@gmail.com
               </span>
             </div>
@@ -6845,6 +8154,7 @@ function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+
 
 function AboutScreen({ go }: { go: (s: Screen) => void }) {
   const features = [
@@ -7322,412 +8632,1541 @@ function LegalScreen({
   )
 }
 // ── Settings Screen ───────────────────────────────────────────────────────────
-function SettingsScreen({ go }: { go: (s: Screen) => void }) {
-  const [notifications, setNotifications] = useState(true)
-  const currentLanguage = "English"
-  // ── Section Title ─────────────────────────────────────────────────────────
-  const Section = ({ title }: { title: string }) => (
-    <p
-      style={{
-        margin: "0 0 8px 2px",
-        fontFamily: "'Poppins', sans-serif",
-        fontWeight: 700,
-        fontSize: 10,
-        letterSpacing: "0.08em",
-        textTransform: "uppercase",
-        color: "rgba(255,255,255,0.55)",
-      }}
-    >
-      {title}
-    </p>
-  )
-  // ── Chevron ───────────────────────────────────────────────────────────────
-  const Chevron = () => (
-    <i
-      className="fa fa-angle-right"
-      style={{
-        fontSize: 18,
-        color: "rgba(255,255,255,0.45)",
-      }}
-    />
-  )
-  // ── Settings Row ─────────────────────────────────────────────────────────
-  const Row = ({
-    icon,
-    label,
-    sub,
-    right,
-    onClick,
-    danger = false,
-  }: {
-    icon: ReactNode
-    label: string
-    sub?: string
-    right?: ReactNode
-    onClick?: () => void
-    danger?: boolean
-  }) => {
-    const Tag = onClick ? "button" : "div"
-    return (
-      <Tag
-        {...(onClick ? { type: "button" as const, onClick } : {})}
+
+function SettingsScreen({
+  go,
+}: {
+  go: (s: Screen) => void
+}) {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] =
+    useState(false)
+  const [showLogoutLoading, setShowLogoutLoading] =
+    useState(false)
+
+  const isDesktop = useIsDesktop()
+
+  const FONT = "'Poppins', sans-serif"
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // COLORS
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const COLORS = {
+    page: "#F2F1EC",
+
+    greenDark: "#155B32",
+    green: "#176B3A",
+    greenMid: "#23804B",
+    greenLight: "#2E8B57",
+
+    white: "#FFFFFF",
+    black: "#171717",
+    gray: "#666666",
+    lightGray: "#D9D9D9",
+    cardGray: "#D8D8D8",
+
+    danger: "#D94A4A",
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SIDEBAR ITEMS
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const sidebarItems = [
+    {
+      icon: "fa-home",
+      label: "Dashboard",
+      screen: "dashboard" as Screen,
+    },
+    {
+      icon: "fa-gear",
+      label: "Settings",
+      screen: "settings" as Screen,
+    },
+    {
+      icon: "fa-question-circle",
+      label: "Help & FAQ",
+      screen: "help" as Screen,
+    },
+  ]
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // LOGOUT
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const handleLogout = () => {
+    setShowLogoutConfirm(false)
+    setShowLogoutLoading(true)
+
+    setTimeout(() => {
+      setShowLogoutLoading(false)
+      setSidebarOpen(false)
+      go("splash")
+    }, 1800)
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SIDEBAR MENU (matches Dashboard)
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const sidebarMenu = (
+    <>
+      {/* LOGO */}
+
+      <div
         style={{
-          width: "100%",
           display: "flex",
           alignItems: "center",
           gap: 12,
-          padding: "12px 13px",
-          marginBottom: 7,
-          borderRadius: 13,
-          border: danger
-            ? "1px solid rgba(255,107,107,0.20)"
-            : "1px solid rgba(224,167,46,0.28)",
-          background: danger ? "rgba(45,24,24,0.72)" : "rgba(22,76,41,0.78)",
-          boxShadow: "0 3px 10px rgba(0,0,0,0.18)",
-          boxSizing: "border-box",
-          cursor: onClick ? "pointer" : "default",
+
+          padding: isDesktop
+            ? "20px 20px 24px"
+            : "18px 16px 22px",
+        }}
+      >
+        <img
+          src={logoImg}
+          alt="Scanity"
+          style={{
+            width: isDesktop ? 48 : 42,
+            height: isDesktop ? 48 : 42,
+            objectFit: "contain",
+            flexShrink: 0,
+          }}
+        />
+
+        <span
+          style={{
+            fontFamily: FONT,
+            fontWeight: 800,
+            fontSize: isDesktop ? 22 : 18,
+            letterSpacing: "-0.01em",
+            color: "#FFFFFF",
+            lineHeight: 1,
+            whiteSpace: "nowrap",
+          }}
+        >
+          <span style={{ color: C.textOnDark }}>Scan</span>
+          <span style={{ color: C.greenLight }}>ity</span>
+        </span>
+      </div>
+
+      {/* MENU TITLE */}
+
+      <p
+        style={{
+          margin: 0,
+
+          padding: isDesktop
+            ? "0 20px 10px"
+            : "0 16px 10px",
+
+          fontFamily: FONT,
+          fontWeight: 600,
+          fontSize: 10,
+          letterSpacing: "0.14em",
+
+          color:
+            "rgba(255,255,255,0.50)",
+        }}
+      >
+        MENU
+      </p>
+
+      {/* MENU */}
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 6,
+
+          padding: isDesktop
+            ? "0 10px"
+            : "0 9px",
+        }}
+      >
+        {sidebarItems.map((item) => (
+          <button
+            key={item.screen}
+            type="button"
+            className="scanity-sidebar-item"
+            onClick={() => {
+              setSidebarOpen(false)
+              go(item.screen)
+            }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+
+              padding: isDesktop
+                ? "12px 14px"
+                : "11px 12px",
+
+              background:
+                "transparent",
+
+              border: "none",
+              borderRadius: 14,
+
+              cursor: "pointer",
+
+              width: "100%",
+
+              textAlign: "left",
+            }}
+          >
+            <i
+              className={`fa ${item.icon}`}
+              style={{
+                fontSize: 15,
+                width: 19,
+                textAlign: "center",
+                color: "#FFFFFF",
+              }}
+            />
+
+            <span
+              style={{
+                fontFamily: FONT,
+                fontWeight: 500,
+
+                fontSize:
+                  isDesktop ? 13 : 12,
+
+                color: "#FFFFFF",
+              }}
+            >
+              {item.label}
+            </span>
+          </button>
+        ))}
+
+        {/* LOGOUT */}
+
+        <button
+          type="button"
+          className="scanity-sidebar-item"
+          onClick={() =>
+            setShowLogoutConfirm(true)
+          }
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+
+            padding: isDesktop
+              ? "12px 14px"
+              : "11px 12px",
+
+            background:
+              "transparent",
+
+            border: "none",
+            borderRadius: 14,
+
+            cursor: "pointer",
+
+            width: "100%",
+
+            textAlign: "left",
+          }}
+        >
+          <i
+            className="fa fa-sign-out"
+            style={{
+              fontSize: 15,
+              width: 19,
+              textAlign: "center",
+
+              color: "#FFFFFF",
+
+              transform:
+                "scaleX(-1)",
+            }}
+          />
+
+          <span
+            style={{
+              fontFamily: FONT,
+              fontWeight: 500,
+
+              fontSize:
+                isDesktop ? 13 : 12,
+
+              color: "#FFFFFF",
+            }}
+          >
+            Logout
+          </span>
+        </button>
+      </div>
+    </>
+  )
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SETTINGS ROW
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const SettingRow = ({
+    icon,
+    title,
+    subtitle,
+    onClick,
+    danger = false,
+  }: {
+    icon: string
+    title: string
+    subtitle?: string
+    onClick?: () => void
+    danger?: boolean
+  }) => {
+    return (
+      <button
+        type="button"
+
+        onClick={onClick}
+
+        style={{
+          width: "100%",
+
+          minHeight:
+            isDesktop ? 92 : 72,
+
+          display: "flex",
+
+          alignItems: "center",
+
+          gap:
+            isDesktop ? 22 : 16,
+
+          padding:
+            isDesktop
+              ? "20px 26px"
+              : "14px 16px",
+
+          background:
+            COLORS.white,
+
+          border: "none",
+
+          borderRadius: 20,
+
+          cursor:
+            onClick
+              ? "pointer"
+              : "default",
+
+          boxSizing:
+            "border-box",
+
           textAlign: "left",
+
+          boxShadow:
+            "0 5px 0 rgba(0,0,0,0.12)",
+
+          transition:
+            "transform 0.16s ease, box-shadow 0.16s ease",
         }}
       >
         {/* ICON */}
+
         <div
           style={{
-            width: 38,
-            height: 38,
-            borderRadius: 10,
+            width:
+              isDesktop ? 56 : 46,
+
+            height:
+              isDesktop ? 56 : 46,
+
             display: "flex",
+
             alignItems: "center",
+
             justifyContent: "center",
+
             flexShrink: 0,
-            background: danger
-              ? "rgba(255,107,107,0.10)"
-              : "rgba(224,167,46,0.14)",
-            border: danger
-              ? "1px solid rgba(255,107,107,0.20)"
-              : "1px solid rgba(224,167,46,0.22)",
+
+            borderRadius:
+              isDesktop ? 16 : 13,
+
+            background:
+              danger
+                ? "rgba(217,74,74,0.12)"
+                : "rgba(23,107,58,0.12)",
+
+            color:
+              danger
+                ? COLORS.danger
+                : COLORS.green,
           }}
         >
-          {icon}
+          <i
+            className={`fa ${icon}`}
+            style={{
+              fontSize:
+                isDesktop ? 24 : 19,
+            }}
+          />
         </div>
+
         {/* TEXT */}
+
         <div
           style={{
             flex: 1,
+
             minWidth: 0,
           }}
         >
           <p
             style={{
               margin: 0,
-              fontFamily: "'Poppins', sans-serif",
+
+              fontFamily: FONT,
+
               fontWeight: 700,
-              fontSize: 11,
-              color: danger ? "#FF8585" : C.textOnDark,
+
+              fontSize:
+                isDesktop ? 16 : 12,
+
+              color:
+                danger
+                  ? COLORS.danger
+                  : COLORS.black,
             }}
           >
-            {label}
+            {title}
           </p>
-          {sub && (
+
+          {subtitle && (
             <p
               style={{
-                margin: "2px 0 0",
-                fontFamily: "'Poppins', sans-serif",
-                fontSize: 8,
-                color: "rgba(255,255,255,0.52)",
+                margin:
+                  "2px 0 0",
+
+                fontFamily: FONT,
+
+                fontWeight: 400,
+
+                fontSize:
+                  isDesktop ? 12 : 9,
+
+                color:
+                  COLORS.gray,
               }}
             >
-              {sub}
+              {subtitle}
             </p>
           )}
         </div>
-        {/* RIGHT */}
-        {right}
-      </Tag>
+
+        {/* CHEVRON */}
+
+        <i
+          className="fa fa-angle-right"
+          style={{
+            fontSize:
+              isDesktop ? 24 : 20,
+
+            color:
+              danger
+                ? "rgba(217,74,74,0.65)"
+                : "#888888",
+
+            flexShrink: 0,
+          }}
+        />
+      </button>
     )
   }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // SECTION TITLE
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const SectionTitle = ({
+    children,
+  }: {
+    children: ReactNode
+  }) => (
+    <p
+      style={{
+        margin:
+          isDesktop
+            ? "0 0 14px 6px"
+            : "0 0 10px 4px",
+
+        fontFamily: FONT,
+
+        fontWeight: 700,
+
+        fontSize:
+          isDesktop ? 12 : 10,
+
+        color: COLORS.black,
+
+        textTransform:
+          "uppercase",
+
+        letterSpacing:
+          "0.04em",
+      }}
+    >
+      {children}
+    </p>
+  )
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // RETURN
+  // ──────────────────────────────────────────────────────────────────────────
+
   return (
     <div
       style={{
         flex: 1,
-        position: "relative",
+
+        height: "100vh",
+
+        minHeight: 0,
+
         display: "flex",
+
         flexDirection: "column",
+
+        position: "relative",
+
         overflow: "hidden",
-        background: "#071A0F",
+
+        background:
+          COLORS.page,
+
+        fontFamily: FONT,
       }}
     >
-      {/* ═══════════════════════════════════════════
-          BACKGROUND IMAGE
-      ═══════════════════════════════════════════ */}
-      <img
-        src="https://images.unsplash.com/photo-1518843875459-f738682238a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-        alt=""
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          opacity: 0.22,
-          pointerEvents: "none",
-        }}
-      />
-      {/* GREEN OVERLAY */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(180deg, rgba(5,24,13,0.92) 0%, rgba(6,35,18,0.88) 45%, rgba(5,25,13,0.96) 100%)",
-          pointerEvents: "none",
-        }}
-      />
-      {/* ═══════════════════════════════════════════
-          HEADER
-      ═══════════════════════════════════════════ */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          paddingTop: 13,
-          paddingLeft: 20,
-          paddingRight: 20,
-          paddingBottom: 13,
-          borderBottom: "1px solid rgba(224,167,46,0.18)",
-        }}
-      >
-        {/* BACK BUTTON */}
-        <button
-          type="button"
-          onClick={() => go("dashboard")}
+      {/* ═════════════════════════════════════════════════════════════════════
+          ANIMATIONS
+      ═════════════════════════════════════════════════════════════════════ */}
+
+      <style>
+        {`
+          @keyframes settingsLogoutProgress {
+            from {
+              width: 0%;
+            }
+
+            to {
+              width: 100%;
+            }
+          }
+
+          @keyframes scanitySidebarSlideIn {
+            from {
+              opacity: 0;
+              transform: translateX(-45px);
+            }
+
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          @keyframes scanityBackdropIn {
+            from {
+              opacity: 0;
+            }
+
+            to {
+              opacity: 1;
+            }
+          }
+
+          .scanity-sidebar-item {
+            transition:
+              background 0.18s ease,
+              transform 0.15s ease;
+          }
+
+          .scanity-sidebar-item:hover {
+            background:
+              rgba(255,255,255,0.10) !important;
+
+            transform:
+              translateX(3px);
+          }
+
+          .scanity-sidebar-item:active {
+            transform: scale(0.97);
+          }
+
+          .scanity-hamburger {
+            transition:
+              transform 0.15s ease,
+              box-shadow 0.15s ease;
+          }
+
+          .scanity-hamburger:hover {
+            transform:
+              translateY(-2px);
+
+            box-shadow:
+              0 8px 20px
+              rgba(0,0,0,0.08) !important;
+          }
+
+          .scanity-hamburger:active {
+            transform:
+              scale(0.94);
+          }
+
+          .scanity-profile {
+            transition:
+              transform 0.15s ease,
+              opacity 0.15s ease;
+          }
+
+          .scanity-profile:hover {
+            transform:
+              translateY(-1px);
+
+            opacity: 0.8;
+          }
+
+          button:hover {
+            outline: none;
+          }
+        `}
+      </style>
+
+      {/* ═════════════════════════════════════════════════════════════════════
+          SIDEBAR (overlay — matches Dashboard)
+      ═════════════════════════════════════════════════════════════════════ */}
+
+      {sidebarOpen && (
+        <div
           style={{
-            width: 36,
-            height: 36,
+            position: "absolute",
+            inset: 0,
+
+            zIndex: 50,
+
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: 10,
-            border: "1px solid rgba(255,255,255,0.16)",
-            background: "rgba(255,255,255,0.07)",
-            color: "#FFFFFF",
-            cursor: "pointer",
           }}
         >
-          <i
-            className="fa fa-angle-left"
+          {/* BACKDROP */}
+
+          <div
+            onClick={() =>
+              setSidebarOpen(false)
+            }
             style={{
-              fontSize: 20,
+              position: "absolute",
+              inset: 0,
+
+              background:
+                "rgba(0,0,0,0.40)",
+
+              backdropFilter:
+                "blur(4px)",
+
+              WebkitBackdropFilter:
+                "blur(4px)",
+
+              animation:
+                "scanityBackdropIn 0.2s ease-out both",
             }}
           />
-        </button>
-        {/* TITLE */}
-        <div>
-          <h2
+
+          {/* SIDEBAR */}
+
+          <div
             style={{
-              margin: 0,
-              fontFamily: "'Poppins', sans-serif",
-              fontWeight: 800,
-              fontSize: 17,
-              color: C.textOnDark,
+              position: "relative",
+
+              zIndex: 51,
+
+              width:
+                isDesktop ? 245 : 220,
+
+              height:
+                `calc(100% - ${
+                  isDesktop ? 32 : 20
+                }px)`,
+
+              margin:
+                isDesktop
+                  ? "16px"
+                  : "10px",
+
+              // GRADIENT SIDEBAR
+              background:
+                `linear-gradient(
+                  160deg,
+                  #155B32 0%,
+                  #176B3A 45%,
+                  #2E8B57 100%
+                )`,
+
+              borderRadius: 26,
+
+              boxShadow:
+                "0 25px 55px rgba(0,0,0,0.28)",
+
+              display: "flex",
+              flexDirection: "column",
+
+              paddingTop: SAFE_TOP,
+              paddingBottom: 24,
+
+              boxSizing:
+                "border-box",
+
+              overflow: "hidden",
+
+              animation:
+                "scanitySidebarSlideIn 0.28s cubic-bezier(0.22,1,0.36,1) both",
             }}
           >
-            Settings
-          </h2>
-          <p
-            style={{
-              margin: "1px 0 0",
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 8,
-              color: "rgba(255,255,255,0.48)",
-            }}
-          >
-            Customize your Scanity experience
-          </p>
-        </div>
-      </div>
-      {/* ═══════════════════════════════════════════
-          CONTENT
-      ═══════════════════════════════════════════ */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          flex: 1,
-          overflowY: "auto",
-          boxSizing: "border-box",
-        }}
-      >
-        <Center maxWidth={640} style={{ padding: "15px 20px 25px" }}>
-        {/* ═══════════════════════════════════════════
-            PREFERENCES
-        ═══════════════════════════════════════════ */}
-        <Section title="Preferences" />
-        {/* Notifications */}
-        <Row
-          icon={
-            <i
-              className="fa fa-bell-o"
+            {/* DECORATIVE CIRCLE */}
+
+            <div
               style={{
-                fontSize: 17,
-                color: C.greenLight,
+                position: "absolute",
+
+                width: 160,
+                height: 160,
+
+                borderRadius: "50%",
+
+                top: -90,
+                right: -80,
+
+                background:
+                  "rgba(255,255,255,0.06)",
+
+                pointerEvents: "none",
               }}
             />
-          }
-          label="Notifications"
-          sub="Receive updates and reminders"
-          right={
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                setNotifications(!notifications)
-              }}
+
+            <div
               style={{
-                width: 42,
-                height: 24,
-                padding: 0,
-                border: "none",
-                borderRadius: 12,
-                background: notifications
-                  ? C.greenLight
-                  : "rgba(255,255,255,0.20)",
-                position: "relative",
-                cursor: "pointer",
-                flexShrink: 0,
+                position: "absolute",
+
+                width: 120,
+                height: 120,
+
+                borderRadius: "50%",
+
+                bottom: 10,
+                left: -75,
+
+                background:
+                  "rgba(255,255,255,0.04)",
+
+                pointerEvents: "none",
+              }}
+            />
+
+            {sidebarMenu}
+          </div>
+        </div>
+      )}
+
+      {/* ═════════════════════════════════════════════════════════════════════
+          MAIN CONTENT
+      ═════════════════════════════════════════════════════════════════════ */}
+
+      <div
+        style={{
+          flex: 1,
+
+          minWidth: 0,
+
+          minHeight: 0,
+
+          display: "flex",
+
+          flexDirection: "column",
+
+          overflow: "hidden",
+
+          position: "relative",
+
+          zIndex: 1,
+        }}
+      >
+        {/* ═══════════════════════════════════════════════════════════════════
+            HEADER
+        ═══════════════════════════════════════════════════════════════════ */}
+
+        <div
+          style={{
+            display: "flex",
+
+            alignItems: "center",
+
+            justifyContent:
+              "space-between",
+
+            paddingTop:
+              isDesktop
+                ? 27
+                : SAFE_TOP + 10,
+
+            paddingLeft:
+              isDesktop ? 20 : 18,
+
+            paddingRight:
+              isDesktop ? 30 : 18,
+
+            paddingBottom:
+              isDesktop ? 12 : 10,
+
+            flexShrink: 0,
+          }}
+        >
+          {/* HAMBURGER — always visible, matches Dashboard */}
+
+          <button
+            type="button"
+
+            className="scanity-hamburger"
+
+            aria-label="Open navigation"
+
+            onClick={() =>
+              setSidebarOpen(true)
+            }
+
+            style={{
+              width: 40,
+
+              height: 40,
+
+              display: "flex",
+
+              alignItems: "center",
+
+              justifyContent: "center",
+
+              borderRadius: 13,
+
+              border:
+                "1px solid #DADAD5",
+
+              background:
+                COLORS.white,
+
+              cursor: "pointer",
+
+              marginRight: 12,
+
+              boxShadow:
+                "0 6px 16px rgba(0,0,0,0.05)",
+
+              flexShrink: 0,
+
+              padding: 0,
+            }}
+          >
+            <i
+              className="fa fa-bars"
+              style={{
+                fontSize: 19,
+
+                color:
+                  COLORS.black,
+              }}
+            />
+          </button>
+
+          {/* TITLE */}
+
+          <div
+            style={{
+              flex: 1,
+            }}
+          >
+            <h2
+              style={{
+                margin: 0,
+
+                fontFamily: FONT,
+
+                fontWeight: 700,
+
+                fontSize:
+                  isDesktop ? 22 : 19,
+
+                color:
+                  COLORS.black,
+
+                letterSpacing:
+                  "-0.02em",
+
+                lineHeight: 1.1,
+              }}
+            >
+              Settings
+            </h2>
+
+            <p
+              style={{
+                margin:
+                  "3px 0 0",
+
+                fontFamily: FONT,
+
+                fontWeight: 400,
+
+                fontSize:
+                  isDesktop ? 9 : 8,
+
+                color:
+                  COLORS.black,
+              }}
+            >
+              Customize your Scanity experience
+            </p>
+          </div>
+
+          {/* USER */}
+
+          <button
+            type="button"
+
+            className="scanity-profile"
+
+            onClick={() =>
+              go("profile")
+            }
+
+            style={{
+              display: "flex",
+
+              alignItems: "center",
+
+              gap: 9,
+
+              border: "none",
+
+              background:
+                "transparent",
+
+              cursor: "pointer",
+
+              padding: 0,
+            }}
+          >
+            <div
+              style={{
+                width:
+                  isDesktop ? 32 : 30,
+
+                height:
+                  isDesktop ? 32 : 30,
+
+                borderRadius:
+                  "50%",
+
+                border:
+                  "1px solid #CCCCCC",
+
+                background:
+                  COLORS.white,
+
+                display: "flex",
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+              }}
+            >
+              <i
+                className="fa fa-user"
+                style={{
+                  fontSize:
+                    isDesktop ? 14 : 13,
+
+                  color:
+                    COLORS.black,
+                }}
+              />
+            </div>
+
+            {isDesktop && (
+              <span
+                style={{
+                  fontFamily: FONT,
+
+                  fontWeight: 600,
+
+                  fontSize: 11,
+
+                  color:
+                    COLORS.black,
+                }}
+              >
+                Username
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            CONTENT
+        ═══════════════════════════════════════════════════════════════════ */}
+
+        <div
+          style={{
+            flex: 1,
+
+            minHeight: 0,
+
+            overflowY: "auto",
+
+            display: "flex",
+
+            justifyContent: "center",
+
+            padding:
+              isDesktop
+                ? "24px 40px 60px"
+                : "10px 16px 30px",
+
+            boxSizing:
+              "border-box",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+
+              maxWidth:
+                isDesktop ? 780 : 620,
+
+              display: "flex",
+
+              flexDirection: "column",
+
+              gap:
+                isDesktop ? 30 : 22,
+            }}
+          >
+            {/* ═════════════════════════════════════════════════════════════
+                SUPPORT & INFO
+            ═════════════════════════════════════════════════════════════ */}
+
+            <div>
+              <SectionTitle>
+                Support & Info
+              </SectionTitle>
+
+              <div
+                style={{
+                  display: "flex",
+
+                  flexDirection:
+                    "column",
+
+                  gap:
+                    isDesktop ? 14 : 10,
+                }}
+              >
+                {/* ABOUT */}
+
+                <SettingRow
+                  icon="fa-info-circle"
+                  title="About Scanity"
+                  subtitle="Learn more about Scanity"
+                  onClick={() =>
+                    go("about")
+                  }
+                />
+
+                {/* PRIVACY */}
+
+                <SettingRow
+                  icon="fa-shield"
+                  title="Privacy Policy"
+                  onClick={() =>
+                    go("privacy")
+                  }
+                />
+
+                {/* TERMS */}
+
+                <SettingRow
+                  icon="fa-file-text-o"
+                  title="Terms of Service"
+                  onClick={() =>
+                    go("terms")
+                  }
+                />
+              </div>
+            </div>
+
+            {/* ═════════════════════════════════════════════════════════════
+                SECURITY
+            ═════════════════════════════════════════════════════════════ */}
+
+            <div>
+              <SectionTitle>
+                Security
+              </SectionTitle>
+
+              <div
+                style={{
+                  display: "flex",
+
+                  flexDirection:
+                    "column",
+
+                  gap:
+                    isDesktop ? 14 : 10,
+                }}
+              >
+                {/* CHANGE PASSWORD */}
+
+                <SettingRow
+                  icon="fa-lock"
+                  title="Change Password"
+                  subtitle="Update your current password"
+                  onClick={() =>
+                    go("forgotPassword")
+                  }
+                />
+              </div>
+            </div>
+
+            {/* ═════════════════════════════════════════════════════════════
+                ACCOUNT
+            ═════════════════════════════════════════════════════════════ */}
+
+            <div>
+              <SectionTitle>
+                Account
+              </SectionTitle>
+
+              <div
+                style={{
+                  display: "flex",
+
+                  flexDirection:
+                    "column",
+
+                  gap:
+                    isDesktop ? 14 : 10,
+                }}
+              >
+                {/* DELETE ACCOUNT */}
+
+                <SettingRow
+                  icon="fa-trash-o"
+                  title="Delete Account"
+                  subtitle="Permanently delete your account"
+                  danger
+                  onClick={() =>
+                    go("delete")
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ═════════════════════════════════════════════════════════════════════
+          LOGOUT CONFIRMATION
+      ═════════════════════════════════════════════════════════════════════ */}
+
+      {showLogoutConfirm && (
+        <div
+          style={{
+            position: "absolute",
+
+            inset: 0,
+
+            zIndex: 100,
+
+            display: "flex",
+
+            alignItems: "center",
+
+            justifyContent:
+              "center",
+
+            padding: 20,
+
+            background:
+              "rgba(0,0,0,0.48)",
+
+            backdropFilter:
+              "blur(7px)",
+
+            WebkitBackdropFilter:
+              "blur(7px)",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+
+              maxWidth: 320,
+
+              padding:
+                "28px 23px 22px",
+
+              borderRadius: 25,
+
+              background:
+                COLORS.white,
+
+              boxShadow:
+                "0 25px 60px rgba(0,0,0,0.25)",
+
+              textAlign: "center",
+
+              boxSizing:
+                "border-box",
+            }}
+          >
+            {/* ICON */}
+
+            <div
+              style={{
+                width: 65,
+
+                height: 65,
+
+                margin:
+                  "0 auto 15px",
+
+                borderRadius:
+                  "50%",
+
+                background:
+                  "#E8F3EC",
+
+                display: "flex",
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+              }}
+            >
+              <i
+                className="fa fa-sign-out"
+                style={{
+                  fontSize: 28,
+
+                  color:
+                    COLORS.green,
+                }}
+              />
+            </div>
+
+            <h3
+              style={{
+                margin:
+                  "0 0 7px",
+
+                fontFamily: FONT,
+
+                fontWeight: 700,
+
+                fontSize: 17,
+
+                color:
+                  COLORS.black,
+              }}
+            >
+              Are you sure you want to logout?
+            </h3>
+
+            <p
+              style={{
+                margin:
+                  "0 0 20px",
+
+                fontFamily: FONT,
+
+                fontSize: 10,
+
+                lineHeight: 1.5,
+
+                color:
+                  COLORS.gray,
+              }}
+            >
+              You will need to login again
+              <br />
+              to access your account.
+            </p>
+
+            {/* BUTTONS */}
+
+            <div
+              style={{
+                display: "flex",
+
+                gap: 10,
+              }}
+            >
+              <button
+                type="button"
+
+                onClick={() =>
+                  setShowLogoutConfirm(false)
+                }
+
+                style={{
+                  flex: 1,
+
+                  height: 43,
+
+                  border:
+                    "1px solid #D5D5D5",
+
+                  borderRadius: 13,
+
+                  background:
+                    "#F5F5F5",
+
+                  color:
+                    COLORS.black,
+
+                  fontFamily: FONT,
+
+                  fontWeight: 500,
+
+                  fontSize: 11,
+
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+
+                onClick={handleLogout}
+
+                style={{
+                  flex: 1,
+
+                  height: 43,
+
+                  border: "none",
+
+                  borderRadius: 13,
+
+                  background: `
+                    linear-gradient(
+                      135deg,
+                      ${COLORS.greenDark},
+                      ${COLORS.greenLight}
+                    )
+                  `,
+
+                  color:
+                    COLORS.white,
+
+                  fontFamily: FONT,
+
+                  fontWeight: 600,
+
+                  fontSize: 11,
+
+                  cursor: "pointer",
+
+                  boxShadow:
+                    "0 7px 18px rgba(21,91,50,0.25)",
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═════════════════════════════════════════════════════════════════════
+          LOGOUT LOADING
+      ═════════════════════════════════════════════════════════════════════ */}
+
+      {showLogoutLoading && (
+        <div
+          style={{
+            position: "absolute",
+
+            inset: 0,
+
+            zIndex: 110,
+
+            display: "flex",
+
+            alignItems: "center",
+
+            justifyContent:
+              "center",
+
+            padding: 20,
+
+            background:
+              "rgba(0,0,0,0.52)",
+
+            backdropFilter:
+              "blur(8px)",
+
+            WebkitBackdropFilter:
+              "blur(8px)",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+
+              maxWidth: 300,
+
+              padding:
+                "30px 22px 24px",
+
+              borderRadius: 25,
+
+              background:
+                COLORS.white,
+
+              textAlign: "center",
+
+              boxShadow:
+                "0 25px 60px rgba(0,0,0,0.25)",
+
+              boxSizing:
+                "border-box",
+            }}
+          >
+            <div
+              style={{
+                width: 65,
+
+                height: 65,
+
+                margin:
+                  "0 auto 15px",
+
+                borderRadius:
+                  "50%",
+
+                background:
+                  "#E8F3EC",
+
+                display: "flex",
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+              }}
+            >
+              <i
+                className="fa fa-sign-out"
+                style={{
+                  fontSize: 28,
+
+                  color:
+                    COLORS.green,
+                }}
+              />
+            </div>
+
+            <h3
+              style={{
+                margin:
+                  "0 0 6px",
+
+                fontFamily: FONT,
+
+                fontWeight: 700,
+
+                fontSize: 17,
+
+                color:
+                  COLORS.black,
+              }}
+            >
+              Logging Out
+            </h3>
+
+            <p
+              style={{
+                margin:
+                  "0 0 18px",
+
+                fontFamily: FONT,
+
+                fontSize: 10,
+
+                color:
+                  COLORS.gray,
+              }}
+            >
+              Please wait...
+            </p>
+
+            {/* PROGRESS BAR */}
+
+            <div
+              style={{
+                width: "100%",
+
+                height: 7,
+
+                borderRadius: 7,
+
+                overflow: "hidden",
+
+                background:
+                  "#E5E5E5",
               }}
             >
               <div
                 style={{
-                  position: "absolute",
-                  top: 3,
-                  left: notifications ? 21 : 3,
-                  width: 18,
-                  height: 18,
-                  borderRadius: "50%",
-                  background: "#FFFFFF",
-                  transition: "left 0.2s",
-                  boxShadow: "0 2px 5px rgba(0,0,0,0.25)",
+                  width: "0%",
+
+                  height: "100%",
+
+                  borderRadius: 7,
+
+                  background: `
+                    linear-gradient(
+                      90deg,
+                      ${COLORS.greenDark},
+                      ${COLORS.greenLight}
+                    )
+                  `,
+
+                  animation:
+                    "settingsLogoutProgress 1.8s linear forwards",
                 }}
               />
-            </button>
-          }
-        />
-       
-        {/* ═══════════════════════════════════════════
-            SECURITY
-        ═══════════════════════════════════════════ */}
-        <div style={{ marginTop: 17 }}>
-          <Section title="Security" />
+            </div>
+          </div>
         </div>
-        {/* Change Password */}
-        <Row
-          onClick={() => go("forgotPassword")}
-          icon={
-            <i
-              className="fa fa-key"
-              style={{
-                fontSize: 17,
-                color: C.greenLight,
-              }}
-            />
-          }
-          label="Change Password"
-          sub="Update your current password"
-          right={<Chevron />}
-        />
-        {/* ═══════════════════════════════════════════
-            SUPPORT & INFO
-        ═══════════════════════════════════════════ */}
-        <div style={{ marginTop: 17 }}>
-          <Section title="Support & Info" />
-        </div>
-        {/* About */}
-        <Row
-          icon={
-            <i
-              className="fa fa-info-circle"
-              style={{
-                fontSize: 17,
-                color: C.greenLight,
-              }}
-            />
-          }
-          onClick={() => go("about")}
-          label="About Scanity"
-          sub="Learn more about Scanity"
-          right={<Chevron />}
-        />
-        {/* Privacy */}
-        <Row
-          icon={
-            <i
-              className="fa fa-shield"
-              style={{
-                fontSize: 16,
-                color: C.greenLight,
-              }}
-            />
-          }
-          onClick={() => go("privacy")}
-          label="Privacy Policy"
-          right={<Chevron />}
-        />
-        {/* Terms */}
-        <Row
-          icon={
-            <i
-              className="fa fa-file-text-o"
-              style={{
-                fontSize: 16,
-                color: C.greenLight,
-              }}
-            />
-          }
-          onClick={() => go("terms")}
-          label="Terms of Service"
-          right={<Chevron />}
-        />
-        {/* ═══════════════════════════════════════════
-            ACCOUNT
-        ═══════════════════════════════════════════ */}
-        <div style={{ marginTop: 17 }}>
-          <Section title="Account" />
-        </div>
-        {/* Delete Account */}
-        <Row
-          danger
-          onClick={() => go("delete")}
-          icon={
-            <i
-              className="fa fa-trash-o"
-              style={{
-                fontSize: 18,
-                color: "#FF6B6B",
-              }}
-            />
-          }
-          label="Delete Account"
-          sub="Permanently delete your account"
-          right={
-            <i
-              className="fa fa-angle-right"
-              style={{
-                fontSize: 18,
-                color: "rgba(255,107,107,0.55)",
-              }}
-            />
-          }
-        />
-        {/* Bottom spacing */}
-        <div style={{ height: 15 }} />
-        </Center>
-      </div>
+      )}
     </div>
   )
 }
+
 // ── Delete Account Screen ────────────────────────────────────────────────────
 function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
   const [showDeleteLoading, setShowDeleteLoading] = useState(false)
@@ -8423,7 +10862,7 @@ function ForgotPasswordScreen({ go }: { go: (s: Screen) => void }) {
               color: "rgba(255,255,255,0.35)",
             }}
           >
-            Scanity • See It. Know It. Eat It.
+          <b> Scanity • See It. Know It. Eat It. </b> 
           </p>
         </Center>
       </div>
@@ -9290,3 +11729,4 @@ export default function App() {
   }
   return <AppFrame>{screenMap[screen]}</AppFrame>
 }
+
