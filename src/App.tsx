@@ -468,7 +468,7 @@ function AppSidebar({
               <img
                 src={logoImg}
                 alt="Scanity"
-                style={{ width: 34, height: 34, objectFit: "contain", flexShrink: 0 }}
+                style={{ width: 48, height: 48, objectFit: "contain", flexShrink: 0 }}
               />
               <div style={{ minWidth: 0 }}>
                 <p
