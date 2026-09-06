@@ -2952,7 +2952,7 @@ function AllSetScreen({ go }: { go: (s: Screen) => void }) {
         </div>
         <div style={{ width: "100%" }}>
           <PrimaryBtn
-            label="Go to  "
+            label="Go to Dashboard"
             onClick={() => go("dashboard")}
             color={C.mocha}
           />
