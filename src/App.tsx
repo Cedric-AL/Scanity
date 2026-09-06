@@ -385,7 +385,6 @@ function Tooltip({
 const SIDEBAR_WIDTH = 264
 const SIDEBAR_MENU: { icon: string; label: string; screen: Screen }[] = [
   { icon: "fa-home", label: "Dashboard", screen: "dashboard" },
-  { icon: "fa-users", label: "Compare Products", screen: "productCompare" },
   { icon: "fa-gear", label: "Settings", screen: "settings" },
   { icon: "fa-question-circle", label: "Help & FAQ", screen: "help" },
   { icon: "fa-info-circle", label: "About", screen: "about" },
@@ -2953,7 +2952,7 @@ function AllSetScreen({ go }: { go: (s: Screen) => void }) {
         </div>
         <div style={{ width: "100%" }}>
           <PrimaryBtn
-            label="Go to Dashboard"
+            label="Go to  "
             onClick={() => go("dashboard")}
             color={C.mocha}
           />
@@ -12848,30 +12847,6 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
               </Tooltip>
             )}
 
-            <Tooltip label="Back to dashboard">
-              <button
-                type="button"
-                onClick={() => go("dashboard")}
-                aria-label="Back"
-                style={{
-                  width: 34,
-                  height: 34,
-                  border: `1px solid ${PALETTE.border}`,
-                  borderRadius: 9,
-                  background: PALETTE.panel,
-                  color: PALETTE.textDark,
-                  cursor: "pointer",
-                  fontSize: 18,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
-                }}
-              >
-                <i className="fa fa-angle-left" />
-              </button>
-            </Tooltip>
-
             <h2
               style={{
                 margin: 0,
@@ -13268,7 +13243,7 @@ function ProfileScreen({ go }: { go: (s: Screen) => void }) {
           marginLeft: isDesktop ? SIDEBAR_WIDTH : 0,
         }}
       >
-      <InfoHeader title="My Profile" subtitle="Your saved details and preferences" go={go} backTo="dashboard" />
+      <InfoHeader title="My Profile" subtitle="Your saved details and preferences" go={go} backTo="dashboard" showBack={false} onMobileMenuClick={() => setSidebarOpen(true)} />
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
         <Center maxWidth={isDesktop ? 960 : 680} style={{ padding: isDesktop ? "48px 32px 48px" : "26px 20px 40px" }}>
           {/* ── Identity card — centered avatar, badge floating top-left, centered name+underline ── */}
@@ -13669,29 +13644,60 @@ function InfoHeader({
   go,
   backTo,
   showBack = true,
+  onMobileMenuClick,
 }: {
   title: string
   subtitle: string
   go: (s: Screen) => void
   backTo?: Screen
   showBack?: boolean
+  onMobileMenuClick?: () => void
 }) {
+  const isDesktop = useIsDesktop()
   return (
     <div
       style={{
         display: "flex",
         alignItems: "center",
         gap: 12,
-        paddingTop:10,
-        paddingLeft: 20,
+        paddingTop: isDesktop ? 10 : `calc(${SAFE_TOP} + 10px)`,
+        paddingLeft: isDesktop ? 20 : 16,
         paddingRight: 20,
         paddingBottom: 13,
         borderBottom: `1px solid ${PALETTE.border}`,
         background: PALETTE.panel,
         flexShrink: 0,
+        boxSizing: "border-box",
       }}
     >
-      {showBack && (
+      {!isDesktop && onMobileMenuClick && (
+        <button
+          type="button"
+          onClick={onMobileMenuClick}
+          aria-label="Open menu"
+          style={{
+            width: 38,
+            height: 38,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 10,
+            border: `1px solid ${PALETTE.border}`,
+            background: "#EAF4EE",
+            color: PALETTE.green,
+            cursor: "pointer",
+            boxShadow: "0 3px 10px rgba(23,107,58,0.08)",
+            flexShrink: 0,
+          }}
+        >
+          <svg width={18} height={14} viewBox="0 0 24 18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <line x1="0" y1="1" x2="24" y2="1" />
+            <line x1="0" y1="9" x2="24" y2="9" />
+            <line x1="0" y1="17" x2="24" y2="17" />
+          </svg>
+        </button>
+      )}
+      {showBack && (isDesktop || !onMobileMenuClick) && (
         <Tooltip label="Back">
           <button
             type="button"
@@ -13721,23 +13727,27 @@ function InfoHeader({
           style={{
             margin: 0,
             fontFamily: FONT_HEAD,
-            fontSize: 17,
-            fontWeight: 600,
+            fontSize: 23,
+            fontWeight: 800,
             color: PALETTE.textDark,
+            lineHeight: 1.2,
+            letterSpacing: "-0.04em",
           }}
         >
           {title}
         </h2>
-        <p
-          style={{
-            margin: "1px 0 0",
-            fontFamily: FONT_HEAD,
-            fontSize: 8,
-            color: "rgba(26,26,26,0.48)",
-          }}
-        >
-          {subtitle}
-        </p>
+        {subtitle ? (
+          <p
+            style={{
+              margin: "4px 0 0",
+              fontFamily: FONT_BODY,
+              fontSize: 12,
+              color: "rgba(26,26,26,0.58)",
+            }}
+          >
+            {subtitle}
+          </p>
+        ) : null}
       </div>
     </div>
   )
@@ -13765,6 +13775,7 @@ function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
         subtitle="Answers for a safer scan"
         go={go}
         showBack={false}
+        onMobileMenuClick={() => setSidebarOpen(true)}
       />
       <div style={{ flex: 1, overflowY: "auto" }}>
         <Center
@@ -13876,6 +13887,60 @@ function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
         <div
           style={{
             marginTop: 18,
+            padding: "16px",
+            borderRadius: 13,
+            border: "1px solid rgba(224,167,46,0.28)",
+            background: PALETTE.panel,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <p
+              style={{
+                margin: 0,
+                color: PALETTE.textDark,
+                fontSize: 11,
+                fontWeight: 700,
+              }}
+            >
+              Need to compare products?
+            </p>
+            <p
+              style={{
+                margin: "4px 0 0",
+                color: "rgba(26,26,26,0.52)",
+                fontSize: 10,
+              }}
+            >
+              Side-by-side safety and ingredient checks in one view.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => go("productCompare")}
+            style={{
+              border: "none",
+              borderRadius: 10,
+              background: PALETTE.green,
+              color: "#FFFFFF",
+              fontFamily: FONT_HEAD,
+              fontWeight: 700,
+              fontSize: 11,
+              padding: "10px 14px",
+              cursor: "pointer",
+              boxShadow: "0 6px 18px rgba(23,107,58,0.18)",
+            }}
+          >
+            Compare Products
+          </button>
+        </div>
+        <div
+          style={{
+            marginTop: 18,
             padding: "14px",
             borderRadius: 13,
             border: "1px solid rgba(224,167,46,0.2)",
@@ -13942,7 +14007,7 @@ function AboutScreen({ go }: { go: (s: Screen) => void }) {
     <div style={{ flex: 1, minHeight: 0, display: "flex", position: "relative", overflow: "hidden" }}>
       <AppSidebar go={go} open={sidebarOpen} onClose={() => setSidebarOpen(false)} isDesktop={isDesktop} active="about" />
       <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", background: PALETTE.page, overflow: "hidden", marginLeft: isDesktop ? SIDEBAR_WIDTH : 0 }}>
-        <InfoHeader title="About" subtitle="" go={go} showBack={false} />
+        <InfoHeader title="About" subtitle="" go={go} showBack={false} onMobileMenuClick={() => setSidebarOpen(true)} />
         <div style={{ flex: 1, overflowY: "auto" }}>
           <Center maxWidth={isDesktop ? 1180 : undefined} style={{ padding: isDesktop ? "32px 40px 56px" : "20px 16px 36px" }}>
             <section
@@ -13961,7 +14026,7 @@ function AboutScreen({ go }: { go: (s: Screen) => void }) {
                 <h1 style={{ margin: 0, maxWidth: 560, fontFamily: FONT_HEAD, fontWeight: 800, fontSize: isDesktop ? 42 : 30, lineHeight: 1.08, color: PALETTE.textDark }}>
                   Smarter choices for a safer plate.
                 </h1>
-                <p style={{ margin: "18px 0 0", maxWidth: 500, fontFamily: FONT_BODY, fontSize: isDesktop ? 15 : 13, lineHeight: 1.7, color: PALETTE.textMuted }}>
+                <p style={{ margin: "18px 0 0", maxWidth: 500, fontFamilew23y: FONT_BODY, fontSize: isDesktop ? 15 : 13, lineHeight: 1.7, color: PALETTE.textMuted }}>
                   Scanity turns confusing food labels into clear, personal guidance so you can shop with confidence.
                 </p>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 24 }}>
@@ -14002,6 +14067,46 @@ function AboutScreen({ go }: { go: (s: Screen) => void }) {
                 ))}
               </div>
             </section>
+
+            <div
+              style={{
+                marginTop: 8,
+                padding: "18px 18px 16px",
+                borderRadius: 16,
+                background: PALETTE.panel,
+                border: `1px solid ${PALETTE.border}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <p style={{ margin: 0, fontFamily: FONT_HEAD, fontWeight: 800, fontSize: 12, color: PALETTE.textDark }}>Compare products side by side</p>
+                <p style={{ margin: "5px 0 0", fontFamily: FONT_BODY, fontSize: 11, color: PALETTE.textMuted }}>
+                  Check ingredients, nutrition, and allergy safety in one place.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => go("productCompare")}
+                style={{
+                  border: "none",
+                  borderRadius: 10,
+                  background: PALETTE.green,
+                  color: "#FFFFFF",
+                  fontFamily: FONT_HEAD,
+                  fontWeight: 700,
+                  fontSize: 11,
+                  padding: "10px 14px",
+                  cursor: "pointer",
+                  boxShadow: "0 6px 18px rgba(23,107,58,0.18)",
+                }}
+              >
+                Compare Products
+              </button>
+            </div>
 
             <section style={{ display: "grid", gridTemplateColumns: isDesktop ? "1fr 1fr" : "1fr", gap: isDesktop ? 64 : 26, borderTop: `1px solid ${PALETTE.border}`, padding: isDesktop ? "40px 0 0" : "28px 0 0" }}>
               <div>
@@ -14332,48 +14437,51 @@ function SettingsScreen({ go }: { go: (s: Screen) => void }) {
           display: "flex",
           alignItems: "center",
           gap: 12,
-          paddingTop: 13,
-          paddingLeft: 20,
+          paddingTop: isDesktop ? 13 : `calc(${SAFE_TOP} + 12px)`,
+          paddingLeft: isDesktop ? 20 : 16,
           paddingRight: 20,
           paddingBottom: 13,
           borderBottom: `1px solid ${PALETTE.border}`,
           background: PALETTE.panel,
+          boxSizing: "border-box",
         }}
       >
-        <Tooltip label="Back">
+        {!isDesktop && (
           <button
             type="button"
-            onClick={() => go("dashboard")}
-            aria-label="Back"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open menu"
             style={{
-              width: 36,
-              height: 36,
+              width: 38,
+              height: 38,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               borderRadius: 10,
               border: `1px solid ${PALETTE.border}`,
-              background: PALETTE.panel,
-              color: PALETTE.textDark,
+              background: "#EAF4EE",
+              color: PALETTE.green,
               cursor: "pointer",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+              boxShadow: "0 3px 10px rgba(23,107,58,0.08)",
+              flexShrink: 0,
             }}
           >
-            <i
-              className="fa fa-angle-left"
-              style={{
-                fontSize: 20,
-              }}
-            />
+            <svg width={18} height={14} viewBox="0 0 24 18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="0" y1="1" x2="24" y2="1" />
+              <line x1="0" y1="9" x2="24" y2="9" />
+              <line x1="0" y1="17" x2="24" y2="17" />
+            </svg>
           </button>
-        </Tooltip>
-        <div>
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
           <h2
             style={{
               margin: 0,
               fontFamily: FONT_HEAD,
               fontWeight: 800,
-              fontSize: 17,
+              fontSize: 23,
+              lineHeight: 1.2,
+              letterSpacing: "-0.04em",
               color: PALETTE.textDark,
             }}
           >
@@ -14381,10 +14489,10 @@ function SettingsScreen({ go }: { go: (s: Screen) => void }) {
           </h2>
           <p
             style={{
-              margin: "1px 0 0",
-              fontFamily: FONT_HEAD,
-              fontSize: 8,
-              color: "rgba(26,26,26,0.48)",
+              margin: "4px 0 0",
+              fontFamily: FONT_BODY,
+              fontSize: 12,
+              color: "rgba(26,26,26,0.58)",
             }}
           >
             Customize your Scanity experience
@@ -14900,15 +15008,15 @@ function ForgotPasswordScreen({
           left: -50,
         }}
       />
-      <Tooltip label="Back" wrapperStyle={{ position: "absolute", top: isDesktop ? 32 : SAFE_TOP, left: isDesktop ? 32 : 18, zIndex: 3 }}>
+      <Tooltip label="Back" wrapperStyle={{ position: "absolute", top: isDesktop ? 32 : `calc(${SAFE_TOP} + 10px)`, left: isDesktop ? 32 : 16, zIndex: 3 }}>
         <button
           type="button"
           onClick={goBack}
           aria-label="Back"
           style={{
-            width: 42,
-            height: 42,
-            borderRadius: 12,
+            width: isDesktop ? 42 : 38,
+            height: isDesktop ? 42 : 38,
+            borderRadius: isDesktop ? 12 : 10,
             border: "1px solid rgba(224,167,46,0.30)",
             background: "rgba(26,26,26,0.08)",
             color: PALETTE.textDark,
