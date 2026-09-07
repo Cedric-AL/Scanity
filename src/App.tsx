@@ -79,14 +79,12 @@ const PALETTE = {
 
   brown: "#593217",
 
-  // Accessible text colors for the three verdict tiers
   cautionText: "#8A6300",
   dangerText: "#B3261E",
 }
 
 const cardShadow = "0 5px 0 rgba(0,0,0,0.08)"
 
-// Deterministic pseudo-random bar widths for the barcode graphic
 const BARCODE_BARS = [
   2, 1, 3, 1, 1, 2, 4, 1, 2, 1, 3, 2, 1, 1, 4, 2,
   1, 3, 1, 2, 1, 1, 3, 2, 4, 1, 1, 2, 3, 1, 2, 1,
@@ -458,7 +456,6 @@ function PrimaryBtn({
         borderRadius: 14,
         border: "none",
 
-        // Keep the custom color behavior already used by the app.
         background: hover ? C.mochaDark : color,
         color: C.white,
 
@@ -3892,7 +3889,6 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
 
                     borderRadius: 20,
 
-                    // Keep the existing gold appearance.
                     background: C.greenLight,
 
                     border: `1.5px solid ${C.goldDark}`,
@@ -12174,7 +12170,7 @@ function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
                   color: C.black,
                 }}
               >
-                Noodles - Beef
+                Noodles Beef
               </p>
 
               <p
@@ -12497,7 +12493,7 @@ type CompareProduct = {
 }
 
 const COMPARE_PRODUCT_A: CompareProduct = {
-  name: "Noodles - Beef",
+  name: "Noodles Beef",
   brand: "Golden Wok",
   quantity: "85g pack",
   imageUrl: beefNoodlesImg,
@@ -12525,7 +12521,7 @@ const COMPARE_PRODUCT_A: CompareProduct = {
 }
 
 const COMPARE_PRODUCT_B: CompareProduct = {
-  name: "Noodles - Chicken",
+  name: "Noodles Chicken",
   brand: "Golden Wok",
   quantity: "85g pack",
   imageUrl: chickenNoodlesImg,
@@ -14076,45 +14072,17 @@ function KeyInsightsCard({
       </div>
 
       {insights.length > 0 && (
-        <ul
+        <p
           style={{
             margin: 0,
-            padding: 0,
-            listStyle: "none",
-            display: "flex",
-            flexDirection: "column",
-            gap: 11,
+            fontFamily: FONT_BODY,
+            fontSize: 12.5,
+            lineHeight: 1.55,
+            color: "rgba(26,18,9,0.78)",
           }}
         >
-          {insights.map((text, index) => (
-            <li
-              key={index}
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 10,
-                fontFamily: FONT_BODY,
-                fontSize: 12.5,
-                lineHeight: 1.55,
-                color: "rgba(26,18,9,0.78)",
-              }}
-            >
-              <span
-                aria-hidden="true"
-                style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: "50%",
-                  background: C.green,
-                  marginTop: 7,
-                  flexShrink: 0,
-                }}
-              />
-
-              {text}
-            </li>
-          ))}
-        </ul>
+          {insights.join(" ")}
+        </p>
       )}
     </div>
   )
@@ -15493,6 +15461,36 @@ function ProfileScreen({
   const [draftName, setDraftName] = useState(name)
   const [draftEmail, setDraftEmail] = useState(email)
 
+  // ── Profile picture ──────────────────────────────────────────────────────
+  const [avatarUrl, setAvatarUrl] =
+    useState<string | null>(null)
+
+  const avatarInputRef =
+    useRef<HTMLInputElement>(null)
+
+  const openAvatarPicker = () => {
+    avatarInputRef.current?.click()
+  }
+
+  const handleAvatarChange = (
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0]
+
+    if (!file) return
+
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      setAvatarUrl(reader.result as string)
+    }
+
+    reader.readAsDataURL(file)
+
+    // Allow re-selecting the same file later
+    e.target.value = ""
+  }
+
   // ── Saved preferences ────────────────────────────────────────────────────
   const [savedAllergies, setSavedAllergies] =
     useState<Set<string>>(
@@ -15626,24 +15624,6 @@ function ProfileScreen({
     ? `${lastScan.name} · ${lastScan.date}`
     : "No scans yet"
 
-  const savedItemCount =
-    savedAllergies.size +
-    savedHealth.size
-
-  const safeScanCount =
-    RECENT_SCANS.filter(
-      (s) => s.score >= 71
-    ).length
-
-  const safeRatePct =
-    RECENT_SCANS.length > 0
-      ? Math.round(
-          (safeScanCount /
-            RECENT_SCANS.length) *
-            100
-        )
-      : 0
-
   return (
     <div
       style={{
@@ -15763,42 +15743,156 @@ function ProfileScreen({
                     position: "relative",
                   }}
                 >
-                  <div
-                    aria-hidden="true"
+                  {/* Hidden file input backing the avatar upload */}
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={
+                      handleAvatarChange
+                    }
                     style={{
-                      width: isDesktop
-                        ? 92
-                        : 76,
-                      height: isDesktop
-                        ? 92
-                        : 76,
-                      borderRadius: "50%",
-                      background:
-                        PALETTE.goldDark,
-                      border: `3px solid ${PALETTE.goldDark}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      boxShadow:
-                        "0 4px 10px rgba(0,0,0,0.12)",
+                      display: "none",
                     }}
+                  />
+
+                  <Tooltip
+                    label={
+                      avatarUrl
+                        ? "Change profile picture"
+                        : "Add profile picture"
+                    }
                   >
-                    <span
+                    <button
+                      type="button"
+                      onClick={
+                        openAvatarPicker
+                      }
+                      aria-label={
+                        avatarUrl
+                          ? "Change profile picture"
+                          : "Add profile picture"
+                      }
                       style={{
-                        fontFamily:
-                          FONT_HEAD,
-                        fontWeight: 600,
-                        fontSize:
-                          isDesktop
-                            ? 28
-                            : 23,
-                        color:
-                          PALETTE.brown,
+                        width: isDesktop
+                          ? 92
+                          : 76,
+                        height: isDesktop
+                          ? 92
+                          : 76,
+                        borderRadius:
+                          "50%",
+                        padding: 0,
+                        background:
+                          avatarUrl
+                            ? "transparent"
+                            : PALETTE.goldDark,
+                        border: `3px solid ${PALETTE.goldDark}`,
+                        display: "flex",
+                        alignItems:
+                          "center",
+                        justifyContent:
+                          "center",
+                        boxShadow:
+                          "0 4px 10px rgba(0,0,0,0.12)",
+                        cursor: "pointer",
+                        overflow: "hidden",
                       }}
                     >
-                      {initials(name)}
-                    </span>
-                  </div>
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt="Profile"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit:
+                              "cover",
+                          }}
+                        />
+                      ) : (
+                        <span
+                          style={{
+                            fontFamily:
+                              FONT_HEAD,
+                            fontWeight: 600,
+                            fontSize:
+                              isDesktop
+                                ? 28
+                                : 23,
+                            color:
+                              PALETTE.brown,
+                          }}
+                        >
+                          {initials(name)}
+                        </span>
+                      )}
+                    </button>
+                  </Tooltip>
+
+                  {/* Add/change photo badge */}
+                  <Tooltip
+                    label={
+                      avatarUrl
+                        ? "Change profile picture"
+                        : "Add profile picture"
+                    }
+                    wrapperStyle={{
+                      position:
+                        "absolute",
+                      bottom: -2,
+                      left: -2,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={
+                        openAvatarPicker
+                      }
+                      aria-label={
+                        avatarUrl
+                          ? "Change profile picture"
+                          : "Add profile picture"
+                      }
+                      style={{
+                        width: 24,
+                        height: 24,
+                        display: "flex",
+                        alignItems:
+                          "center",
+                        justifyContent:
+                          "center",
+                        borderRadius:
+                          "50%",
+                        border: `1.5px solid ${C.white}`,
+                        background:
+                          C.green,
+                        color: C.white,
+                        cursor:
+                          "pointer",
+                        boxShadow:
+                          "0 2px 6px rgba(0,0,0,0.18)",
+                      }}
+                    >
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                        <circle
+                          cx="12"
+                          cy="13"
+                          r="4"
+                        />
+                      </svg>
+                    </button>
+                  </Tooltip>
 
                   {/* Edit button */}
                   {!editingIdentity && (
@@ -16171,18 +16265,10 @@ function ProfileScreen({
             </div>
 
             {/* ────────────────────────────────────────────────────────────
-                ABOUT YOU / PROFILE INSIGHTS
+                ABOUT YOU
             ──────────────────────────────────────────────────────────── */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns:
-                  isDesktop
-                    ? "repeat(auto-fit, minmax(320px, 1fr))"
-                    : "repeat(auto-fit, minmax(260px, 1fr))",
-                gap: isDesktop
-                  ? 20
-                  : 14,
                 marginTop: 18,
               }}
             >
@@ -16336,176 +16422,6 @@ function ProfileScreen({
                 >
                   Edit details →
                 </button>
-              </div>
-
-              {/* Profile insights */}
-              <div
-                style={{
-                  borderRadius: 16,
-                  background:
-                    PALETTE.panel,
-                  border: `1.5px solid ${PALETTE.border}`,
-                  boxShadow:
-                    cardShadow,
-                  padding: isDesktop
-                    ? "22px 24px 24px"
-                    : "16px 18px 18px",
-                }}
-              >
-                <h4
-                  style={{
-                    margin: 0,
-                    fontFamily:
-                      FONT_HEAD,
-                    fontWeight: 700,
-                    fontSize:
-                      isDesktop
-                        ? 15
-                        : 13.5,
-                    color:
-                      PALETTE.textDark,
-                    paddingBottom: 8,
-                    borderBottom: `2px solid ${PALETTE.green}`,
-                  }}
-                >
-                  Profile insights
-                </h4>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection:
-                      "column",
-                    gap: isDesktop
-                      ? 14
-                      : 11,
-                    marginTop:
-                      isDesktop
-                        ? 16
-                        : 12,
-                  }}
-                >
-                  <div>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontFamily:
-                          FONT_HEAD,
-                        fontWeight: 700,
-                        fontSize:
-                          isDesktop
-                            ? 13.5
-                            : 12,
-                        color:
-                          PALETTE.textDark,
-                      }}
-                    >
-                      Profile complete
-                    </p>
-
-                    <p
-                      style={{
-                        margin:
-                          "2px 0 0",
-                        fontFamily:
-                          FONT_BODY,
-                        fontSize:
-                          isDesktop
-                            ? 12.5
-                            : 11,
-                        color:
-                          PALETTE.textMuted,
-                      }}
-                    >
-                      {savedItemCount} saved
-                      item
-                      {savedItemCount ===
-                      1
-                        ? ""
-                        : "s"}{" "}
-                      shaping your
-                      scans.
-                    </p>
-                  </div>
-
-                  <div>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontFamily:
-                          FONT_HEAD,
-                        fontWeight: 700,
-                        fontSize:
-                          isDesktop
-                            ? 13.5
-                            : 12,
-                        color:
-                          PALETTE.textDark,
-                      }}
-                    >
-                      Careful shopper
-                    </p>
-
-                    <p
-                      style={{
-                        margin:
-                          "2px 0 0",
-                        fontFamily:
-                          FONT_BODY,
-                        fontSize:
-                          isDesktop
-                            ? 12.5
-                            : 11,
-                        color:
-                          PALETTE.textMuted,
-                      }}
-                    >
-                      {safeRatePct}% of
-                      your last{" "}
-                      {RECENT_SCANS.length}{" "}
-                      scans came back
-                      Safe.
-                    </p>
-                  </div>
-
-                  <div>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontFamily:
-                          FONT_HEAD,
-                        fontWeight: 700,
-                        fontSize:
-                          isDesktop
-                            ? 13.5
-                            : 12,
-                        color:
-                          PALETTE.textDark,
-                      }}
-                    >
-                      Most common flag
-                    </p>
-
-                    <p
-                      style={{
-                        margin:
-                          "2px 0 0",
-                        fontFamily:
-                          FONT_BODY,
-                        fontSize:
-                          isDesktop
-                            ? 12.5
-                            : 11,
-                        color:
-                          PALETTE.textMuted,
-                      }}
-                    >
-                      Added sugar, on
-                      4 of your last 20
-                      scans.
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
 
