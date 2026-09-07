@@ -50,18 +50,12 @@ const C = {
   statusDanger: "var(--scanity-danger)",
 }
 
-// ── Typography — Montserrat for headings/titles/buttons/nav/section labels,
-// Inter for body copy, descriptions, inputs, and supporting text. Used
-// app-wide across every screen. ──────────────────────────────────────────
+// ── Typography ────────────────────────────────────────────────────────────────
 const FONT_HEAD = "var(--scanity-font-heading)"
 const FONT_BODY = "var(--scanity-font-body)"
 const FONT = "var(--scanity-font-body)"
-// ── Light-theme design tokens ────────────────────────────────────────────────
-// Layout/card language from the redesign a friend contributed: warm cream
-// background, white "chunky" cards with a soft offset shadow, forest-green
-// sidebar/accents. Typography stays on the app's existing Montserrat/Inter
-// pair rather than the reference build's Poppins. ───────────────────────────
 
+// ── Light-theme design tokens ─────────────────────────────────────────────────
 const PALETTE = {
   page: "#E8E5E0",
   panel: "#FFFFFF",
@@ -85,36 +79,76 @@ const PALETTE = {
 
   brown: "#593217",
 
-  // Accessible text colors for the three verdict tiers
   cautionText: "#8A6300",
   dangerText: "#B3261E",
 }
 
 const cardShadow = "0 5px 0 rgba(0,0,0,0.08)"
-// Deterministic pseudo-random bar widths for the barcode graphic on the Dashboard hero card
+
 const BARCODE_BARS = [
-  2, 1, 3, 1, 1, 2, 4, 1, 2, 1, 3, 2, 1, 1, 4, 2, 1, 3, 1, 2, 1, 1, 3, 2, 4, 1,
-  1, 2, 3, 1, 2, 1, 4, 1, 1, 3, 2, 1, 2, 1,
+  2, 1, 3, 1, 1, 2, 4, 1, 2, 1, 3, 2, 1, 1, 4, 2,
+  1, 3, 1, 2, 1, 1, 3, 2, 4, 1, 1, 2, 3, 1, 2, 1,
+  4, 1, 1, 3, 2, 1, 2, 1,
 ]
+
 // ── Safe-area constant ───────────────────────────────────────────────────────
 const SAFE_TOP =
   typeof window !== "undefined" && window.self !== window.top
-    ? "max(59px, env(safe-area-inset-top))" // inside Figma Make's preview iframe
-    : "env(safe-area-inset-top, 0px)" // real device / real deployed link
-type Screen = "splash" | "login" | "register" | "success" | "allergies" | "health" | "loading" | "allset" | "dashboard" | "history" | "barcode" | "ocr" | "profile" | "help" | "about" | "privacy" | "terms" | "settings" | "delete" | "forgotPassword" | "resetPassword" | "confirmationPassword" | "language" | "productResult" | "productCompare"
+    ? "max(59px, env(safe-area-inset-top))"
+    : "env(safe-area-inset-top, 0px)"
+
+type Screen =
+  | "splash"
+  | "login"
+  | "register"
+  | "success"
+  | "allergies"
+  | "health"
+  | "loading"
+  | "allset"
+  | "dashboard"
+  | "history"
+  | "barcode"
+  | "ocr"
+  | "profile"
+  | "help"
+  | "about"
+  | "privacy"
+  | "terms"
+  | "settings"
+  | "delete"
+  | "forgotPassword"
+  | "resetPassword"
+  | "confirmationPassword"
+  | "productResult"
+  | "productCompare"
+
 // ── Responsive helpers ───────────────────────────────────────────────────────
 function useIsDesktop(breakpoint = 1024) {
   const [isDesktop, setIsDesktop] = useState(
-    () => typeof window !== "undefined" && window.innerWidth >= breakpoint,
+    () =>
+      typeof window !== "undefined" &&
+      window.innerWidth >= breakpoint,
   )
+
   useEffect(() => {
-    const onResize = () => setIsDesktop(window.innerWidth >= breakpoint)
+    const onResize = () => {
+      setIsDesktop(window.innerWidth >= breakpoint)
+    }
+
     onResize()
+
     window.addEventListener("resize", onResize)
-    return () => window.removeEventListener("resize", onResize)
+
+    return () => {
+      window.removeEventListener("resize", onResize)
+    }
   }, [breakpoint])
+
   return isDesktop
 }
+
+// ── Center helper ─────────────────────────────────────────────────────────────
 function Center({
   children,
   maxWidth = 640,
@@ -139,7 +173,8 @@ function Center({
     </div>
   )
 }
-// ── App shell (replaces the old fixed-size phone mockup) ────────────────────
+
+// ── App shell ─────────────────────────────────────────────────────────────────
 function AppFrame({ children }: { children: ReactNode }) {
   return (
     <div
@@ -151,17 +186,26 @@ function AppFrame({ children }: { children: ReactNode }) {
         flexDirection: "column",
       }}
     >
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         {children}
       </div>
     </div>
   )
 }
+
 // ── Back button ───────────────────────────────────────────────────────────────
 function BackBtn({ onPress }: { onPress: () => void }) {
   return (
     <button
+      type="button"
       onClick={onPress}
+      aria-label="Go back"
       style={{
         width: 36,
         height: 36,
@@ -175,7 +219,13 @@ function BackBtn({ onPress }: { onPress: () => void }) {
         boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
       }}
     >
-      <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
+      <svg
+        width="8"
+        height="14"
+        viewBox="0 0 8 14"
+        fill="none"
+        aria-hidden="true"
+      >
         <path
           d="M7 1L1 7L7 13"
           stroke={C.black}
@@ -187,12 +237,19 @@ function BackBtn({ onPress }: { onPress: () => void }) {
     </button>
   )
 }
+
 // ── Logo mark ─────────────────────────────────────────────────────────────────
-function Logo({ size = 160, style }: { size?: number; style?: CSSProperties }) {
+function Logo({
+  size = 160,
+  style,
+}: {
+  size?: number
+  style?: CSSProperties
+}) {
   return (
     <img
       src={logoImg}
-      alt="NutriGuard logo"
+      alt="Scanity logo"
       style={{
         width: size,
         height: size,
@@ -204,6 +261,7 @@ function Logo({ size = 160, style }: { size?: number; style?: CSSProperties }) {
     />
   )
 }
+
 // ── Input field ───────────────────────────────────────────────────────────────
 function Field({
   icon,
@@ -224,7 +282,8 @@ function Field({
   const [focused, setFocused] = useState(false)
 
   const isPassword = type === "password"
-  const inputType = isPassword && !show ? "password" : "text"
+  const inputType =
+    isPassword && !show ? "password" : "text"
 
   return (
     <div style={{ marginBottom: hint ? 4 : 14 }}>
@@ -298,7 +357,9 @@ function Field({
           <button
             type="button"
             onClick={() => setShow(!show)}
-            aria-label={show ? "Hide password" : "Show password"}
+            aria-label={
+              show ? "Hide password" : "Show password"
+            }
             style={{
               display: "flex",
               alignItems: "center",
@@ -324,6 +385,7 @@ function Field({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                aria-hidden="true"
               >
                 <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" />
                 <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" />
@@ -338,6 +400,7 @@ function Field({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                aria-hidden="true"
               >
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                 <circle cx="12" cy="12" r="3" />
@@ -383,6 +446,7 @@ function PrimaryBtn({
   return (
     <button
       type="button"
+      className="scanity-btn scanity-btn-primary"
       onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -401,6 +465,7 @@ function PrimaryBtn({
         letterSpacing: "0.02em",
 
         cursor: "pointer",
+
         transition:
           "background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease",
 
@@ -408,7 +473,9 @@ function PrimaryBtn({
           ? `0 6px 18px ${color}55`
           : `0 4px 14px ${color}40`,
 
-        transform: hover ? "translateY(-1px)" : "translateY(0)",
+        transform: hover
+          ? "translateY(-1px)"
+          : "translateY(0)",
       }}
     >
       {label}
@@ -416,10 +483,7 @@ function PrimaryBtn({
   )
 }
 
-// ── Tooltip — wraps an icon-only control and reveals what it does on hover
-// (and on keyboard focus, for accessibility), the way a toolbar icon button
-// does on GitHub. Positioned relative to whatever it wraps, so it drops in
-// around an existing <button> without changing that button's own markup. ──
+// ── Tooltip ───────────────────────────────────────────────────────────────────
 function Tooltip({
   label,
   children,
@@ -432,35 +496,52 @@ function Tooltip({
   wrapperStyle?: CSSProperties
 }) {
   const [show, setShow] = useState(false)
+
   return (
     <span
-      style={{ position: "relative", display: "inline-flex", ...wrapperStyle }}
+      style={{
+        position: "relative",
+        display: "inline-flex",
+        ...wrapperStyle,
+      }}
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
       onFocus={() => setShow(true)}
       onBlur={() => setShow(false)}
     >
       {children}
+
       {show && (
         <span
           role="tooltip"
           style={{
             position: "absolute",
-            ...(side === "bottom" ? { top: "calc(100% + 8px)" } : { bottom: "calc(100% + 8px)" }),
+
+            ...(side === "bottom"
+              ? { top: "calc(100% + 8px)" }
+              : { bottom: "calc(100% + 8px)" }),
+
             left: "50%",
             transform: "translateX(-50%)",
+
             padding: "5px 10px",
+
             borderRadius: 7,
+
             background: "rgba(20,20,20,0.92)",
             color: "#FFFFFF",
+
             fontFamily: FONT_BODY,
             fontWeight: 600,
             fontSize: 10.5,
             lineHeight: 1.3,
+
             whiteSpace: "nowrap",
             pointerEvents: "none",
             zIndex: 500,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+
+            boxShadow:
+              "0 4px 12px rgba(0,0,0,0.25)",
           }}
         >
           {label}
@@ -469,9 +550,10 @@ function Tooltip({
     </span>
   )
 }
-// ── App sidebar — desktop-persistent, mobile-collapsible. Shared by every
-// interior (post-login) screen so the nav pattern and light-theme card look
-// stay consistent app-wide. ──────────────────────────────────────────────────
+
+// ── App sidebar ───────────────────────────────────────────────────────────────
+// Desktop-persistent, mobile-collapsible.
+// Shared by every interior post-login screen.
 const SIDEBAR_WIDTH = 264
 
 const SIDEBAR_MENU: {
@@ -479,10 +561,26 @@ const SIDEBAR_MENU: {
   label: string
   screen: Screen
 }[] = [
-  { icon: "fa-home", label: "Dashboard", screen: "dashboard" },
-  { icon: "fa-gear", label: "Settings", screen: "settings" },
-  { icon: "fa-question-circle", label: "Help & FAQ", screen: "help" },
-  { icon: "fa-info-circle", label: "About", screen: "about" },
+  {
+    icon: "fa-home",
+    label: "Dashboard",
+    screen: "dashboard",
+  },
+  {
+    icon: "fa-gear",
+    label: "Settings",
+    screen: "settings",
+  },
+  {
+    icon: "fa-question-circle",
+    label: "Help & FAQ",
+    screen: "help",
+  },
+  {
+    icon: "fa-info-circle",
+    label: "About",
+    screen: "about",
+  },
 ]
 
 function AppSidebar({
@@ -498,8 +596,11 @@ function AppSidebar({
   isDesktop: boolean
   active?: Screen
 }) {
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
-  const [showLogoutLoading, setShowLogoutLoading] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] =
+    useState(false)
+
+  const [showLogoutLoading, setShowLogoutLoading] =
+    useState(false)
 
   const handleLogout = () => {
     setShowLogoutConfirm(false)
@@ -523,8 +624,8 @@ function AppSidebar({
             zIndex: 200,
             display: "flex",
 
-            // Desktop sidebar should not block the rest of the page.
-            pointerEvents: isDesktop ? "none" : "auto",
+            pointerEvents:
+              isDesktop ? "none" : "auto",
           }}
         >
           {/* ── Mobile overlay ─────────────────────────────────────────── */}
@@ -535,10 +636,12 @@ function AppSidebar({
                 position: "absolute",
                 inset: 0,
 
-                background: "rgba(20,20,20,0.45)",
+                background:
+                  "rgba(20,20,20,0.45)",
 
                 backdropFilter: "blur(3px)",
-                WebkitBackdropFilter: "blur(3px)",
+                WebkitBackdropFilter:
+                  "blur(3px)",
 
                 cursor: "pointer",
               }}
@@ -553,7 +656,10 @@ function AppSidebar({
 
               pointerEvents: "auto",
 
-              width: isDesktop ? SIDEBAR_WIDTH : 260,
+              width: isDesktop
+                ? SIDEBAR_WIDTH
+                : 260,
+
               height: "100%",
 
               background: `linear-gradient(
@@ -562,7 +668,8 @@ function AppSidebar({
                 ${PALETTE.greenDark} 100%
               )`,
 
-              boxShadow: "6px 0 30px rgba(0,0,0,0.18)",
+              boxShadow:
+                "6px 0 30px rgba(0,0,0,0.18)",
 
               display: "flex",
               flexDirection: "column",
@@ -574,7 +681,6 @@ function AppSidebar({
 
               overflowY: "auto",
 
-              // Smooth scrolling on mobile
               WebkitOverflowScrolling: "touch",
             }}
           >
@@ -623,11 +729,19 @@ function AppSidebar({
                     whiteSpace: "nowrap",
                   }}
                 >
-                  <span style={{ color: C.textOnDark }}>
+                  <span
+                    style={{
+                      color: C.textOnDark,
+                    }}
+                  >
                     Scan
                   </span>
 
-                  <span style={{ color: C.greenLight }}>
+                  <span
+                    style={{
+                      color: C.greenLight,
+                    }}
+                  >
                     ity
                   </span>
                 </p>
@@ -644,7 +758,8 @@ function AppSidebar({
                     letterSpacing: "0.12em",
                     textTransform: "uppercase",
 
-                    color: "rgba(255,255,255,0.55)",
+                    color:
+                      "rgba(255,255,255,0.55)",
                   }}
                 >
                   See It. Know It. Eat It.
@@ -705,12 +820,12 @@ function AppSidebar({
               style={{
                 display: "flex",
                 flexDirection: "column",
-
                 padding: "8px 12px",
               }}
             >
               {SIDEBAR_MENU.map((item) => {
-                const isActive = active === item.screen
+                const isActive =
+                  active === item.screen
 
                 return (
                   <button
@@ -733,7 +848,8 @@ function AppSidebar({
                         ? "rgba(255,255,255,0.14)"
                         : "transparent",
 
-                      border: "1px solid transparent",
+                      border:
+                        "1px solid transparent",
 
                       borderRadius: 12,
 
@@ -768,7 +884,8 @@ function AppSidebar({
                             ? C.greenLight
                             : "rgba(255,255,255,0.85)",
 
-                          transition: "color 0.18s ease",
+                          transition:
+                            "color 0.18s ease",
                         }}
                       />
                     </span>
@@ -895,10 +1012,12 @@ function AppSidebar({
 
             padding: 20,
 
-            background: "rgba(20,20,20,0.55)",
+            background:
+              "rgba(20,20,20,0.55)",
 
             backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
+            WebkitBackdropFilter:
+              "blur(6px)",
           }}
         >
           <div
@@ -930,7 +1049,8 @@ function AppSidebar({
 
                 borderRadius: "50%",
 
-                background: PALETTE.greenLight,
+                background:
+                  PALETTE.greenLight,
 
                 display: "flex",
                 alignItems: "center",
@@ -1077,10 +1197,12 @@ function AppSidebar({
 
             padding: 20,
 
-            background: "rgba(20,20,20,0.6)",
+            background:
+              "rgba(20,20,20,0.6)",
 
             backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
+            WebkitBackdropFilter:
+              "blur(6px)",
           }}
         >
           <div
@@ -1112,7 +1234,8 @@ function AppSidebar({
 
                 borderRadius: "50%",
 
-                background: PALETTE.greenLight,
+                background:
+                  PALETTE.greenLight,
 
                 display: "flex",
                 alignItems: "center",
@@ -3766,7 +3889,6 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
 
                     borderRadius: 20,
 
-                    // Keep the existing gold appearance.
                     background: C.greenLight,
 
                     border: `1.5px solid ${C.goldDark}`,
@@ -17997,8 +18119,6 @@ function SettingsScreen({ go }: { go: (s: Screen) => void }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const isDesktop = useIsDesktop()
 
-  const currentLanguage = "English"
-
   const Section = ({ title }: { title: string }) => (
     <p
       style={{
@@ -18449,8 +18569,14 @@ function SettingsScreen({ go }: { go: (s: Screen) => void }) {
   )
 }
 
-function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
-  const [showDeleteLoading, setShowDeleteLoading] = useState(false)
+function DeleteAccountScreen({
+  go,
+}: {
+  go: (s: Screen) => void
+}) {
+  const [showDeleteLoading, setShowDeleteLoading] =
+    useState(false)
+
   return (
     <div
       style={{
@@ -18462,7 +18588,16 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
         background: PALETTE.page,
       }}
     >
-      <Tooltip label="Back to settings" wrapperStyle={{ position: "absolute", top: SAFE_TOP, left: 18, zIndex: 5 }}>
+      {/* ── Back Button ─────────────────────────────────────────────────── */}
+      <Tooltip
+        label="Back to settings"
+        wrapperStyle={{
+          position: "absolute",
+          top: SAFE_TOP,
+          left: 18,
+          zIndex: 5,
+        }}
+      >
         <button
           type="button"
           onClick={() => go("settings")}
@@ -18478,7 +18613,8 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
             background: PALETTE.panel,
             color: PALETTE.textDark,
             cursor: "pointer",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            boxShadow:
+              "0 2px 8px rgba(0,0,0,0.08)",
           }}
         >
           <i
@@ -18489,6 +18625,8 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
           />
         </button>
       </Tooltip>
+
+      {/* ── Main Content ────────────────────────────────────────────────── */}
       <div
         style={{
           position: "relative",
@@ -18509,11 +18647,13 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
             borderRadius: 24,
             background: PALETTE.panel,
             border: `1.5px solid ${PALETTE.border}`,
-            boxShadow: "0 18px 50px rgba(0,0,0,0.16)",
+            boxShadow:
+              "0 18px 50px rgba(0,0,0,0.16)",
             textAlign: "center",
             boxSizing: "border-box",
           }}
         >
+          {/* ── Delete Icon ─────────────────────────────────────────────── */}
           <div
             style={{
               width: 78,
@@ -18524,7 +18664,8 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
               justifyContent: "center",
               borderRadius: "50%",
               background: PALETTE.dangerBg,
-              border: "2px solid rgba(217,74,74,0.35)",
+              border:
+                "2px solid rgba(217,74,74,0.35)",
             }}
           >
             <i
@@ -18535,6 +18676,8 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
               }}
             />
           </div>
+
+          {/* ── Title ──────────────────────────────────────────────────── */}
           <h2
             style={{
               margin: "0 0 8px",
@@ -18546,6 +18689,8 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
           >
             Delete your account?
           </h2>
+
+          {/* ── Description ────────────────────────────────────────────── */}
           <p
             style={{
               margin: "0 auto 19px",
@@ -18556,9 +18701,13 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
               color: "rgba(26,26,26,0.58)",
             }}
           >
-            This action cannot be undone. All your data, scan history, and
-            preferences will be permanently deleted.
+            This action cannot be undone. All
+            your data, scan history, and
+            preferences will be permanently
+            deleted.
           </p>
+
+          {/* ── Warning ────────────────────────────────────────────────── */}
           <div
             style={{
               display: "flex",
@@ -18569,8 +18718,10 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
               marginBottom: 20,
               boxSizing: "border-box",
               borderRadius: 12,
-              background: "rgba(245,197,24,0.10)",
-              border: "1px solid rgba(245,197,24,0.20)",
+              background:
+                "rgba(245,197,24,0.10)",
+              border:
+                "1px solid rgba(245,197,24,0.20)",
               textAlign: "left",
             }}
           >
@@ -18582,6 +18733,7 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
                 flexShrink: 0,
               }}
             />
+
             <span
               style={{
                 fontFamily: FONT_BODY,
@@ -18593,10 +18745,14 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
               This action cannot be undone.
             </span>
           </div>
+
+          {/* ── Delete Button ───────────────────────────────────────────── */}
           <button
             type="button"
+            disabled={showDeleteLoading}
             onClick={() => {
               setShowDeleteLoading(true)
+
               setTimeout(() => {
                 setShowDeleteLoading(false)
                 go("splash")
@@ -18608,37 +18764,55 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
               marginBottom: 9,
               border: "none",
               borderRadius: 12,
-              background: "linear-gradient(135deg, #D9534F, #B93E3A)",
+              background:
+                "linear-gradient(135deg, #D9534F, #B93E3A)",
               color: "#FFFFFF",
               fontFamily: FONT_HEAD,
               fontWeight: 700,
               fontSize: 10,
-              cursor: "pointer",
-              boxShadow: "0 5px 16px rgba(217,83,79,0.24)",
+              cursor: showDeleteLoading
+                ? "not-allowed"
+                : "pointer",
+              boxShadow:
+                "0 5px 16px rgba(217,83,79,0.24)",
+              opacity: showDeleteLoading
+                ? 0.7
+                : 1,
             }}
           >
             Yes, Delete My Account
           </button>
+
+          {/* ── Cancel Button ───────────────────────────────────────────── */}
           <button
             type="button"
+            disabled={showDeleteLoading}
             onClick={() => go("settings")}
             style={{
               width: "100%",
               height: 43,
-              border: `1px solid ${PALETTE.border}`,
+              border:
+                `1px solid ${PALETTE.border}`,
               borderRadius: 12,
               background: PALETTE.page,
               color: PALETTE.textDark,
               fontFamily: FONT_BODY,
               fontWeight: 600,
               fontSize: 10,
-              cursor: "pointer",
+              cursor: showDeleteLoading
+                ? "not-allowed"
+                : "pointer",
+              opacity: showDeleteLoading
+                ? 0.6
+                : 1,
             }}
           >
             Cancel
           </button>
         </div>
       </div>
+
+      {/* ── Delete Loading Overlay ─────────────────────────────────────── */}
       {showDeleteLoading && (
         <div
           style={{
@@ -18649,9 +18823,11 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
             alignItems: "center",
             justifyContent: "center",
             padding: 20,
-            background: "rgba(3,18,10,0.78)",
+            background:
+              "rgba(3,18,10,0.78)",
             backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
+            WebkitBackdropFilter:
+              "blur(8px)",
           }}
         >
           <div
@@ -18661,12 +18837,15 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
               padding: "30px 22px 24px",
               borderRadius: 24,
               background: PALETTE.panel,
-              border: `1.5px solid ${PALETTE.border}`,
-              boxShadow: "0 18px 50px rgba(0,0,0,0.28)",
+              border:
+                `1.5px solid ${PALETTE.border}`,
+              boxShadow:
+                "0 18px 50px rgba(0,0,0,0.28)",
               textAlign: "center",
               boxSizing: "border-box",
             }}
           >
+            {/* Loading Icon */}
             <div
               style={{
                 width: 70,
@@ -18676,8 +18855,10 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: "50%",
-                border: "2px solid rgba(217,74,74,0.35)",
-                background: PALETTE.dangerBg,
+                border:
+                  "2px solid rgba(217,74,74,0.35)",
+                background:
+                  PALETTE.dangerBg,
               }}
             >
               <i
@@ -18688,6 +18869,8 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
                 }}
               />
             </div>
+
+            {/* Loading Title */}
             <h2
               style={{
                 margin: "0 0 7px",
@@ -18699,6 +18882,8 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
             >
               Deleting Account
             </h2>
+
+            {/* Loading Description */}
             <p
               style={{
                 margin: "0 0 19px",
@@ -18709,14 +18894,18 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
             >
               Please wait...
             </p>
+
+            {/* Progress Bar */}
             <div
               style={{
                 width: "100%",
                 height: 8,
                 borderRadius: 8,
                 overflow: "hidden",
-                background: "rgba(26,26,26,0.10)",
-                border: "1px solid rgba(26,26,26,0.18)",
+                background:
+                  "rgba(26,26,26,0.10)",
+                border:
+                  "1px solid rgba(26,26,26,0.18)",
               }}
             >
               <div
@@ -18724,11 +18913,15 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
                   width: "0%",
                   height: "100%",
                   borderRadius: 8,
-                  background: PALETTE.danger,
-                  animation: "deleteProgress 1.8s linear forwards",
+                  background:
+                    PALETTE.danger,
+                  animation:
+                    "deleteProgress 1.8s linear forwards",
                 }}
               />
             </div>
+
+            {/* Loading Message */}
             <p
               style={{
                 margin: "11px 0 0",
@@ -18743,12 +18936,15 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
           </div>
         </div>
       )}
+
+      {/* ── Animation ───────────────────────────────────────────────────── */}
       <style>
         {`
           @keyframes deleteProgress {
             from {
               width: 0%;
             }
+
             to {
               width: 100%;
             }
@@ -18758,6 +18954,8 @@ function DeleteAccountScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+
+// ── Forgot Password Screen ────────────────────────────────────────────────
 function ForgotPasswordScreen({
   go,
   goBack,
@@ -18768,6 +18966,7 @@ function ForgotPasswordScreen({
   const [email, setEmail] = useState("")
   const [pressed, setPressed] = useState(false)
   const isDesktop = useIsDesktop()
+
   return (
     <div
       style={{
@@ -18779,6 +18978,7 @@ function ForgotPasswordScreen({
         fontFamily: FONT_BODY,
       }}
     >
+      {/* Background */}
       <div
         style={{
           position: "absolute",
@@ -18788,6 +18988,7 @@ function ForgotPasswordScreen({
             "radial-gradient(circle at 85% 80%, rgba(23,107,58,0.08), transparent 40%)",
         }}
       />
+
       <div
         style={{
           position: "absolute",
@@ -18800,6 +19001,7 @@ function ForgotPasswordScreen({
           right: -50,
         }}
       />
+
       <div
         style={{
           position: "absolute",
@@ -18812,7 +19014,17 @@ function ForgotPasswordScreen({
           left: -50,
         }}
       />
-      <Tooltip label="Back" wrapperStyle={{ position: "absolute", top: isDesktop ? 32 : `calc(${SAFE_TOP} + 10px)`, left: isDesktop ? 32 : 16, zIndex: 3 }}>
+
+      {/* Back Button */}
+      <Tooltip
+        label="Back"
+        wrapperStyle={{
+          position: "absolute",
+          top: isDesktop ? 32 : `calc(${SAFE_TOP} + 10px)`,
+          left: isDesktop ? 32 : 16,
+          zIndex: 3,
+        }}
+      >
         <button
           type="button"
           onClick={goBack}
@@ -18841,9 +19053,14 @@ function ForgotPasswordScreen({
             e.currentTarget.style.transform = "translateX(0)"
           }}
         >
-          <i className="fa fa-angle-left" style={{ fontSize: 24 }} />
+          <i
+            className="fa fa-angle-left"
+            style={{ fontSize: 24 }}
+          />
         </button>
       </Tooltip>
+
+      {/* Main Content */}
       <div
         style={{
           position: "relative",
@@ -18878,6 +19095,7 @@ function ForgotPasswordScreen({
               : {}),
           }}
         >
+          {/* Icon */}
           <div
             style={{
               width: isDesktop ? 96 : 88,
@@ -18902,6 +19120,8 @@ function ForgotPasswordScreen({
               }}
             />
           </div>
+
+          {/* Heading */}
           <h1
             style={{
               margin: "0 0 10px",
@@ -18909,10 +19129,12 @@ function ForgotPasswordScreen({
               fontWeight: 800,
               color: PALETTE.textDark,
               textAlign: "center",
+              fontFamily: FONT_HEAD,
             }}
           >
             Forgot Password?
           </h1>
+
           <p
             style={{
               margin: "0 0 30px",
@@ -18927,6 +19149,8 @@ function ForgotPasswordScreen({
             <br />
             code to reset your password.
           </p>
+
+          {/* Email */}
           <div
             style={{
               width: "100%",
@@ -18945,6 +19169,7 @@ function ForgotPasswordScreen({
             >
               Email Address
             </label>
+
             <div
               style={{
                 height: isDesktop ? 54 : 48,
@@ -18958,7 +19183,9 @@ function ForgotPasswordScreen({
                 border: email
                   ? "1px solid rgba(224,167,46,0.75)"
                   : "1px solid rgba(26,26,26,0.14)",
-                boxShadow: email ? "0 0 15px rgba(224,167,46,0.08)" : "none",
+                boxShadow: email
+                  ? "0 0 15px rgba(224,167,46,0.08)"
+                  : "none",
               }}
             >
               <i
@@ -18969,6 +19196,7 @@ function ForgotPasswordScreen({
                   flexShrink: 0,
                 }}
               />
+
               <input
                 type="email"
                 value={email}
@@ -18987,6 +19215,8 @@ function ForgotPasswordScreen({
               />
             </div>
           </div>
+
+          {/* Continue */}
           <button
             type="button"
             onMouseDown={() => setPressed(true)}
@@ -19007,9 +19237,9 @@ function ForgotPasswordScreen({
               border: "1px solid rgba(224,167,46,0.55)",
               borderRadius: 14,
               background: pressed
-                ? "#8B6F5A"
+                ? C.mochaLight
                 : "linear-gradient(135deg, #E0A72E 0%, #C98A1F 100%)",
-              color: "#FFFFFF",
+              color: C.white,
               fontFamily: FONT_HEAD,
               fontSize: isDesktop ? 15 : 16,
               fontWeight: 700,
@@ -19023,6 +19253,8 @@ function ForgotPasswordScreen({
           >
             Continue
           </button>
+
+          {/* Login */}
           <button
             type="button"
             onClick={() => go("login")}
@@ -19046,6 +19278,8 @@ function ForgotPasswordScreen({
               Login
             </span>
           </button>
+
+          {/* Footer */}
           <p
             style={{
               margin: isDesktop ? "32px 0 0" : "24px 0 0",
@@ -19061,6 +19295,9 @@ function ForgotPasswordScreen({
     </div>
   )
 }
+
+
+// ── Reset Password Screen ─────────────────────────────────────────────────
 function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -19068,10 +19305,12 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [pressed, setPressed] = useState(false)
   const isDesktop = useIsDesktop()
+
   const passwordsMatch =
     password.length > 0 &&
     confirmPassword.length > 0 &&
     password === confirmPassword
+
   return (
     <div
       style={{
@@ -19083,6 +19322,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
         fontFamily: FONT_BODY,
       }}
     >
+      {/* Background */}
       <div
         style={{
           position: "absolute",
@@ -19092,6 +19332,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
             "radial-gradient(circle at 85% 80%, rgba(23,107,58,0.08), transparent 40%)",
         }}
       />
+
       <div
         style={{
           position: "absolute",
@@ -19104,6 +19345,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
           right: -50,
         }}
       />
+
       <div
         style={{
           position: "absolute",
@@ -19116,14 +19358,24 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
           left: -50,
         }}
       />
-      <Tooltip label="Back" wrapperStyle={{ position: "absolute", top: isDesktop ? 32 : SAFE_TOP, left: isDesktop ? 32 : 18, zIndex: 3 }}>
+
+      {/* Back */}
+      <Tooltip
+        label="Back"
+        wrapperStyle={{
+          position: "absolute",
+          top: isDesktop ? 32 : SAFE_TOP,
+          left: isDesktop ? 32 : 18,
+          zIndex: 3,
+        }}
+      >
         <button
           type="button"
           onClick={() => go("forgotPassword")}
           aria-label="Back"
           style={{
-            width: 42,
-            height: 42,
+            width: isDesktop ? 42 : 38,
+            height: isDesktop ? 42 : 38,
             borderRadius: 12,
             border: "1px solid rgba(224,167,46,0.30)",
             background: "rgba(26,26,26,0.08)",
@@ -19145,9 +19397,14 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
             e.currentTarget.style.transform = "translateX(0)"
           }}
         >
-          <i className="fa fa-angle-left" style={{ fontSize: 24 }} />
+          <i
+            className="fa fa-angle-left"
+            style={{ fontSize: 24 }}
+          />
         </button>
       </Tooltip>
+
+      {/* Main */}
       <div
         style={{
           position: "relative",
@@ -19182,6 +19439,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
               : {}),
           }}
         >
+          {/* Icon */}
           <div
             style={{
               width: isDesktop ? 96 : 88,
@@ -19206,6 +19464,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
               }}
             />
           </div>
+
           <h1
             style={{
               margin: "0 0 10px",
@@ -19213,10 +19472,12 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
               fontWeight: 800,
               color: PALETTE.textDark,
               textAlign: "center",
+              fontFamily: FONT_HEAD,
             }}
           >
             Reset Password
           </h1>
+
           <p
             style={{
               margin: "0 0 30px",
@@ -19231,6 +19492,8 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
             <br />
             Make sure it is strong and secure.
           </p>
+
+          {/* New Password */}
           <div
             style={{
               width: "100%",
@@ -19249,6 +19512,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
             >
               New Password
             </label>
+
             <div
               style={{
                 height: isDesktop ? 54 : 48,
@@ -19262,7 +19526,9 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                 border: password
                   ? "1px solid rgba(224,167,46,0.75)"
                   : "1px solid rgba(26,26,26,0.14)",
-                boxShadow: password ? "0 0 15px rgba(224,167,46,0.08)" : "none",
+                boxShadow: password
+                  ? "0 0 15px rgba(224,167,46,0.08)"
+                  : "none",
               }}
             >
               <i
@@ -19273,6 +19539,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   flexShrink: 0,
                 }}
               />
+
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
@@ -19290,11 +19557,16 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   fontSize: isDesktop ? 13 : 11,
                 }}
               />
-              <Tooltip label={showPassword ? "Hide password" : "Show password"}>
+
+              <Tooltip
+                label={showPassword ? "Hide password" : "Show password"}
+              >
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showPassword ? "Hide password" : "Show password"
+                  }
                   style={{
                     border: "none",
                     background: "transparent",
@@ -19305,13 +19577,21 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   }}
                 >
                   <i
-                    className={showPassword ? "fa fa-eye-slash" : "fa fa-eye"}
-                    style={{ fontSize: isDesktop ? 15 : 14 }}
+                    className={
+                      showPassword
+                        ? "fa fa-eye-slash"
+                        : "fa fa-eye"
+                    }
+                    style={{
+                      fontSize: isDesktop ? 15 : 14,
+                    }}
                   />
                 </button>
               </Tooltip>
             </div>
           </div>
+
+          {/* Confirm Password */}
           <div
             style={{
               width: "100%",
@@ -19329,6 +19609,7 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
             >
               Confirm Password
             </label>
+
             <div
               style={{
                 height: isDesktop ? 54 : 48,
@@ -19358,10 +19639,13 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   flexShrink: 0,
                 }}
               />
+
               <input
                 type={showConfirm ? "text" : "password"}
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) =>
+                  setConfirmPassword(e.target.value)
+                }
                 placeholder="Confirm new password"
                 style={{
                   flex: 1,
@@ -19375,11 +19659,16 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   fontSize: isDesktop ? 13 : 11,
                 }}
               />
-              <Tooltip label={showConfirm ? "Hide password" : "Show password"}>
+
+              <Tooltip
+                label={showConfirm ? "Hide password" : "Show password"}
+              >
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  aria-label={showConfirm ? "Hide password" : "Show password"}
+                  aria-label={
+                    showConfirm ? "Hide password" : "Show password"
+                  }
                   style={{
                     border: "none",
                     background: "transparent",
@@ -19390,18 +19679,27 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
                   }}
                 >
                   <i
-                    className={showConfirm ? "fa fa-eye-slash" : "fa fa-eye"}
-                    style={{ fontSize: isDesktop ? 15 : 14 }}
+                    className={
+                      showConfirm
+                        ? "fa fa-eye-slash"
+                        : "fa fa-eye"
+                    }
+                    style={{
+                      fontSize: isDesktop ? 15 : 14,
+                    }}
                   />
                 </button>
               </Tooltip>
             </div>
+
             {confirmPassword.length > 0 && (
               <p
                 style={{
                   margin: "8px 0 0 4px",
                   fontSize: isDesktop ? 10 : 8,
-                  color: passwordsMatch ? "#4CAF50" : "#D96C6C",
+                  color: passwordsMatch
+                    ? C.statusSafe
+                    : C.statusDanger,
                 }}
               >
                 {passwordsMatch
@@ -19410,6 +19708,8 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
               </p>
             )}
           </div>
+
+          {/* Continue */}
           <button
             type="button"
             disabled={!passwordsMatch}
@@ -19433,24 +19733,32 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
               background: !passwordsMatch
                 ? "rgba(26,26,26,0.12)"
                 : pressed
-                  ? "#8B6F5A"
+                  ? C.mochaLight
                   : "linear-gradient(135deg, #E0A72E 0%, #C98A1F 100%)",
-              color: !passwordsMatch ? "rgba(26,26,26,0.35)" : "#FFFFFF",
+              color: !passwordsMatch
+                ? "rgba(26,26,26,0.35)"
+                : C.white,
               fontFamily: FONT_HEAD,
               fontSize: isDesktop ? 15 : 16,
               fontWeight: 700,
-              cursor: !passwordsMatch ? "not-allowed" : "pointer",
+              cursor: !passwordsMatch
+                ? "not-allowed"
+                : "pointer",
               boxShadow: !passwordsMatch
                 ? "none"
                 : pressed
                   ? "0 3px 10px rgba(0,0,0,0.25)"
                   : "0 6px 20px rgba(224,167,46,0.22)",
-              transform: pressed ? "scale(0.98)" : "scale(1)",
+              transform: pressed
+                ? "scale(0.98)"
+                : "scale(1)",
               transition: "all 0.12s ease",
             }}
           >
             Continue
           </button>
+
+          {/* Footer */}
           <p
             style={{
               margin: isDesktop ? "32px 0 0" : "24px 0 0",
@@ -19466,16 +19774,27 @@ function ResetPasswordScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
-function ConfirmationPasswordScreen({ go }: { go: (s: Screen) => void }) {
+
+
+// ── Confirmation Password Screen ─────────────────────────────────────────
+function ConfirmationPasswordScreen({
+  go,
+}: {
+  go: (s: Screen) => void
+}) {
+  const isDesktop = useIsDesktop()
+
   return (
     <div
       style={{
         flex: 1,
+        minHeight: "100%",
         background: PALETTE.page,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        padding: "22px 20px",
+        justifyContent: "center",
+        padding: isDesktop ? "60px 24px" : "30px 20px",
         boxSizing: "border-box",
         color: PALETTE.textDark,
         fontFamily: FONT_BODY,
@@ -19483,25 +19802,40 @@ function ConfirmationPasswordScreen({ go }: { go: (s: Screen) => void }) {
         overflow: "hidden",
       }}
     >
+      {/* Background glow */}
       <div
         style={{
           position: "absolute",
-          width: 220,
-          height: 220,
+          width: isDesktop ? 260 : 220,
+          height: isDesktop ? 260 : 220,
           borderRadius: "50%",
           background: "rgba(224,167,46,0.10)",
           filter: "blur(50px)",
-          top: 80,
+          top: isDesktop ? 80 : 70,
           left: "50%",
           transform: "translateX(-50%)",
         }}
       />
+
+      {/* Secondary glow */}
+      <div
+        style={{
+          position: "absolute",
+          width: 180,
+          height: 180,
+          borderRadius: "50%",
+          background: "rgba(23,107,58,0.06)",
+          filter: "blur(45px)",
+          bottom: -50,
+          right: -40,
+        }}
+      />
+
       {/* Success Icon */}
       <div
         style={{
-          width: 92,
-          height: 92,
-          marginTop: 110,
+          width: isDesktop ? 92 : 82,
+          height: isDesktop ? 92 : 82,
           borderRadius: "50%",
           background: C.greenLight,
           display: "flex",
@@ -19510,22 +19844,27 @@ function ConfirmationPasswordScreen({ go }: { go: (s: Screen) => void }) {
           boxShadow: "0 0 35px rgba(224,167,46,0.35)",
           position: "relative",
           zIndex: 2,
+          flexShrink: 0,
         }}
       >
         <i
           className="fa fa-check"
           style={{
-            fontSize: 48,
-            color: "#FFFFFF",
+            fontSize: isDesktop ? 48 : 42,
+            color: C.white,
           }}
         />
       </div>
+
+      {/* Heading */}
       <h2
         style={{
-          margin: "24px 0 7px",
+          margin: isDesktop ? "24px 0 8px" : "20px 0 8px",
           textAlign: "center",
-          fontSize: 25,
+          fontSize: isDesktop ? 25 : 21,
+          lineHeight: isDesktop ? "32px" : "27px",
           fontWeight: 800,
+          fontFamily: FONT_HEAD,
           position: "relative",
           zIndex: 2,
         }}
@@ -19534,11 +19873,14 @@ function ConfirmationPasswordScreen({ go }: { go: (s: Screen) => void }) {
         <br />
         reset successfully.
       </h2>
+
+      {/* Description */}
       <p
         style={{
           margin: 0,
           textAlign: "center",
-          fontSize: 12,
+          fontSize: isDesktop ? 12 : 10,
+          lineHeight: isDesktop ? "18px" : "15px",
           color: "rgba(26,26,26,0.55)",
           position: "relative",
           zIndex: 2,
@@ -19546,39 +19888,67 @@ function ConfirmationPasswordScreen({ go }: { go: (s: Screen) => void }) {
       >
         You can now login using your new password.
       </p>
+
+      {/* Button */}
       <Center
         maxWidth={460}
         style={{
-          position: "absolute",
-          bottom: 50,
-          left: 0,
-          right: 0,
+          width: "100%",
+          marginTop: isDesktop ? 44 : 36,
           padding: "0 20px",
           boxSizing: "border-box",
+          position: "relative",
+          zIndex: 2,
         }}
       >
         <button
+          type="button"
           onClick={() => go("login")}
           style={{
             width: "100%",
-            height: 60,
+            height: isDesktop ? 60 : 52,
             border: "none",
             borderRadius: 12,
             background: C.greenLight,
-            color: "#FFFFFF",
+            color: C.white,
             fontFamily: FONT_HEAD,
             fontWeight: 700,
-            fontSize: 16,
+            fontSize: isDesktop ? 16 : 14,
             cursor: "pointer",
             boxShadow: "0 6px 20px rgba(224,167,46,0.22)",
+            transition: "transform 0.12s ease, box-shadow 0.12s ease",
+          }}
+          onMouseDown={(e) => {
+            e.currentTarget.style.transform = "scale(0.98)"
+          }}
+          onMouseUp={(e) => {
+            e.currentTarget.style.transform = "scale(1)"
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)"
           }}
         >
           Back to Login
         </button>
       </Center>
+
+      {/* Footer */}
+      <p
+        style={{
+          margin: isDesktop ? "30px 0 0" : "24px 0 0",
+          textAlign: "center",
+          fontSize: isDesktop ? 11 : 9,
+          color: "rgba(26,26,26,0.35)",
+          position: "relative",
+          zIndex: 2,
+        }}
+      >
+        Scanity • See It. Know It. Eat It.
+      </p>
     </div>
   )
 }
+
 const LANGUAGES = [
   {
     code: "en-US",
