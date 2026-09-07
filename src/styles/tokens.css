@@ -30,6 +30,14 @@
   --scanity-gold-dark: #C98A1F;
   --scanity-text-on-dark: #F0F0E8;
 
+  /* Nutrition Grade Scale (A best – E worst). Each aliases an existing
+     token above so there is one source of truth per color. */
+  --scanity-grade-a: var(--scanity-green);
+  --scanity-grade-b: var(--scanity-green-light);
+  --scanity-grade-c: var(--scanity-warning);
+  --scanity-grade-d: var(--scanity-gold);
+  --scanity-grade-e: var(--scanity-danger);
+
   /* Typography */
   --scanity-font-heading: "General Sans", "Inter", sans-serif;
   --scanity-font-body: "General Sans", "Inter", sans-serif;
