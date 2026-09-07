@@ -20,6 +20,8 @@ import potatoChipsImg from "@/imports/potato_chips.jpeg"
 import tunaSandwichImg from "@/imports/tuna_sandwhich.jpeg"
 import yogurtImg from "@/imports/yogurt.jpeg"
 import cornflakesImg from "@/imports/corn_flakes_scanity.jpeg"
+import aboutHeroImg from "@/imports/bgs.png"
+import aboutLabelImg from "@/imports/bgss.png"
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
@@ -12090,7 +12092,7 @@ function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
       }}
     >
       {/* ── Header ───────────────────────────────────────────────────────── */}
-      <div style={{ paddingTop: 12 }}>
+      <div>
         <InfoHeader
           title="Product Result"
           subtitle="Scan analysis complete"
@@ -12102,7 +12104,6 @@ function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
         style={{
           flex: 1,
           overflowY: "auto",
-          marginTop: 15,
         }}
       >
         <Center
@@ -12120,35 +12121,20 @@ function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
               aspectRatio: "16/9",
               borderRadius: C.radiusLg ?? 16,
               background: C.white,
-              border: `1.5px dashed rgba(224,167,46,0.3)`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              border: `1.5px solid ${C.border}`,
+              overflow: "hidden",
               marginBottom: 16,
             }}
           >
-            <svg
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="rgba(224,167,46,0.4)"
-              strokeWidth="1.5"
-            >
-              <rect
-                x="3"
-                y="3"
-                width="18"
-                height="18"
-                rx="2"
-              />
-              <circle
-                cx="8.5"
-                cy="8.5"
-                r="1.5"
-              />
-              <polyline points="21 15 16 10 5 21" />
-            </svg>
+            <img
+              src={beefNoodlesImg}
+              alt="Noodles Beef"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
           </div>
 
           {/* ── Product Name + Score ──────────────────────────────────────── */}
@@ -17212,6 +17198,132 @@ function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
    ========================================================= */
 
 function AboutScreen({ go }: { go: (s: Screen) => void }) {
+  const isDesktop = useIsDesktop()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const features = [
+    { icon: "fa-shield", title: "Personalized Safety", text: "Scanity checks products against your allergies, dietary restrictions, and health conditions." },
+    { icon: "fa-barcode", title: "Smart Scanning", text: "Scan a barcode or capture a nutrition label using OCR to identify useful information." },
+    { icon: "fa-leaf", title: "Nutrition Insights", text: "Get an easy-to-understand nutrition score based on important nutritional factors." },
+    { icon: "fa-lightbulb-o", title: "AI Explanations", text: "Understand why a product may be safe, cautionary, or unsafe for you." },
+  ]
+
+  const steps = [
+    ["01", "fa-barcode", "Scan", "Scan the product barcode or food label."],
+    ["02", "fa-search", "Analyze", "Scanity analyzes ingredients and nutrition information."],
+    ["03", "fa-user", "Personalize", "The system compares the product against your health profile."],
+    ["04", "fa-file-text-o", "Understand", "Scanity explains potential risks and unfamiliar ingredients."],
+    ["05", "fa-shield", "Decide", "Safe, caution, or avoid recommendation."],
+  ]
+
+  return (
+    <div style={{ flex: 1, minHeight: 0, display: "flex", overflow: "hidden", background: C.offWhite, fontFamily: FONT_BODY }}>
+      <AppSidebar
+        go={go}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        isDesktop={isDesktop}
+        active="about"
+      />
+
+      <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column", marginLeft: isDesktop ? SIDEBAR_WIDTH : 0 }}>
+        <InfoHeader
+          title="About Us"
+          subtitle=""
+          go={go}
+          showBack={false}
+          onMobileMenuClick={() => setSidebarOpen(true)}
+        />
+
+        <main style={{ flex: 1, overflowY: "auto" }}>
+          <section
+            style={{
+              position: "relative",
+              minHeight: isDesktop ? 330 : 430,
+              display: "flex",
+              alignItems: "center",
+              overflow: "hidden",
+              background: C.green,
+            }}
+          >
+            <img
+              src={aboutHeroImg}
+              alt="Person shopping for food in a grocery store"
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+            />
+            <div style={{ position: "absolute", inset: 0, background: `color-mix(in srgb, ${PALETTE.green} 68%, transparent)` }} />
+            <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 1180, margin: "0 auto", padding: isDesktop ? "54px 68px" : "54px 22px" }}>
+              <p style={{ margin: "0 0 14px", fontFamily: FONT_HEAD, fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: C.textOnDark }}>About Scanity</p>
+              <h1 style={{ margin: 0, maxWidth: 540, fontFamily: FONT_HEAD, fontSize: isDesktop ? 36 : 29, lineHeight: 1.1, fontWeight: 800, color: C.white }}>Making every food choice safer, simpler, and smarter.</h1>
+              <p style={{ maxWidth: 480, margin: "18px 0 0", fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.88)" }}>
+                Scanity is an AI-powered food safety and nutrition decision support tool that helps consumers understand food labels and determine whether packaged food products are suitable for their personal health profile.
+              </p>
+              <button type="button" onClick={() => go("dashboard")} style={{ marginTop: 22, display: "inline-flex", alignItems: "center", gap: 8, border: "none", borderRadius: 999, padding: "11px 17px", background: PALETTE.greenDark, color: C.white, fontFamily: FONT_HEAD, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                <i className="fa fa-play-circle" /> How Scanity Works <i className="fa fa-arrow-right" />
+              </button>
+            </div>
+          </section>
+
+          <section style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: isDesktop ? "1fr 1fr" : "1fr", alignItems: "center", gap: isDesktop ? 48 : 28, padding: isDesktop ? "42px 68px 36px" : "34px 22px 36px" }}>
+            <div>
+              <h2 style={{ margin: 0, maxWidth: 470, fontFamily: FONT_HEAD, fontSize: isDesktop ? 25 : 22, lineHeight: 1.12, color: PALETTE.greenDark }}>Food labels shouldn't be difficult to understand.</h2>
+              <p style={{ margin: "14px 0 0", maxWidth: 470, fontSize: 12.5, lineHeight: 1.65, color: PALETTE.textMuted }}>Ingredients and nutrition facts can contain technical terms that are difficult for ordinary consumers to interpret. Scanity transforms this information into simple, understandable insights so users can make more informed food choices.</p>
+            </div>
+            <img src={aboutLabelImg} alt="Nutrition facts label" style={{ width: "100%", height: isDesktop ? 170 : 190, objectFit: "cover", objectPosition: "center", borderRadius: 12 }} />
+          </section>
+
+          <section style={{ background: PALETTE.greenLight, padding: isDesktop ? "28px 68px 34px" : "26px 22px 32px" }}>
+            <div style={{ maxWidth: 1180, margin: "0 auto" }}>
+              <h2 style={{ margin: "0 0 16px", fontFamily: FONT_HEAD, fontSize: 17, color: PALETTE.greenDark }}>How Scanity Helps</h2>
+              <div style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : "1fr", gap: isDesktop ? 16 : 12 }}>
+                {features.map((feature) => (
+                  <article key={feature.title} style={{ minHeight: isDesktop ? 150 : 0, padding: "18px 17px", borderRadius: 8, background: "rgba(255,255,255,0.72)", border: "1px solid rgba(23,107,58,0.08)" }}>
+                    <div style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: PALETTE.green, color: C.white, fontSize: 18 }}><i className={`fa ${feature.icon}`} /></div>
+                    <h3 style={{ margin: "12px 0 5px", fontFamily: FONT_HEAD, fontSize: 12, color: PALETTE.greenDark }}>{feature.title}</h3>
+                    <p style={{ margin: 0, fontSize: 10.5, lineHeight: 1.5, color: PALETTE.textMuted }}>{feature.text}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section style={{ maxWidth: 1180, margin: "0 auto", padding: isDesktop ? "34px 68px 38px" : "34px 22px 40px" }}>
+            <h2 style={{ margin: "0 0 20px", fontFamily: FONT_HEAD, fontSize: 17, color: PALETTE.greenDark }}>How It Works</h2>
+            <div style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(5, 1fr)" : "1fr", gap: isDesktop ? 18 : 24 }}>
+              {steps.map(([number, icon, title, text], index) => (
+                <div key={title} style={{ position: "relative", textAlign: "center", padding: "0 8px" }}>
+                  <span style={{ position: "absolute", top: 0, left: isDesktop ? 0 : 8, fontSize: 9, fontWeight: 700, color: PALETTE.greenMid }}>{number}</span>
+                  <div style={{ width: 46, height: 46, margin: "0 auto 9px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: PALETTE.greenLight, color: C.green, fontSize: 19 }}><i className={`fa ${icon}`} /></div>
+                  <h3 style={{ margin: 0, fontFamily: FONT_HEAD, fontSize: 12, color: PALETTE.greenDark }}>{title}</h3>
+                  <p style={{ margin: "6px auto 0", maxWidth: 170, fontSize: 10, lineHeight: 1.5, color: PALETTE.textMuted }}>{text}</p>
+                  {isDesktop && index < steps.length - 1 && <i className="fa fa-arrow-right" style={{ position: "absolute", top: 16, right: -10, color: PALETTE.greenMid, fontSize: 11 }} />}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section style={{ background: `linear-gradient(110deg, ${PALETTE.greenDark}, ${PALETTE.greenMid})`, color: C.white, padding: isDesktop ? "24px 68px" : "28px 22px" }}>
+            <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", alignItems: "center", gap: 18 }}>
+              <img src={logoImg} alt="Scanity logo" style={{ width: isDesktop ? 105 : 70, height: 80, objectFit: "contain", mixBlendMode: "screen" }} />
+              <div style={{ borderLeft: "1px solid rgba(255,255,255,0.5)", paddingLeft: 18 }}>
+                <p style={{ margin: 0, fontSize: 9, color: C.textOnDark }}>Our Purpose</p>
+                <h2 style={{ margin: 0, fontFamily: FONT_HEAD, fontSize: isDesktop ? 18 : 16, lineHeight: 1.2 }}>We believe understanding what you eat should be simple.</h2>
+                <p style={{ margin: "8px 0 0", maxWidth: 560, fontSize: 10.5, lineHeight: 1.5, color: "rgba(255,255,255,0.82)" }}>Scanity was created to help consumers better understand food labels, recognize potentially unsafe ingredients, and make food decisions based on their individual health needs.</p>
+              </div>
+            </div>
+          </section>
+
+          <footer style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 22px 18px", display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", fontSize: 9, color: PALETTE.textMuted }}>
+            <span>Scanity &nbsp;|&nbsp; See · Know · Eat</span>
+            <span>About &nbsp; | &nbsp; Privacy Policy &nbsp; | &nbsp; Terms &nbsp; | &nbsp; Contact</span>
+          </footer>
+        </main>
+      </div>
+    </div>
+  )
+}
+
+function LegacyAboutScreen({ go }: { go: (s: Screen) => void }) {
   const features = [
     {
       icon: "fa-search",
