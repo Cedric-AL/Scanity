@@ -17104,9 +17104,6 @@ function AboutScreen({ go }: { go: (s: Screen) => void }) {
               <p style={{ maxWidth: 480, margin: "18px 0 0", fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.88)" }}>
                 Scanity is an AI-powered food safety and nutrition decision support tool that helps consumers understand food labels and determine whether packaged food products are suitable for their personal health profile.
               </p>
-              <button type="button" onClick={() => go("dashboard")} style={{ marginTop: 22, display: "inline-flex", alignItems: "center", gap: 8, border: "none", borderRadius: 999, padding: "11px 17px", background: PALETTE.greenDark, color: C.white, fontFamily: FONT_HEAD, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                <i className="fa fa-play-circle" /> How Scanity Works <i className="fa fa-arrow-right" />
-              </button>
             </div>
           </section>
 
