@@ -50,6 +50,28 @@ const C = {
   statusSafe: "var(--scanity-success)",
   statusCaution: "var(--scanity-warning)",
   statusDanger: "var(--scanity-danger)",
+
+  greenDark: "var(--scanity-green-dark)",
+  greenSoft: "var(--scanity-green-soft)",
+  greenText: "var(--scanity-green-text)",
+
+  dangerBg: "var(--scanity-danger-bg)",
+  dangerText: "var(--scanity-danger-text)",
+
+  warningText: "var(--scanity-warning-text)",
+
+  blue: "var(--scanity-blue)",
+  blueSoft: "var(--scanity-blue-soft)",
+
+  red: "var(--scanity-red)",
+  redSoft: "var(--scanity-red-soft)",
+
+  brown: "var(--scanity-brown)",
+
+  sidebarBg: "var(--scanity-sidebar-bg)",
+  sidebarDark: "var(--scanity-sidebar-dark)",
+
+  yellow: "var(--scanity-yellow)",
 }
 
 // ── Typography ────────────────────────────────────────────────────────────────
@@ -17090,66 +17112,6 @@ function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
               })}
             </div>
 
-            {/* COMPARE PRODUCTS */}
-            <div
-              style={{
-                marginTop: 18,
-                padding: "16px",
-                borderRadius: 13,
-                border: `1px solid rgba(224,167,46,0.28)`,
-                background: PALETTE.panel,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-                flexWrap: "wrap",
-                boxShadow: cardShadow,
-              }}
-            >
-              <div>
-                <p
-                  style={{
-                    margin: 0,
-                    fontFamily: FONT_HEAD,
-                    color: PALETTE.textDark,
-                    fontSize: 11,
-                    fontWeight: 700,
-                  }}
-                >
-                  Need to compare products?
-                </p>
-
-                <p
-                  style={{
-                    margin: "4px 0 0",
-                    fontFamily: FONT_BODY,
-                    color: "rgba(26,26,26,0.52)",
-                    fontSize: 10,
-                  }}
-                >
-                  Side-by-side safety and ingredient checks in one view.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => go("productCompare")}
-                style={{
-                  border: "none",
-                  borderRadius: 10,
-                  background: PALETTE.green,
-                  color: C.white,
-                  fontFamily: FONT_HEAD,
-                  fontWeight: 700,
-                  fontSize: 11,
-                  padding: "10px 14px",
-                  cursor: "pointer",
-                  boxShadow: "0 6px 18px rgba(23,107,58,0.18)",
-                }}
-              >
-                Compare Products
-              </button>
-            </div>
 
             {/* CONTACT SUPPORT */}
             <div
