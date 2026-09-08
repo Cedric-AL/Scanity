@@ -23,6 +23,8 @@ import cornflakesImg from "@/imports/corn_flakes_scanity.jpeg"
 import aboutHeroImg from "@/imports/bgs.png"
 import aboutLabelImg from "@/imports/bgss.png"
 
+import { loginUser } from "./api/auth"
+
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
   green: "var(--scanity-green)",
@@ -1529,7 +1531,87 @@ function SplashScreen({ go }: { go: (s: Screen) => void }) {
 function LoginScreen({ go }: { go: (s: Screen) => void }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+
+  const [emailError, setEmailError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [loginError, setLoginError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
   const isDesktop = useIsDesktop()
+
+  const validateLogin = () => {
+    let valid = true
+
+    setEmailError("")
+    setPasswordError("")
+    setLoginError("")
+
+    const identifier = email.trim()
+
+    if (!identifier) {
+      setEmailError("Email or username is required.")
+      valid = false
+    } else {
+      const looksLikeEmail = identifier.includes("@")
+
+      if (
+        looksLikeEmail &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)
+      ) {
+        setEmailError("Please enter a valid email address.")
+        valid = false
+      } else if (
+        !looksLikeEmail &&
+        !/^[a-zA-Z0-9._-]{3,30}$/.test(identifier)
+      ) {
+        setEmailError("Please enter a valid username.")
+        valid = false
+      }
+    }
+
+    if (!password) {
+      setPasswordError("Password is required.")
+      valid = false
+    }
+
+    return valid
+  }
+
+  const handleLogin = async () => {
+    // Prevent double-click / duplicate requests
+    if (isLoading) return
+
+    if (!validateLogin()) return
+
+    setIsLoading(true)
+    setLoginError("")
+
+    try {
+      await loginUser({
+        identifier: email.trim(),
+        password,
+      })
+
+      // Only navigate after the API confirms successful login.
+      go("dashboard")
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "AUTH_API_NOT_READY"
+      ) {
+        setLoginError(
+          "Login service is not connected yet. Please try again later.",
+        )
+      } else {
+        setLoginError(
+          "Incorrect email/username or password.",
+        )
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div
       style={{
@@ -1553,6 +1635,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
           objectPosition: "center",
         }}
       />
+
       <div
         style={{
           position: "absolute",
@@ -1562,6 +1645,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
             : "rgba(12, 32, 18, 0.82)",
         }}
       />
+
       <div
         style={{
           position: "relative",
@@ -1601,6 +1685,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                 mixBlendMode: "screen",
               }}
             />
+
             <p
               style={{
                 marginTop: "-12px",
@@ -1614,6 +1699,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
               <span style={{ color: C.textOnDark }}>Scan</span>
               <span style={{ color: C.greenLight }}>ity</span>
             </p>
+
             <h2
               style={{
                 marginTop: 8,
@@ -1626,6 +1712,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
             >
               Welcome Back!
             </h2>
+
             <p
               style={{
                 fontSize: isDesktop ? 14 : 13,
@@ -1638,6 +1725,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
               Please login to continue
             </p>
           </div>
+
           <div>
             <Field
               icon={
@@ -1653,11 +1741,31 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                   <circle cx="12" cy="7" r="4" />
                 </svg>
               }
-              placeholder="Email"
-              type="email"
+              placeholder="Email or username"
+              type="text"
               value={email}
-              onChange={setEmail}
+              onChange={(value) => {
+                setEmail(value)
+                if (emailError) setEmailError("")
+                if (loginError) setLoginError("")
+              }}
             />
+
+            {emailError && (
+              <p
+                style={{
+                  marginTop: -8,
+                  marginBottom: 12,
+                  color: C.statusDanger,
+                  fontFamily: FONT_BODY,
+                  fontSize: 12,
+                  fontWeight: 500,
+                }}
+              >
+                {emailError}
+              </p>
+            )}
+
             <Field
               icon={
                 <svg
@@ -1682,8 +1790,49 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
               placeholder="Password"
               type="password"
               value={password}
-              onChange={setPassword}
+              onChange={(value) => {
+                setPassword(value)
+                if (passwordError) setPasswordError("")
+                if (loginError) setLoginError("")
+              }}
             />
+
+            {passwordError && (
+              <p
+                style={{
+                  marginTop: -8,
+                  marginBottom: 12,
+                  color: C.statusDanger,
+                  fontFamily: FONT_BODY,
+                  fontSize: 12,
+                  fontWeight: 500,
+                }}
+              >
+                {passwordError}
+              </p>
+            )}
+
+            {loginError && (
+              <div
+                role="alert"
+                style={{
+                  marginTop: 4,
+                  marginBottom: 16,
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  background: C.mochaPale,
+                  border: `1px solid ${C.statusDanger}`,
+                  color: C.statusDanger,
+                  fontFamily: FONT_BODY,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  lineHeight: 1.4,
+                }}
+              >
+                {loginError}
+              </div>
+            )}
+
             <div
               style={{
                 textAlign: "right",
@@ -1708,11 +1857,14 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                 Forgot Password?
               </button>
             </div>
+
             <PrimaryBtn
-              label="LOGIN"
-              onClick={() => go("success")}
+              label={isLoading ? "LOGGING IN..." : "LOGIN"}
+              onClick={handleLogin}
               color={C.mocha}
+              disabled={isLoading}
             />
+
             <p
               style={{
                 textAlign: "center",
@@ -1723,7 +1875,10 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
             >
               Don't have an account?{" "}
               <button
-                onClick={() => go("register")}
+                type="button"
+                onClick={() => {
+                  if (!isLoading) go("register")
+                }}
                 style={{
                   background: "none",
                   border: "none",
@@ -1731,13 +1886,15 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                   fontFamily: FONT_BODY,
                   fontWeight: 500,
                   fontSize: isDesktop ? 14 : 13,
-                  cursor: "pointer",
+                  cursor: isLoading ? "default" : "pointer",
+                  opacity: isLoading ? 0.6 : 1,
                 }}
               >
                 Register
               </button>
             </p>
           </div>
+
           <div
             style={{
               display: "flex",
@@ -1754,6 +1911,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                 background: C.green,
               }}
             />
+
             <div
               style={{
                 width: 12,
@@ -1762,6 +1920,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                 background: C.mocha,
               }}
             />
+
             <div
               style={{
                 width: 6,
