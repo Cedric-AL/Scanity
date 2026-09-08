@@ -23,7 +23,7 @@ import cornflakesImg from "@/imports/corn_flakes_scanity.jpeg"
 import aboutHeroImg from "@/imports/bgs.png"
 import aboutLabelImg from "@/imports/bgss.png"
 
-import { loginUser } from "./api/auth"
+import { loginUser, registerUser } from "./api/auth"
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
@@ -1935,12 +1935,110 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+
 function RegisterScreen({ go }: { go: (s: Screen) => void }) {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirm, setConfirm] = useState("")
+
+  const [nameError, setNameError] = useState("")
+  const [emailError, setEmailError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [confirmError, setConfirmError] = useState("")
+  const [registerError, setRegisterError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
   const isDesktop = useIsDesktop()
+
+  const validateRegistration = () => {
+    let valid = true
+
+    setNameError("")
+    setEmailError("")
+    setPasswordError("")
+    setConfirmError("")
+    setRegisterError("")
+
+    const trimmedName = name.trim()
+    const trimmedEmail = email.trim()
+
+    if (!trimmedName) {
+      setNameError("Full name is required.")
+      valid = false
+    } else if (trimmedName.length < 2) {
+      setNameError("Please enter your full name.")
+      valid = false
+    }
+
+    if (!trimmedEmail) {
+      setEmailError("Email is required.")
+      valid = false
+    } else if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)
+    ) {
+      setEmailError("Please enter a valid email address.")
+      valid = false
+    }
+
+    if (!password) {
+      setPasswordError("Password is required.")
+      valid = false
+    } else if (password.length < 8) {
+      setPasswordError("Password must be at least 8 characters.")
+      valid = false
+    } else if (!/\d/.test(password)) {
+      setPasswordError("Password must contain at least 1 number.")
+      valid = false
+    }
+
+    if (!confirm) {
+      setConfirmError("Please confirm your password.")
+      valid = false
+    } else if (password !== confirm) {
+      setConfirmError("Passwords do not match.")
+      valid = false
+    }
+
+    return valid
+  }
+
+  const handleRegister = async () => {
+    // Prevent double-click / duplicate registration requests
+    if (isLoading) return
+
+    if (!validateRegistration()) return
+
+    setIsLoading(true)
+    setRegisterError("")
+
+    try {
+      await registerUser({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+      })
+
+      // Only show success after the API confirms registration.
+      go("success")
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "AUTH_API_NOT_READY"
+      ) {
+        setRegisterError(
+          "Registration service is not connected yet. Please try again later.",
+        )
+      } else {
+        setRegisterError(
+          "Unable to create your account. Please check your details and try again.",
+        )
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div
       style={{
@@ -1953,8 +2051,6 @@ function RegisterScreen({ go }: { go: (s: Screen) => void }) {
         overflow: "hidden",
       }}
     >
-      {/* Same background as splash & login */}
-      {/* Background */}
       <img
         src="https://images.unsplash.com/photo-1518843875459-f738682238a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxmcmVzaCUyMGNvbG9yZnVsJTIwZnJ1aXRzJTIwdmVnZXRhYmxlcyUyMGhlYWx0aHklMjBmb29kfGVufDF8fHx8MTc4NjIzOTc1M3ww&ixlib=rb-4.1.0&q=80&w=1080"
         alt=""
@@ -1967,7 +2063,7 @@ function RegisterScreen({ go }: { go: (s: Screen) => void }) {
           objectPosition: "center",
         }}
       />
-      {/* Dark overlay */}
+
       <div
         style={{
           position: "absolute",
@@ -1977,183 +2073,294 @@ function RegisterScreen({ go }: { go: (s: Screen) => void }) {
             : "rgba(12, 32, 18, 0.82)",
         }}
       />
+
       <Center maxWidth={440}>
-        {/* Main content */}
         <div
           style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          paddingTop: 50,
-          paddingLeft: 28,
-          paddingRight: 28,
-          paddingBottom: 36,
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-      
-        {/* Logo + brand */}
-        <div
-          style={{
+            flex: 1,
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
-            marginBottom: 8,
+            paddingTop: 50,
+            paddingLeft: 28,
+            paddingRight: 28,
+            paddingBottom: 36,
+            position: "relative",
+            zIndex: 1,
           }}
         >
-          <Logo
-            size={120}
-            style={{ borderRadius: 0, mixBlendMode: "screen" }}
-          />
-          <p
+          <div
             style={{
-              marginTop: -8,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
+            <Logo
+              size={120}
+              style={{ borderRadius: 0, mixBlendMode: "screen" }}
+            />
+
+            <p
+              style={{
+                marginTop: -8,
+                fontWeight: 800,
+                fontSize: 24,
+                fontFamily: FONT_HEAD,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              <span style={{ color: C.textOnDark }}>Scan</span>
+              <span style={{ color: C.greenLight }}>ity</span>
+            </p>
+          </div>
+
+          <h2
+            style={{
               fontWeight: 800,
               fontSize: 24,
-              fontFamily: FONT_HEAD,
-              letterSpacing: "-0.01em",
+              color: C.textOnDark,
+              textAlign: "center",
+              marginTop: 0,
+              marginBottom: 2,
             }}
           >
-            <span style={{ color: C.textOnDark }}>Scan</span>
-            <span style={{ color: C.greenLight }}>ity</span>
-          </p>
-        </div>
-        <h2
-          style={{
-            fontWeight: 800,
-            fontSize: 24,
-            color: C.textOnDark,
-            textAlign: "center",
-            marginTop: 0,
-            marginBottom: 2,
-          }}
-        >
-          Create Account
-        </h2>
-        <p
-          style={{
-            fontSize: 13,
-            color: "rgba(255,255,255,0.6)",
-            textAlign: "center",
-            marginTop: 4,
-            marginBottom: 20,
-          }}
-        >
-          Sign up to get started
-        </p>
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          }
-          placeholder="Full Name"
-          value={name}
-          onChange={setName}
-        />
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-              <polyline points="22,6 12,13 2,6" />
-            </svg>
-          }
-          placeholder="Email"
-          type="email"
-          value={email}
-          onChange={setEmail}
-        />
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0110 0v4" />
-            </svg>
-          }
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={setPassword}
-          hint="Min 8 characters, 1 number"
-        />
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0110 0v4" />
-            </svg>
-          }
-          placeholder="Confirm Password"
-          type="password"
-          value={confirm}
-          onChange={setConfirm}
-        />
-        <div style={{ marginTop: 8 }}>
-          <PrimaryBtn
-            label="Register"
-            onClick={() => go("success")}
-            color={C.mocha}
-          />
-        </div>
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: 16,
-            fontSize: 13,
-            color: "rgba(255,255,255,0.6)",
-          }}
-        >
-          Already have an account?{" "}
-          <button
-            onClick={() => go("login")}
+            Create Account
+          </h2>
+
+          <p
             style={{
-              background: "none",
-              border: "none",
-              color: C.greenLight,
-              fontFamily: FONT_BODY,
-              fontWeight: 600,
               fontSize: 13,
-              cursor: "pointer",
+              color: "rgba(255,255,255,0.6)",
+              textAlign: "center",
+              marginTop: 4,
+              marginBottom: 20,
             }}
           >
-            Login
-          </button>
-        </p>
+            Sign up to get started
+          </p>
+
+          <Field
+            icon={
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            }
+            placeholder="Full Name"
+            value={name}
+            onChange={(value) => {
+              setName(value)
+              if (nameError) setNameError("")
+              if (registerError) setRegisterError("")
+            }}
+          />
+
+          {nameError && (
+            <p
+              style={{
+                marginTop: -8,
+                marginBottom: 12,
+                color: C.statusDanger,
+                fontFamily: FONT_BODY,
+                fontSize: 12,
+                fontWeight: 500,
+              }}
+            >
+              {nameError}
+            </p>
+          )}
+
+          <Field
+            icon={
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+            }
+            placeholder="Email"
+            type="email"
+            value={email}
+            onChange={(value) => {
+              setEmail(value)
+              if (emailError) setEmailError("")
+              if (registerError) setRegisterError("")
+            }}
+          />
+
+          {emailError && (
+            <p
+              style={{
+                marginTop: -8,
+                marginBottom: 12,
+                color: C.statusDanger,
+                fontFamily: FONT_BODY,
+                fontSize: 12,
+                fontWeight: 500,
+              }}
+            >
+              {emailError}
+            </p>
+          )}
+
+          <Field
+            icon={
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+              </svg>
+            }
+            placeholder="Password"
+            type="password"
+            value={password}
+            onChange={(value) => {
+              setPassword(value)
+              if (passwordError) setPasswordError("")
+              if (confirmError) setConfirmError("")
+              if (registerError) setRegisterError("")
+            }}
+            hint="Min 8 characters, 1 number"
+          />
+
+          {passwordError && (
+            <p
+              style={{
+                marginTop: -8,
+                marginBottom: 12,
+                color: C.statusDanger,
+                fontFamily: FONT_BODY,
+                fontSize: 12,
+                fontWeight: 500,
+              }}
+            >
+              {passwordError}
+            </p>
+          )}
+
+          <Field
+            icon={
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+              </svg>
+            }
+            placeholder="Confirm Password"
+            type="password"
+            value={confirm}
+            onChange={(value) => {
+              setConfirm(value)
+              if (confirmError) setConfirmError("")
+              if (registerError) setRegisterError("")
+            }}
+          />
+
+          {confirmError && (
+            <p
+              style={{
+                marginTop: -8,
+                marginBottom: 12,
+                color: C.statusDanger,
+                fontFamily: FONT_BODY,
+                fontSize: 12,
+                fontWeight: 500,
+              }}
+            >
+              {confirmError}
+            </p>
+          )}
+
+          {registerError && (
+            <div
+              role="alert"
+              style={{
+                marginTop: 4,
+                marginBottom: 16,
+                padding: "10px 12px",
+                borderRadius: 10,
+                background: C.mochaPale,
+                border: `1px solid ${C.statusDanger}`,
+                color: C.statusDanger,
+                fontFamily: FONT_BODY,
+                fontSize: 12,
+                fontWeight: 500,
+                lineHeight: 1.4,
+              }}
+            >
+              {registerError}
+            </div>
+          )}
+
+          <div style={{ marginTop: 8 }}>
+            <PrimaryBtn
+              label={isLoading ? "REGISTERING..." : "Register"}
+              onClick={handleRegister}
+              color={C.mocha}
+              disabled={isLoading}
+            />
+          </div>
+
+          <p
+            style={{
+              textAlign: "center",
+              marginTop: 16,
+              fontSize: 13,
+              color: "rgba(255,255,255,0.6)",
+            }}
+          >
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={() => {
+                if (!isLoading) go("login")
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: C.greenLight,
+                fontFamily: FONT_BODY,
+                fontWeight: 600,
+                fontSize: 13,
+                cursor: isLoading ? "default" : "pointer",
+                opacity: isLoading ? 0.6 : 1,
+              }}
+            >
+              Login
+            </button>
+          </p>
         </div>
       </Center>
     </div>
   )
 }
+
 function SuccessScreen({ go }: { go: (s: Screen) => void }) {
   const isDesktop = useIsDesktop()
   return (
