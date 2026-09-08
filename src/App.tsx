@@ -20108,8 +20108,22 @@ function LanguageScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+// Where we stash the current screen so a refresh reopens the same page
+// instead of bouncing back to the splash screen.
+const SCREEN_STORAGE_KEY = "scanity:screen"
+
+function readStoredScreen(): Screen | null {
+  if (typeof window === "undefined") return null
+  try {
+    return (sessionStorage.getItem(SCREEN_STORAGE_KEY) as Screen | null) ?? null
+  } catch {
+    // sessionStorage can throw in privacy modes / disabled-storage contexts.
+    return null
+  }
+}
+
 export default function App() {
-  const [screen, setScreen] = useState<Screen>("splash")
+  const [screen, setScreen] = useState<Screen>(() => readStoredScreen() ?? "splash")
   // Tracks where each `go()` was called from, so a screen that can be
   // reached from more than one place (like Forgot Password, opened from
   // either Login or Settings) can send the back button to wherever the
@@ -20123,6 +20137,17 @@ export default function App() {
     const previous = historyRef.current.pop()
     setScreen(previous ?? "dashboard")
   }
+
+  // Keep the stored screen in sync so a page refresh (or reopening the tab)
+  // lands back on whatever screen the person was on, not the splash screen.
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(SCREEN_STORAGE_KEY, screen)
+    } catch {
+      // Ignore write failures (e.g. storage disabled) — worst case the
+      // next refresh falls back to the splash screen.
+    }
+  }, [screen])
   const screenMap: Record<Screen, ReactNode> = {
     splash: <SplashScreen go={go} />,
     login: <LoginScreen go={go} />,
