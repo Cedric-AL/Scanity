@@ -9,11 +9,11 @@ export type RegisterData = {
   password: string
 }
 
-const API_BASE_URL = "http://localhost:8000"
+const API_BASE_URL = "http://localhost:8000/api/v1"
 
 // ─────────────────────────────────────────────
 // REGISTER
-// POST /auth/register
+// POST /api/v1/auth/register
 // ─────────────────────────────────────────────
 export async function registerUser(data: RegisterData) {
   try {
@@ -50,7 +50,7 @@ export async function registerUser(data: RegisterData) {
 
 // ─────────────────────────────────────────────
 // LOGIN
-// POST /auth/login
+// POST /api/v1/auth/login
 // ─────────────────────────────────────────────
 export async function loginUser(
   credentials: LoginCredentials,

@@ -1859,7 +1859,44 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
             </div>
 
             <PrimaryBtn
-              label={isLoading ? "LOGGING IN..." : "LOGIN"}
+              label={
+                isLoading ? (
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    style={{ display: "block", margin: "0 auto" }}
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9"
+                      stroke="rgba(255,255,255,0.3)"
+                      strokeWidth="3"
+                      fill="none"
+                    />
+                    <path
+                      d="M21 12a9 9 0 0 0-9-9"
+                      stroke="#fff"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                    >
+                      <animateTransform
+                        attributeName="transform"
+                        type="rotate"
+                        from="0 12 12"
+                        to="360 12 12"
+                        dur="0.7s"
+                        repeatCount="indefinite"
+                      />
+                    </path>
+                  </svg>
+                ) : (
+                  "LOGIN"
+                )
+              }
               onClick={handleLogin}
               color={C.mocha}
               disabled={isLoading}
@@ -2320,7 +2357,44 @@ function RegisterScreen({ go }: { go: (s: Screen) => void }) {
 
           <div style={{ marginTop: 8 }}>
             <PrimaryBtn
-              label={isLoading ? "REGISTERING..." : "Register"}
+              label={
+                isLoading ? (
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    style={{ display: "block", margin: "0 auto" }}
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9"
+                      stroke="rgba(255,255,255,0.3)"
+                      strokeWidth="3"
+                      fill="none"
+                    />
+                    <path
+                      d="M21 12a9 9 0 0 0-9-9"
+                      stroke="#fff"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                    >
+                      <animateTransform
+                        attributeName="transform"
+                        type="rotate"
+                        from="0 12 12"
+                        to="360 12 12"
+                        dur="0.7s"
+                        repeatCount="indefinite"
+                      />
+                    </path>
+                  </svg>
+                ) : (
+                  "Register"
+                )
+              }
               onClick={handleRegister}
               color={C.mocha}
               disabled={isLoading}
