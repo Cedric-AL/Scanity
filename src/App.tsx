@@ -2066,7 +2066,16 @@ function RegisterScreen({ go }: { go: (s: Screen) => void }) {
         setRegisterError(
           "Registration service is not connected yet. Please try again later.",
         )
-      } else {
+      }
+      else if (
+      error instanceof Error &&
+     /already registered|already exists|duplicate|user_already_exists/i.test(
+      error.message,
+     )
+     ) {
+    setEmailError("An account with this email already exists.")
+     } 
+      else {
         setRegisterError(
           "Unable to create your account. Please check your details and try again.",
         )
