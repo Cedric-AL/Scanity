@@ -4088,20 +4088,281 @@ function ScanRow({ scan, onView }: { scan: ScanRecord; onView: () => void }) {
   )
 }
 // ── Dashboard Screen ──────────────────────────────────────────────────────────
+// ── Soft Slate (neumorphic) design tokens — DASHBOARD ONLY ─────────────────────
+// Scoped to the Dashboard screen only, per the "1a Soft Slate — extruded rail,
+// raised cards" direction from the design exploration. Every other screen keeps
+// the app's normal PALETTE/theme — do not reuse these tokens elsewhere.
+const SOFT_SLATE = {
+  bg: "#e9edf2",
+  raisedLg: "9px 9px 22px #c6ccd4, -9px -9px 22px #ffffff",
+  raisedMd: "8px 8px 20px #c6ccd4, -8px -8px 20px #ffffff",
+  raisedSm: "5px 5px 12px #c6ccd4, -5px -5px 12px #ffffff",
+  raisedBtn: "6px 6px 14px #c6ccd4, -4px -4px 10px #ffffff",
+  raisedBtnAlt: "6px 6px 14px #c6ccd4, -6px -6px 14px #ffffff",
+  raisedIconWell: "4px 4px 10px #c0a06a, -3px -3px 8px #ffffff",
+  insetLg: "inset 7px 7px 15px #c6ccd4, inset -7px -7px 15px #ffffff",
+  insetMd: "inset 5px 5px 11px #c6ccd4, inset -5px -5px 11px #ffffff",
+  insetSm: "inset 3px 3px 7px #c6ccd4, inset -3px -3px 7px #ffffff",
+  textPrimary: "#24292f",
+  textSecondary: "#565d64",
+  textMuted: "#5f666d",
+  green: "#1e6b3f",
+  gold: "#d8a02a",
+  caution: "#b8501f",
+  unsafe: "#c23a1f",
+  barDark: "#2b3138",
+  thumbBg: "#dfe4ea",
+  fontFamily: `Archivo, ${FONT_BODY}`,
+}
+
+// ── Dashboard icon rail — 80px, icon-only, own palette ──────────────────────────
+// Replaces AppSidebar on the Dashboard only (per user's "dashboard only" scope
+// decision). Always visible — no mobile drawer/overlay, it's slim enough to
+// stay put at any width. The Scanity wordmark/tagline live in the greeting
+// header instead of the rail.
+function DashboardIconRail({
+  go,
+  isDesktop,
+}: {
+  go: (s: Screen) => void
+  isDesktop: boolean
+}) {
+  const navItems: {
+    screen: Screen
+    label: string
+    path: ReactNode
+  }[] = [
+    {
+      screen: "dashboard",
+      label: "Dashboard",
+      path: (
+        <>
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <path d="M9 22V12h6v10" />
+        </>
+      ),
+    },
+    {
+      screen: "settings",
+      label: "Settings",
+      path: (
+        <>
+          <circle cx="12" cy="12" r="3" />
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />
+        </>
+      ),
+    },
+    {
+      screen: "help",
+      label: "Help & FAQ",
+      path: (
+        <>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+          <path d="M12 17h.01" />
+        </>
+      ),
+    },
+    {
+      screen: "about",
+      label: "About",
+      path: (
+        <>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4" />
+          <path d="M12 8h.01" />
+        </>
+      ),
+    },
+  ]
+
+  return (
+    <div
+      style={{
+        width: isDesktop ? 80 : "100%",
+        height: isDesktop ? "100%" : 72,
+        flex: "none",
+        background: SOFT_SLATE.bg,
+        borderRadius: 26,
+        padding: isDesktop ? "36px 0 12px" : "0 18px",
+        display: "flex",
+        flexDirection: isDesktop ? "column" : "row",
+        alignItems: "center",
+        justifyContent: isDesktop ? "flex-start" : "space-between",
+        gap: isDesktop ? 32 : 20,
+        boxShadow: SOFT_SLATE.raisedLg,
+        fontFamily: SOFT_SLATE.fontFamily,
+        boxSizing: "border-box",
+      }}
+    >
+      {/* Brand leaf mark */}
+      <Tooltip label="Scanity">
+        <div
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 14,
+            background: SOFT_SLATE.bg,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: SOFT_SLATE.raisedSm,
+            flexShrink: 0,
+          }}
+        >
+          <svg
+            width="19"
+            height="19"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={SOFT_SLATE.green}
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+          </svg>
+        </div>
+      </Tooltip>
+
+      {/* Nav icons */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: isDesktop ? "column" : "row",
+          alignItems: "center",
+          gap: isDesktop ? 20 : 12,
+          flex: isDesktop ? undefined : 1,
+          justifyContent: isDesktop ? undefined : "center",
+        }}
+      >
+        {navItems.map((item) => {
+          const isActive = item.screen === "dashboard"
+          return (
+            <Tooltip key={item.screen} label={item.label}>
+              <button
+                type="button"
+                onClick={() => go(item.screen)}
+                aria-label={item.label}
+                aria-current={isActive ? "page" : undefined}
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 14,
+                  border: "none",
+                  background: isActive ? SOFT_SLATE.bg : "transparent",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  boxShadow: isActive ? SOFT_SLATE.insetMd : "none",
+                }}
+              >
+                <svg
+                  width="17"
+                  height="17"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={isActive ? SOFT_SLATE.green : SOFT_SLATE.textMuted}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                >
+                  {item.path}
+                </svg>
+              </button>
+            </Tooltip>
+          )
+        })}
+      </div>
+
+      {/* Divider — visually separates logout from the nav icons above it */}
+      {isDesktop && (
+        <div
+          style={{
+            width: 32,
+            height: 1,
+            background: "#c6ccd4",
+            margin: "8px 0 0",
+            flexShrink: 0,
+          }}
+        />
+      )}
+
+      {/* Logout — pinned to the bottom of the rail */}
+      <Tooltip label="Log out">
+        <button
+          type="button"
+          onClick={() => go("splash")}
+          aria-label="Log out"
+          style={{
+            marginTop: isDesktop ? "auto" : 0,
+            flexShrink: 0,
+            width: 42,
+            height: 42,
+            borderRadius: 14,
+            border: "none",
+            background: SOFT_SLATE.bg,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            boxShadow: SOFT_SLATE.raisedSm,
+          }}
+        >
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={SOFT_SLATE.caution}
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <path d="m16 17 5-5-5-5" />
+            <path d="M21 12H9" />
+          </svg>
+        </button>
+      </Tooltip>
+    </div>
+  )
+}
+
 function DashboardScreen({ go }: { go: (s: Screen) => void }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const isDesktop = useIsDesktop()
 
-  const cards = [
+  const actionCards: {
+    label: string
+    description: string
+    action: () => void
+    path: ReactNode
+  }[] = [
     {
       label: "Scan OCR",
-      icon: <i className="fa fa-file-text-o" />,
+      description: "Read the label when there is no barcode.",
       action: () => go("ocr"),
+      path: (
+        <>
+          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+          <path d="M14 2v5h6" />
+          <path d="M8 13h8" />
+          <path d="M8 17h5" />
+        </>
+      ),
     },
     {
       label: "Compare Products",
-      icon: <i className="fa fa-balance-scale" />,
+      description: "Put two items side by side.",
       action: () => go("productCompare"),
+      path: (
+        <>
+          <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+          <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+          <path d="M7 21h10" />
+          <path d="M12 3v18" />
+          <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+        </>
+      ),
     },
   ]
 
@@ -4113,612 +4374,473 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
         flexDirection: "column",
         position: "relative",
         overflow: "hidden",
-        background: PALETTE.page,
+        background: SOFT_SLATE.bg,
       }}
     >
-      {/* ── Sidebar ───────────────────────────────────────────────────── */}
-      <AppSidebar
-        go={go}
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        isDesktop={isDesktop}
-        active="dashboard"
-      />
+      {/* ── Icon rail ───────────────────────────────────────────────────── */}
+      {/* Pinned to the viewport (position: fixed), not inside the scrolling
+          content — same trick AppSidebar uses elsewhere in the app — so it
+          stays put in place while the content next to it scrolls, instead of
+          scrolling away with it. Stretches to the bottom of the viewport
+          (top:26 to bottom:26) so it reaches all the way down, with the nav
+          icons up top and logout pushed to the very bottom via marginTop:
+          "auto". Desktop only; it's the only nav (settings/help/about/logout)
+          Dashboard has now that AppSidebar's mobile drawer has been replaced
+          here, so on mobile it renders inline as a horizontal bar instead
+          (below). */}
+      {isDesktop && (
+        <div
+          style={{
+            position: "fixed",
+            top: 22,
+            left: 26,
+            bottom: 22,
+            width: 80,
+            zIndex: 5,
+          }}
+        >
+          <DashboardIconRail go={go} isDesktop />
+        </div>
+      )}
 
-      {/* ── Main content ──────────────────────────────────────────────── */}
       <div
         style={{
           flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          position: "relative",
-          zIndex: 1,
+          overflowY: "auto",
           minHeight: 0,
-          marginLeft: isDesktop ? SIDEBAR_WIDTH : 0,
+          paddingTop: SAFE_TOP,
+          boxSizing: "border-box",
+          marginLeft: isDesktop ? 80 + 26 + 26 : 0,
         }}
       >
-        {/* ═══════════════════════════════════════════════════════════════
-            TOP BAR
-           ═══════════════════════════════════════════════════════════════ */}
-        <div
-          style={{
-            paddingTop: SAFE_TOP,
-            paddingLeft: isDesktop ? 40 : 20,
-            paddingRight: isDesktop ? 40 : 20,
-            paddingBottom: 4,
-
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-
-            marginTop: 0,
-          }}
-        >
-          {/* Mobile menu button */}
-          {isDesktop ? (
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                flexShrink: 0,
-              }}
-            />
-          ) : (
-            <Tooltip label="Open menu">
-              <button
-                type="button"
-                onClick={() => setSidebarOpen(true)}
-                aria-label="Open menu"
-                style={{
-                  width: 36,
-                  height: 36,
-
-                  background: PALETTE.panel,
-
-                  border: `1px solid ${PALETTE.border}`,
-                  borderRadius: 10,
-
-                  cursor: "pointer",
-
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-
-                  boxShadow:
-                    "0 2px 8px rgba(0,0,0,0.06)",
-
-                  transition:
-                    "transform 0.12s ease, box-shadow 0.18s ease",
-                }}
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={PALETTE.green}
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                >
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </svg>
-              </button>
-            </Tooltip>
-          )}
-
-          {/* Profile button */}
-          <button
-            type="button"
-            onClick={() => go("profile")}
-            aria-label="Open profile"
+        <Center maxWidth={isDesktop ? 1420 - (80 + 26 + 26) : undefined}>
+          <div
             style={{
-              width: 36,
-              height: 36,
-
-              borderRadius: "50%",
-
-              background: PALETTE.greenLight,
-              border: `1.5px solid ${PALETTE.green}33`,
-
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-
-              cursor: "pointer",
-
-              marginTop: 15,
-
-              transition:
-                "transform 0.12s ease, box-shadow 0.18s ease",
+              flexDirection: "column",
+              gap: 22,
+              padding: isDesktop ? "26px 40px 26px 0" : "16px 14px",
+              boxSizing: "border-box",
+              fontFamily: SOFT_SLATE.fontFamily,
+              color: SOFT_SLATE.textPrimary,
+              minWidth: 0,
             }}
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke={PALETTE.green}
-              strokeWidth="2"
-            >
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </button>
-        </div>
+            {!isDesktop && <DashboardIconRail go={go} isDesktop={false} />}
 
-        {/* ═══════════════════════════════════════════════════════════════
-            WELCOME HEADER
-           ═══════════════════════════════════════════════════════════════ */}
-        <div
-          style={{
-            padding: isDesktop
-              ? "4px 40px 12px"
-              : "2px 20px 10px",
-
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div>
-            <h2
-              style={{
-                fontFamily: FONT_HEAD,
-                fontWeight: 800,
-
-                fontSize: isDesktop ? 26 : 22,
-
-                color: PALETTE.textDark,
-
-                marginBottom: 2,
-                marginTop: 2,
-
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Hello, User!
-            </h2>
-
-            <p
-              style={{
-                fontFamily: FONT_BODY,
-                fontSize: 14,
-
-                color: PALETTE.textMuted,
-
-                margin: 0,
-              }}
-            >
-              See It. Know It. Eat It.
-            </p>
-          </div>
-        </div>
-
-        {/* ═══════════════════════════════════════════════════════════════
-            DASHBOARD CONTENT
-           ═══════════════════════════════════════════════════════════════ */}
-        <div
-          style={{
-            flex: 1,
-
-            overflowY: "auto",
-
-            padding: isDesktop
-              ? "0 40px 40px"
-              : "0 16px 24px",
-
-            minHeight: 0,
-          }}
-        >
-          <Center
-            maxWidth={
-              isDesktop ? 1180 : undefined
-            }
-          >
-            <div
-              style={{
-                display: isDesktop
-                  ? "grid"
-                  : "flex",
-
-                gridTemplateColumns: isDesktop
-                  ? "1.55fr 1fr"
-                  : undefined,
-
-                flexDirection: isDesktop
-                  ? undefined
-                  : "column",
-
-                alignItems: "stretch",
-
-                gap: isDesktop ? 22 : 18,
-              }}
-            >
-              {/* ═══════════════════════════════════════════════════════
-                  LEFT COLUMN — SCAN ACTIONS
-                 ═══════════════════════════════════════════════════════ */}
+            {/* Greeting */}
               <div
                 style={{
                   display: "flex",
-                  flexDirection: "column",
-
-                  gap: 16,
-
-                  minWidth: 0,
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  gap: 20,
                 }}
               >
-                {/* ── Scan Barcode ─────────────────────────────────── */}
-                <button
-                  type="button"
-                  onClick={() => go("barcode")}
-                  style={{
-                    width: "100%",
+                <div>
+                  <div
+                    style={{
+                      fontSize: isDesktop ? 30 : 24,
+                      fontWeight: 800,
+                      letterSpacing: "-0.02em",
+                      color: SOFT_SLATE.textPrimary,
+                    }}
+                  >
+                    Hello, User!
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      color: SOFT_SLATE.textSecondary,
+                      marginTop: 4,
+                    }}
+                  >
+                    See It. Know It. Eat It.
+                  </div>
+                </div>
 
+                <div style={{ display: "flex", gap: 12 }}>
+                  <Tooltip label="Open profile">
+                    <button
+                      type="button"
+                      onClick={() => go("profile")}
+                      aria-label="Open profile"
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: "50%",
+                        background: SOFT_SLATE.bg,
+                        border: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: SOFT_SLATE.raisedSm,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke={SOFT_SLATE.green}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      >
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M6 21v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1" />
+                      </svg>
+                    </button>
+                  </Tooltip>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 22,
+                  alignItems: "flex-start",
+                  flexDirection: isDesktop ? "row" : "column",
+                }}
+              >
+                {/* ── Left column — scan actions ─────────────────────────── */}
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    width: "100%",
                     display: "flex",
                     flexDirection: "column",
-                    alignItems: "center",
-
-                    borderRadius: 20,
-
-                    background: C.greenLight,
-
-                    border: `1.5px solid ${C.goldDark}`,
-
-                    boxShadow: cardShadow,
-
-                    cursor: "pointer",
-
-                    boxSizing: "border-box",
-
-                    padding: isDesktop
-                      ? "30px 30px 34px"
-                      : "24px 22px 28px",
-
-                    textAlign: "left",
-
-                    transition:
-                      "transform 0.14s ease, box-shadow 0.18s ease",
+                    gap: 18,
                   }}
                 >
+                  {/* Scan Barcode */}
                   <div
                     style={{
-                      width: "100%",
+                      background: SOFT_SLATE.bg,
+                      borderRadius: 26,
+                      padding: isDesktop ? 28 : 20,
+                      boxShadow: SOFT_SLATE.raisedLg,
+                      boxSizing: "border-box",
                     }}
                   >
-                    <h3
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div
+                        style={{
+                          width: 38,
+                          height: 38,
+                          borderRadius: 12,
+                          background: SOFT_SLATE.gold,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: SOFT_SLATE.raisedIconWell,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#3f2f06"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        >
+                          <path d="M3 5V3h2" />
+                          <path d="M19 3h2v2" />
+                          <path d="M21 19v2h-2" />
+                          <path d="M5 21H3v-2" />
+                          <path d="M7 8v8" />
+                          <path d="M11 8v8" />
+                          <path d="M15 8v8" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 20, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>
+                          Scan Barcode
+                        </div>
+                        <div style={{ fontSize: 13, color: SOFT_SLATE.textSecondary }}>
+                          Get product information from the food.
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => go("barcode")}
                       style={{
-                        margin: 0,
-
-                        fontFamily: FONT_HEAD,
-                        fontWeight: 750,
-
-                        fontSize: isDesktop
-                          ? 23
-                          : 19,
-
-                        color: PALETTE.textDark,
-
-                        letterSpacing: "-0.01em",
-                      }}
-                    >
-                      Scan Barcode
-                    </h3>
-
-                    <p
-                      style={{
-                        margin: "4px 0 0",
-
-                        fontFamily: FONT_BODY,
-
-                        fontSize: isDesktop
-                          ? 14
-                          : 12.5,
-
-                        color: PALETTE.textMuted,
-
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      Scan barcodes to get the product
-                      information from the food.
-                    </p>
-                  </div>
-
-                  {/* Barcode graphic */}
-                  <div
-                    style={{
-                      marginTop: isDesktop
-                        ? 30
-                        : 22,
-
-                      display: "flex",
-                      flexDirection: "column",
-
-                      alignItems: "center",
-
-                      gap: 12,
-                    }}
-                  >
-                    <div
-                      style={{
+                        width: "100%",
+                        marginTop: 22,
+                        border: "none",
+                        borderRadius: 20,
+                        background: SOFT_SLATE.bg,
+                        padding: isDesktop ? "26px 20px" : "20px 16px",
                         display: "flex",
-                        alignItems: "flex-end",
-
-                        gap: 3,
-
-                        height: isDesktop
-                          ? 84
-                          : 66,
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 12,
+                        boxShadow: SOFT_SLATE.insetLg,
+                        cursor: "pointer",
+                        boxSizing: "border-box",
                       }}
                     >
-                      {BARCODE_BARS.map(
-                        (w, i) => (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-end",
+                          gap: 3,
+                          height: isDesktop ? 74 : 58,
+                        }}
+                      >
+                        {BARCODE_BARS.map((w, i) => (
                           <div
                             key={i}
                             style={{
                               width: w,
                               height: "100%",
-
-                              background:
-                                PALETTE.textDark,
-
+                              background: SOFT_SLATE.barDark,
                               flexShrink: 0,
                             }}
                           />
-                        )
-                      )}
-                    </div>
-
-                    <span
-                      style={{
-                        fontFamily:
-                          "monospace",
-
-                        fontSize: isDesktop
-                          ? 15
-                          : 13,
-
-                        letterSpacing:
-                          "0.12em",
-
-                        color:
-                          PALETTE.textDark,
-                      }}
-                    >
-                      1234567890000
-                    </span>
-                  </div>
-                </button>
-
-                {/* ═══════════════════════════════════════════════════
-                    OCR + COMPARE CARDS
-                   ═══════════════════════════════════════════════════ */}
-                <div
-                  style={{
-                    display: "grid",
-
-                    gridTemplateColumns:
-                      "1fr 1fr",
-
-                    gap: isDesktop
-                      ? 14
-                      : 10,
-                  }}
-                >
-                  {cards.map((card) => (
-                    <button
-                      type="button"
-                      key={card.label}
-                      onClick={card.action}
-                      style={{
-                        minHeight: isDesktop
-                          ? 168
-                          : 160,
-
-                        display: "flex",
-                        flexDirection: "column",
-
-                        alignItems: "center",
-                        justifyContent: "center",
-
-                        gap: 14,
-
-                        background:
-                          PALETTE.green,
-
-                        border: "none",
-
-                        borderRadius: 20,
-
-                        padding: isDesktop
-                          ? "30px 16px"
-                          : "24px 12px",
-
-                        boxSizing:
-                          "border-box",
-
-                        cursor: "pointer",
-
-                        width: "100%",
-
-                        boxShadow:
-                          "10px 6px 18px rgba(23,107,58,0.22)",
-
-                        transition:
-                          "transform 0.14s ease, box-shadow 0.18s ease",
-                      }}
-                    >
-                      {/* Card icon */}
-                      <div
-                        style={{
-                          width: isDesktop
-                            ? 52
-                            : 44,
-
-                          height: isDesktop
-                            ? 52
-                            : 55,
-
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-
-                          color: C.white,
-
-                          fontSize: isDesktop
-                            ? 34
-                            : 28,
-                        }}
-                      >
-                        {card.icon}
+                        ))}
                       </div>
-
-                      {/* Card label */}
                       <span
                         style={{
-                          fontFamily:
-                            FONT_BODY,
-
-                          fontWeight: 700,
-
-                          fontSize: isDesktop
-                            ? 17
-                            : 14,
-
-                          lineHeight:
-                            "20px",
-
-                          color: C.white,
-
-                          textAlign:
-                            "center",
+                          fontSize: 15,
+                          fontWeight: 600,
+                          letterSpacing: "0.24em",
+                          color: "#555c63",
                         }}
                       >
-                        {card.label}
+                        1234567890000
                       </span>
                     </button>
-                  ))}
-                </div>
-              </div>
 
-              {/* ═══════════════════════════════════════════════════════
-                  RIGHT COLUMN — SCAN HISTORY
-                 ═══════════════════════════════════════════════════════ */}
-              <div
-                style={{
-                  width: "100%",
+                    <div style={{ marginTop: 20, display: "flex", gap: 14 }}>
+                      <button
+                        type="button"
+                        onClick={() => go("barcode")}
+                        style={{
+                          padding: "15px 26px",
+                          border: "none",
+                          borderRadius: 16,
+                          background: SOFT_SLATE.green,
+                          color: "#ffffff",
+                          fontSize: 14,
+                          fontWeight: 700,
+                          boxShadow: SOFT_SLATE.raisedBtn,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Start scan
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => go("barcode")}
+                        style={{
+                          padding: "15px 26px",
+                          border: "none",
+                          borderRadius: 16,
+                          background: SOFT_SLATE.bg,
+                          color: "#4a5158",
+                          fontSize: 14,
+                          fontWeight: 700,
+                          boxShadow: SOFT_SLATE.raisedBtnAlt,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Enter code manually
+                      </button>
+                    </div>
+                  </div>
 
-                  borderRadius: 18,
-
-                  background:
-                    PALETTE.panel,
-
-                  border:
-                    `1.5px solid ${PALETTE.border}`,
-
-                  boxShadow: cardShadow,
-
-                  boxSizing:
-                    "border-box",
-
-                  padding: isDesktop
-                    ? "16px 14px"
-                    : "14px 12px",
-                }}
-              >
-                {/* History header */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent:
-                      "space-between",
-
-                    padding:
-                      "0 4px 10px",
-                  }}
-                >
-                  <h3
+                  {/* OCR + Compare */}
+                  <div
                     style={{
-                      margin: 0,
-
-                      fontFamily:
-                        FONT_HEAD,
-
-                      fontWeight: 800,
-
-                      fontSize: 14,
-
-                      color:
-                        PALETTE.textDark,
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 18,
                     }}
                   >
-                    Scan History
-                  </h3>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      go("history")
-                    }
-                    style={{
-                      border: "none",
-
-                      background: "none",
-
-                      padding: 0,
-
-                      fontFamily:
-                        FONT_HEAD,
-
-                      fontWeight: 700,
-
-                      fontSize: 11,
-
-                      color:
-                        PALETTE.greenText,
-
-                      cursor: "pointer",
-                    }}
-                  >
-                    View All
-                  </button>
+                    {actionCards.map((card) => (
+                      <button
+                        type="button"
+                        key={card.label}
+                        onClick={card.action}
+                        style={{
+                          background: SOFT_SLATE.bg,
+                          border: "none",
+                          borderRadius: 22,
+                          padding: 24,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-start",
+                          gap: 14,
+                          boxShadow: SOFT_SLATE.raisedMd,
+                          cursor: "pointer",
+                          boxSizing: "border-box",
+                          textAlign: "left",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: 16,
+                            background: SOFT_SLATE.bg,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            boxShadow: SOFT_SLATE.insetMd,
+                          }}
+                        >
+                          <svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke={SOFT_SLATE.green}
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          >
+                            {card.path}
+                          </svg>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 17, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>
+                            {card.label}
+                          </div>
+                          <div style={{ fontSize: 13, color: SOFT_SLATE.textSecondary, marginTop: 3 }}>
+                            {card.description}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Recent scans */}
+                {/* ── Right column — scan history ────────────────────────── */}
                 <div
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-
-                    gap: 2,
+                    width: isDesktop ? 384 : "100%",
+                    flex: "none",
+                    background: SOFT_SLATE.bg,
+                    borderRadius: 26,
+                    padding: "24px 22px",
+                    boxShadow: SOFT_SLATE.raisedLg,
+                    boxSizing: "border-box",
                   }}
                 >
-                  {RECENT_SCANS.map(
-                    (scan) => (
-                      <ScanRow
-                        key={`${scan.name}-${scan.time}`}
-                        scan={scan}
-                        onView={() =>
-                          go(
-                            "productResult"
-                          )
-                        }
-                      />
-                    )
-                  )}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>
+                      Scan History
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => go("history")}
+                      style={{
+                        border: "none",
+                        background: "none",
+                        padding: 0,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: SOFT_SLATE.green,
+                        cursor: "pointer",
+                      }}
+                    >
+                      View All
+                    </button>
+                  </div>
+
+                  <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 12 }}>
+                    {RECENT_SCANS.map((scan) => {
+                      const status = scanStatusInfo(scan.score)
+                      const statusColor =
+                        status.label === "Safe"
+                          ? SOFT_SLATE.green
+                          : status.label === "Caution"
+                            ? SOFT_SLATE.caution
+                            : SOFT_SLATE.unsafe
+                      return (
+                        <button
+                          type="button"
+                          key={`${scan.name}-${scan.time}`}
+                          onClick={() => go("productResult")}
+                          style={{
+                            width: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 14,
+                            padding: "13px 15px",
+                            border: "none",
+                            borderRadius: 18,
+                            background: SOFT_SLATE.bg,
+                            boxShadow: SOFT_SLATE.raisedSm,
+                            cursor: "pointer",
+                            textAlign: "left",
+                            boxSizing: "border-box",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 38,
+                              height: 38,
+                              flexShrink: 0,
+                              borderRadius: 12,
+                              background: SOFT_SLATE.thumbBg,
+                              boxShadow: SOFT_SLATE.insetSm,
+                              overflow: "hidden",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {scan.imageUrl && (
+                              <img
+                                src={scan.imageUrl}
+                                alt=""
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              />
+                            )}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: SOFT_SLATE.textPrimary }}>
+                              {scan.name}
+                            </div>
+                            <div style={{ fontSize: 11, color: SOFT_SLATE.textMuted }}>
+                              {scan.date} · {scan.time} · {scan.method}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontSize: 16, fontWeight: 800, color: statusColor }}>
+                              {scan.score}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 10,
+                                fontWeight: 700,
+                                letterSpacing: "0.06em",
+                                color: statusColor,
+                              }}
+                            >
+                              {status.label.toUpperCase()}
+                            </div>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
-          </Center>
-        </div>
+        </Center>
       </div>
     </div>
   )
 }
 // ── Barcode Scanner Screen ────────────────────────────────────────────────────
+
 type ScannerStatus =
   | "ready"
   | "camera-loading"
