@@ -23,6 +23,8 @@ import cornflakesImg from "@/imports/corn_flakes_scanity.jpeg"
 import aboutHeroImg from "@/imports/bgs.png"
 import aboutLabelImg from "@/imports/bgss.png"
 
+import { loginUser, registerUser } from "./api/auth"
+
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
   green: "var(--scanity-green)",
@@ -1529,7 +1531,87 @@ function SplashScreen({ go }: { go: (s: Screen) => void }) {
 function LoginScreen({ go }: { go: (s: Screen) => void }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+
+  const [emailError, setEmailError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [loginError, setLoginError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
   const isDesktop = useIsDesktop()
+
+  const validateLogin = () => {
+    let valid = true
+
+    setEmailError("")
+    setPasswordError("")
+    setLoginError("")
+
+    const identifier = email.trim()
+
+    if (!identifier) {
+      setEmailError("Email or username is required.")
+      valid = false
+    } else {
+      const looksLikeEmail = identifier.includes("@")
+
+      if (
+        looksLikeEmail &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)
+      ) {
+        setEmailError("Please enter a valid email address.")
+        valid = false
+      } else if (
+        !looksLikeEmail &&
+        !/^[a-zA-Z0-9._-]{3,30}$/.test(identifier)
+      ) {
+        setEmailError("Please enter a valid username.")
+        valid = false
+      }
+    }
+
+    if (!password) {
+      setPasswordError("Password is required.")
+      valid = false
+    }
+
+    return valid
+  }
+
+  const handleLogin = async () => {
+    // Prevent double-click / duplicate requests
+    if (isLoading) return
+
+    if (!validateLogin()) return
+
+    setIsLoading(true)
+    setLoginError("")
+
+    try {
+      await loginUser({
+        identifier: email.trim(),
+        password,
+      })
+
+      // Only navigate after the API confirms successful login.
+      go("dashboard")
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "AUTH_API_NOT_READY"
+      ) {
+        setLoginError(
+          "Login service is not connected yet. Please try again later.",
+        )
+      } else {
+        setLoginError(
+          "Incorrect email/username or password.",
+        )
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div
       style={{
@@ -1553,6 +1635,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
           objectPosition: "center",
         }}
       />
+
       <div
         style={{
           position: "absolute",
@@ -1562,6 +1645,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
             : "rgba(12, 32, 18, 0.82)",
         }}
       />
+
       <div
         style={{
           position: "relative",
@@ -1601,6 +1685,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                 mixBlendMode: "screen",
               }}
             />
+
             <p
               style={{
                 marginTop: "-12px",
@@ -1614,6 +1699,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
               <span style={{ color: C.textOnDark }}>Scan</span>
               <span style={{ color: C.greenLight }}>ity</span>
             </p>
+
             <h2
               style={{
                 marginTop: 8,
@@ -1626,6 +1712,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
             >
               Welcome Back!
             </h2>
+
             <p
               style={{
                 fontSize: isDesktop ? 14 : 13,
@@ -1638,6 +1725,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
               Please login to continue
             </p>
           </div>
+
           <div>
             <Field
               icon={
@@ -1653,11 +1741,31 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                   <circle cx="12" cy="7" r="4" />
                 </svg>
               }
-              placeholder="Email"
-              type="email"
+              placeholder="Email or username"
+              type="text"
               value={email}
-              onChange={setEmail}
+              onChange={(value) => {
+                setEmail(value)
+                if (emailError) setEmailError("")
+                if (loginError) setLoginError("")
+              }}
             />
+
+            {emailError && (
+              <p
+                style={{
+                  marginTop: -8,
+                  marginBottom: 12,
+                  color: C.statusDanger,
+                  fontFamily: FONT_BODY,
+                  fontSize: 12,
+                  fontWeight: 500,
+                }}
+              >
+                {emailError}
+              </p>
+            )}
+
             <Field
               icon={
                 <svg
@@ -1682,8 +1790,49 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
               placeholder="Password"
               type="password"
               value={password}
-              onChange={setPassword}
+              onChange={(value) => {
+                setPassword(value)
+                if (passwordError) setPasswordError("")
+                if (loginError) setLoginError("")
+              }}
             />
+
+            {passwordError && (
+              <p
+                style={{
+                  marginTop: -8,
+                  marginBottom: 12,
+                  color: C.statusDanger,
+                  fontFamily: FONT_BODY,
+                  fontSize: 12,
+                  fontWeight: 500,
+                }}
+              >
+                {passwordError}
+              </p>
+            )}
+
+            {loginError && (
+              <div
+                role="alert"
+                style={{
+                  marginTop: 4,
+                  marginBottom: 16,
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  background: C.mochaPale,
+                  border: `1px solid ${C.statusDanger}`,
+                  color: C.statusDanger,
+                  fontFamily: FONT_BODY,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  lineHeight: 1.4,
+                }}
+              >
+                {loginError}
+              </div>
+            )}
+
             <div
               style={{
                 textAlign: "right",
@@ -1708,11 +1857,51 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                 Forgot Password?
               </button>
             </div>
+
             <PrimaryBtn
-              label="LOGIN"
-              onClick={() => go("success")}
+              label={
+                isLoading ? (
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    style={{ display: "block", margin: "0 auto" }}
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9"
+                      stroke="rgba(255,255,255,0.3)"
+                      strokeWidth="3"
+                      fill="none"
+                    />
+                    <path
+                      d="M21 12a9 9 0 0 0-9-9"
+                      stroke="#fff"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                    >
+                      <animateTransform
+                        attributeName="transform"
+                        type="rotate"
+                        from="0 12 12"
+                        to="360 12 12"
+                        dur="0.7s"
+                        repeatCount="indefinite"
+                      />
+                    </path>
+                  </svg>
+                ) : (
+                  "LOGIN"
+                )
+              }
+              onClick={handleLogin}
               color={C.mocha}
+              disabled={isLoading}
             />
+
             <p
               style={{
                 textAlign: "center",
@@ -1723,7 +1912,10 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
             >
               Don't have an account?{" "}
               <button
-                onClick={() => go("register")}
+                type="button"
+                onClick={() => {
+                  if (!isLoading) go("register")
+                }}
                 style={{
                   background: "none",
                   border: "none",
@@ -1731,13 +1923,15 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                   fontFamily: FONT_BODY,
                   fontWeight: 500,
                   fontSize: isDesktop ? 14 : 13,
-                  cursor: "pointer",
+                  cursor: isLoading ? "default" : "pointer",
+                  opacity: isLoading ? 0.6 : 1,
                 }}
               >
                 Register
               </button>
             </p>
           </div>
+
           <div
             style={{
               display: "flex",
@@ -1754,6 +1948,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                 background: C.green,
               }}
             />
+
             <div
               style={{
                 width: 12,
@@ -1762,6 +1957,7 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
                 background: C.mocha,
               }}
             />
+
             <div
               style={{
                 width: 6,
@@ -1776,12 +1972,119 @@ function LoginScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+
 function RegisterScreen({ go }: { go: (s: Screen) => void }) {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirm, setConfirm] = useState("")
+
+  const [nameError, setNameError] = useState("")
+  const [emailError, setEmailError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [confirmError, setConfirmError] = useState("")
+  const [registerError, setRegisterError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
   const isDesktop = useIsDesktop()
+
+  const validateRegistration = () => {
+    let valid = true
+
+    setNameError("")
+    setEmailError("")
+    setPasswordError("")
+    setConfirmError("")
+    setRegisterError("")
+
+    const trimmedName = name.trim()
+    const trimmedEmail = email.trim()
+
+    if (!trimmedName) {
+      setNameError("Full name is required.")
+      valid = false
+    } else if (trimmedName.length < 2) {
+      setNameError("Please enter your full name.")
+      valid = false
+    }
+
+    if (!trimmedEmail) {
+      setEmailError("Email is required.")
+      valid = false
+    } else if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)
+    ) {
+      setEmailError("Please enter a valid email address.")
+      valid = false
+    }
+
+    if (!password) {
+      setPasswordError("Password is required.")
+      valid = false
+    } else if (password.length < 8) {
+      setPasswordError("Password must be at least 8 characters.")
+      valid = false
+    } else if (!/\d/.test(password)) {
+      setPasswordError("Password must contain at least 1 number.")
+      valid = false
+    }
+
+    if (!confirm) {
+      setConfirmError("Please confirm your password.")
+      valid = false
+    } else if (password !== confirm) {
+      setConfirmError("Passwords do not match.")
+      valid = false
+    }
+
+    return valid
+  }
+
+  const handleRegister = async () => {
+    // Prevent double-click / duplicate registration requests
+    if (isLoading) return
+
+    if (!validateRegistration()) return
+
+    setIsLoading(true)
+    setRegisterError("")
+
+    try {
+      await registerUser({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+      })
+
+      // Only show success after the API confirms registration.
+      go("success")
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "AUTH_API_NOT_READY"
+      ) {
+        setRegisterError(
+          "Registration service is not connected yet. Please try again later.",
+        )
+      }
+      else if (
+      error instanceof Error &&
+     /already registered|already exists|duplicate|user_already_exists/i.test(
+      error.message,
+     )
+     ) {
+    setEmailError("An account with this email already exists.")
+     } 
+      else {
+        setRegisterError(
+          "Unable to create your account. Please check your details and try again.",
+        )
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div
       style={{
@@ -1794,8 +2097,6 @@ function RegisterScreen({ go }: { go: (s: Screen) => void }) {
         overflow: "hidden",
       }}
     >
-      {/* Same background as splash & login */}
-      {/* Background */}
       <img
         src="https://images.unsplash.com/photo-1518843875459-f738682238a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxmcmVzaCUyMGNvbG9yZnVsJTIwZnJ1aXRzJTIwdmVnZXRhYmxlcyUyMGhlYWx0aHklMjBmb29kfGVufDF8fHx8MTc4NjIzOTc1M3ww&ixlib=rb-4.1.0&q=80&w=1080"
         alt=""
@@ -1808,7 +2109,7 @@ function RegisterScreen({ go }: { go: (s: Screen) => void }) {
           objectPosition: "center",
         }}
       />
-      {/* Dark overlay */}
+
       <div
         style={{
           position: "absolute",
@@ -1818,183 +2119,331 @@ function RegisterScreen({ go }: { go: (s: Screen) => void }) {
             : "rgba(12, 32, 18, 0.82)",
         }}
       />
+
       <Center maxWidth={440}>
-        {/* Main content */}
         <div
           style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          paddingTop: 50,
-          paddingLeft: 28,
-          paddingRight: 28,
-          paddingBottom: 36,
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-      
-        {/* Logo + brand */}
-        <div
-          style={{
+            flex: 1,
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
-            marginBottom: 8,
+            paddingTop: 50,
+            paddingLeft: 28,
+            paddingRight: 28,
+            paddingBottom: 36,
+            position: "relative",
+            zIndex: 1,
           }}
         >
-          <Logo
-            size={120}
-            style={{ borderRadius: 0, mixBlendMode: "screen" }}
-          />
-          <p
+          <div
             style={{
-              marginTop: -8,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
+            <Logo
+              size={120}
+              style={{ borderRadius: 0, mixBlendMode: "screen" }}
+            />
+
+            <p
+              style={{
+                marginTop: -8,
+                fontWeight: 800,
+                fontSize: 24,
+                fontFamily: FONT_HEAD,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              <span style={{ color: C.textOnDark }}>Scan</span>
+              <span style={{ color: C.greenLight }}>ity</span>
+            </p>
+          </div>
+
+          <h2
+            style={{
               fontWeight: 800,
               fontSize: 24,
-              fontFamily: FONT_HEAD,
-              letterSpacing: "-0.01em",
+              color: C.textOnDark,
+              textAlign: "center",
+              marginTop: 0,
+              marginBottom: 2,
             }}
           >
-            <span style={{ color: C.textOnDark }}>Scan</span>
-            <span style={{ color: C.greenLight }}>ity</span>
-          </p>
-        </div>
-        <h2
-          style={{
-            fontWeight: 800,
-            fontSize: 24,
-            color: C.textOnDark,
-            textAlign: "center",
-            marginTop: 0,
-            marginBottom: 2,
-          }}
-        >
-          Create Account
-        </h2>
-        <p
-          style={{
-            fontSize: 13,
-            color: "rgba(255,255,255,0.6)",
-            textAlign: "center",
-            marginTop: 4,
-            marginBottom: 20,
-          }}
-        >
-          Sign up to get started
-        </p>
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          }
-          placeholder="Full Name"
-          value={name}
-          onChange={setName}
-        />
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-              <polyline points="22,6 12,13 2,6" />
-            </svg>
-          }
-          placeholder="Email"
-          type="email"
-          value={email}
-          onChange={setEmail}
-        />
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0110 0v4" />
-            </svg>
-          }
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={setPassword}
-          hint="Min 8 characters, 1 number"
-        />
-        <Field
-          icon={
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0110 0v4" />
-            </svg>
-          }
-          placeholder="Confirm Password"
-          type="password"
-          value={confirm}
-          onChange={setConfirm}
-        />
-        <div style={{ marginTop: 8 }}>
-          <PrimaryBtn
-            label="Register"
-            onClick={() => go("success")}
-            color={C.mocha}
-          />
-        </div>
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: 16,
-            fontSize: 13,
-            color: "rgba(255,255,255,0.6)",
-          }}
-        >
-          Already have an account?{" "}
-          <button
-            onClick={() => go("login")}
+            Create Account
+          </h2>
+
+          <p
             style={{
-              background: "none",
-              border: "none",
-              color: C.greenLight,
-              fontFamily: FONT_BODY,
-              fontWeight: 600,
               fontSize: 13,
-              cursor: "pointer",
+              color: "rgba(255,255,255,0.6)",
+              textAlign: "center",
+              marginTop: 4,
+              marginBottom: 20,
             }}
           >
-            Login
-          </button>
-        </p>
+            Sign up to get started
+          </p>
+
+          <Field
+            icon={
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            }
+            placeholder="Full Name"
+            value={name}
+            onChange={(value) => {
+              setName(value)
+              if (nameError) setNameError("")
+              if (registerError) setRegisterError("")
+            }}
+          />
+
+          {nameError && (
+            <p
+              style={{
+                marginTop: -8,
+                marginBottom: 12,
+                color: C.statusDanger,
+                fontFamily: FONT_BODY,
+                fontSize: 12,
+                fontWeight: 500,
+              }}
+            >
+              {nameError}
+            </p>
+          )}
+
+          <Field
+            icon={
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+            }
+            placeholder="Email"
+            type="email"
+            value={email}
+            onChange={(value) => {
+              setEmail(value)
+              if (emailError) setEmailError("")
+              if (registerError) setRegisterError("")
+            }}
+          />
+
+          {emailError && (
+            <p
+              style={{
+                marginTop: -8,
+                marginBottom: 12,
+                color: C.statusDanger,
+                fontFamily: FONT_BODY,
+                fontSize: 12,
+                fontWeight: 500,
+              }}
+            >
+              {emailError}
+            </p>
+          )}
+
+          <Field
+            icon={
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+              </svg>
+            }
+            placeholder="Password"
+            type="password"
+            value={password}
+            onChange={(value) => {
+              setPassword(value)
+              if (passwordError) setPasswordError("")
+              if (confirmError) setConfirmError("")
+              if (registerError) setRegisterError("")
+            }}
+            hint="Min 8 characters, 1 number"
+          />
+
+          {passwordError && (
+            <p
+              style={{
+                marginTop: -8,
+                marginBottom: 12,
+                color: C.statusDanger,
+                fontFamily: FONT_BODY,
+                fontSize: 12,
+                fontWeight: 500,
+              }}
+            >
+              {passwordError}
+            </p>
+          )}
+
+          <Field
+            icon={
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+              </svg>
+            }
+            placeholder="Confirm Password"
+            type="password"
+            value={confirm}
+            onChange={(value) => {
+              setConfirm(value)
+              if (confirmError) setConfirmError("")
+              if (registerError) setRegisterError("")
+            }}
+          />
+
+          {confirmError && (
+            <p
+              style={{
+                marginTop: -8,
+                marginBottom: 12,
+                color: C.statusDanger,
+                fontFamily: FONT_BODY,
+                fontSize: 12,
+                fontWeight: 500,
+              }}
+            >
+              {confirmError}
+            </p>
+          )}
+
+          {registerError && (
+            <div
+              role="alert"
+              style={{
+                marginTop: 4,
+                marginBottom: 16,
+                padding: "10px 12px",
+                borderRadius: 10,
+                background: C.mochaPale,
+                border: `1px solid ${C.statusDanger}`,
+                color: C.statusDanger,
+                fontFamily: FONT_BODY,
+                fontSize: 12,
+                fontWeight: 500,
+                lineHeight: 1.4,
+              }}
+            >
+              {registerError}
+            </div>
+          )}
+
+          <div style={{ marginTop: 8 }}>
+            <PrimaryBtn
+              label={
+                isLoading ? (
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    style={{ display: "block", margin: "0 auto" }}
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="9"
+                      stroke="rgba(255,255,255,0.3)"
+                      strokeWidth="3"
+                      fill="none"
+                    />
+                    <path
+                      d="M21 12a9 9 0 0 0-9-9"
+                      stroke="#fff"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="none"
+                    >
+                      <animateTransform
+                        attributeName="transform"
+                        type="rotate"
+                        from="0 12 12"
+                        to="360 12 12"
+                        dur="0.7s"
+                        repeatCount="indefinite"
+                      />
+                    </path>
+                  </svg>
+                ) : (
+                  "Register"
+                )
+              }
+              onClick={handleRegister}
+              color={C.mocha}
+              disabled={isLoading}
+            />
+          </div>
+
+          <p
+            style={{
+              textAlign: "center",
+              marginTop: 16,
+              fontSize: 13,
+              color: "rgba(255,255,255,0.6)",
+            }}
+          >
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={() => {
+                if (!isLoading) go("login")
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: C.greenLight,
+                fontFamily: FONT_BODY,
+                fontWeight: 600,
+                fontSize: 13,
+                cursor: isLoading ? "default" : "pointer",
+                opacity: isLoading ? 0.6 : 1,
+              }}
+            >
+              Login
+            </button>
+          </p>
         </div>
       </Center>
     </div>
   )
 }
+
 function SuccessScreen({ go }: { go: (s: Screen) => void }) {
   const isDesktop = useIsDesktop()
   return (
@@ -20108,22 +20557,8 @@ function LanguageScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
-// Where we stash the current screen so a refresh reopens the same page
-// instead of bouncing back to the splash screen.
-const SCREEN_STORAGE_KEY = "scanity:screen"
-
-function readStoredScreen(): Screen | null {
-  if (typeof window === "undefined") return null
-  try {
-    return (sessionStorage.getItem(SCREEN_STORAGE_KEY) as Screen | null) ?? null
-  } catch {
-    // sessionStorage can throw in privacy modes / disabled-storage contexts.
-    return null
-  }
-}
-
 export default function App() {
-  const [screen, setScreen] = useState<Screen>(() => readStoredScreen() ?? "splash")
+  const [screen, setScreen] = useState<Screen>("splash")
   // Tracks where each `go()` was called from, so a screen that can be
   // reached from more than one place (like Forgot Password, opened from
   // either Login or Settings) can send the back button to wherever the
@@ -20137,17 +20572,6 @@ export default function App() {
     const previous = historyRef.current.pop()
     setScreen(previous ?? "dashboard")
   }
-
-  // Keep the stored screen in sync so a page refresh (or reopening the tab)
-  // lands back on whatever screen the person was on, not the splash screen.
-  useEffect(() => {
-    try {
-      sessionStorage.setItem(SCREEN_STORAGE_KEY, screen)
-    } catch {
-      // Ignore write failures (e.g. storage disabled) — worst case the
-      // next refresh falls back to the splash screen.
-    }
-  }, [screen])
   const screenMap: Record<Screen, ReactNode> = {
     splash: <SplashScreen go={go} />,
     login: <LoginScreen go={go} />,

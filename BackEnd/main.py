@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 import logging
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
@@ -37,6 +38,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8443", "http://127.0.0.1:8443"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.add_exception_handler(SQLAlchemyError, database_exception_handler)
 app.include_router(example_router, prefix="/api/v1")
 app.include_router(scan_router, prefix="/api/v1")
