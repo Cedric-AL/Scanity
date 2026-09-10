@@ -14470,8 +14470,10 @@ type CompareScenario =
 
 function ProductCompareScreen({
   go,
+  goBack,
 }: {
   go: (s: Screen) => void
+  goBack: () => void
 }) {
   const isDesktop = useIsDesktop()
 
@@ -15186,17 +15188,27 @@ function ProductCompareScreen({
             padding: `${isDesktop ? "40px" : `calc(${SAFE_TOP} + 66px)`} ${H_PAD}px 6px`,
           }}
         >
-          <h1
+          <div
             style={{
-              margin: 0,
-              fontFamily: FONT_HEAD,
-              fontWeight: 800,
-              fontSize: 23,
-              color: C.black,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
             }}
           >
-            Compare Products
-          </h1>
+            <BackBtn onPress={goBack} />
+
+            <h1
+              style={{
+                margin: 0,
+                fontFamily: FONT_HEAD,
+                fontWeight: 800,
+                fontSize: 23,
+                color: C.black,
+              }}
+            >
+              Compare Products
+            </h1>
+          </div>
 
           <p
             style={{
@@ -15229,16 +15241,13 @@ function ProductCompareScreen({
 }
 // Same data the Dashboard panel reads from — no separate placeholder set.
 function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
-  const [filter, setFilter] = useState<"recent" | "favourite">("recent")
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const isDesktop = useIsDesktop()
 
-  const scans = RECENT_SCANS.filter(
-    (scan) =>
-      (filter === "recent" || scan.favorite) &&
-      scan.name.toLowerCase().includes(query.toLowerCase()),
+  const scans = RECENT_SCANS.filter((scan) =>
+    scan.name.toLowerCase().includes(query.toLowerCase()),
   )
 
   return (
@@ -15417,47 +15426,6 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
                 }}
               />
             )}
-
-            {/* FILTER BUTTONS */}
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                marginBottom: 18,
-              }}
-            >
-              {(["recent", "favourite"] as const).map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setFilter(option)}
-                  style={{
-                    padding: "8px 20px",
-                    borderRadius: 999,
-                    border: `1.5px solid ${
-                      filter === option
-                        ? PALETTE.green
-                        : PALETTE.border
-                    }`,
-                    background:
-                      filter === option
-                        ? PALETTE.greenLight
-                        : "transparent",
-                    color:
-                      filter === option
-                        ? PALETTE.greenText
-                        : PALETTE.textMuted,
-                    fontFamily: FONT_HEAD,
-                    fontWeight: 700,
-                    fontSize: 12,
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  {option === "recent" ? "Recent" : "Favourite"}
-                </button>
-              ))}
-            </div>
 
             {/* SCAN HISTORY CARD */}
             <div
@@ -20557,19 +20525,84 @@ function LanguageScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+// ── Screen persistence (survive a page refresh) ────────────────────────────────
+// Keeping the current screen (and the back-navigation stack) in sessionStorage
+// means reloading the tab lands back on the same screen instead of bouncing to
+// the splash screen. sessionStorage (not localStorage) is used on purpose: it
+// clears when the tab/browser closes, so opening the app fresh later still
+// starts clean.
+const SCREEN_STORAGE_KEY = "scanity_screen"
+const SCREEN_HISTORY_STORAGE_KEY = "scanity_screen_history"
+const VALID_SCREENS: string[] = [
+  "splash", "login", "register", "success", "allergies", "health", "loading",
+  "allset", "dashboard", "history", "barcode", "ocr", "profile", "help",
+  "about", "privacy", "terms", "settings", "delete", "forgotPassword",
+  "resetPassword", "confirmationPassword", "productResult", "productCompare",
+  "language",
+]
+function readStoredScreen(): Screen {
+  if (typeof window === "undefined") return "splash"
+  try {
+    const saved = window.sessionStorage.getItem(SCREEN_STORAGE_KEY)
+    if (saved && VALID_SCREENS.includes(saved)) {
+      return saved as Screen
+    }
+  } catch {
+    // sessionStorage unavailable (private browsing, etc.) — just start fresh
+  }
+  return "splash"
+}
+function readStoredScreenHistory(): Screen[] {
+  if (typeof window === "undefined") return []
+  try {
+    const saved = window.sessionStorage.getItem(SCREEN_HISTORY_STORAGE_KEY)
+    const parsed = saved ? JSON.parse(saved) : null
+    if (Array.isArray(parsed)) {
+      return parsed.filter(
+        (entry): entry is Screen =>
+          typeof entry === "string" && VALID_SCREENS.includes(entry),
+      )
+    }
+  } catch {
+    // ignore malformed/inaccessible storage
+  }
+  return []
+}
+function persistScreenHistory(history: Screen[]) {
+  if (typeof window === "undefined") return
+  try {
+    window.sessionStorage.setItem(
+      SCREEN_HISTORY_STORAGE_KEY,
+      JSON.stringify(history),
+    )
+  } catch {
+    // ignore
+  }
+}
 export default function App() {
-  const [screen, setScreen] = useState<Screen>("splash")
+  const [screen, setScreen] = useState<Screen>(readStoredScreen)
   // Tracks where each `go()` was called from, so a screen that can be
   // reached from more than one place (like Forgot Password, opened from
   // either Login or Settings) can send the back button to wherever the
   // person actually came from instead of a single hardcoded destination.
-  const historyRef = useRef<Screen[]>([])
+  // Restored from sessionStorage on mount so refreshing the page keeps the
+  // back button working the same way it did before the reload.
+  const historyRef = useRef<Screen[]>(readStoredScreenHistory())
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(SCREEN_STORAGE_KEY, screen)
+    } catch {
+      // ignore
+    }
+  }, [screen])
   const go = (next: Screen) => {
     historyRef.current.push(screen)
+    persistScreenHistory(historyRef.current)
     setScreen(next)
   }
   const goBack = () => {
     const previous = historyRef.current.pop()
+    persistScreenHistory(historyRef.current)
     setScreen(previous ?? "dashboard")
   }
   const screenMap: Record<Screen, ReactNode> = {
@@ -20597,7 +20630,7 @@ export default function App() {
     confirmationPassword: <ConfirmationPasswordScreen go={go} />,
     language: <LanguageScreen go={go} />,
     productResult: <ProductResultScreen go={go} />,
-    productCompare: <ProductCompareScreen go={go} />,
+    productCompare: <ProductCompareScreen go={go} goBack={goBack} />,
   }
   return <AppFrame>{screenMap[screen]}</AppFrame>
 }
