@@ -3971,15 +3971,61 @@ const RECENT_SCANS: ScanRecord[] = [
   { name: "Instant Noodles", date: "Aug 3, 2026", time: "12:40 PM", score: 55, method: "Barcode", imageUrl: beefNoodlesImg },
   { name: "Tuna Sandwich", date: "Aug 2, 2026", time: "11:15 AM", score: 84, method: "OCR", favorite: true, imageUrl: tunaSandwichImg },
 ]
+// Colors are the same Soft Slate status hues DashboardIconRail's logout icon
+// and the Dashboard's own Scan History panel use (SOFT_SLATE.green/caution/
+// unsafe), so a score reads the same way on both screens.
 function scanStatusInfo(score: number): { label: string; color: string; bg: string } {
-  if (score >= 71) return { label: "Safe", color: "#1F9254", bg: "#E4F5EA" }
-  if (score >= 42) return { label: "Caution", color: "#B8860B", bg: "#FBF1D9" }
-  return { label: "Unsafe", color: "#D9534F", bg: "#FBEAEA" }
+  if (score >= 71) return { label: "Safe", color: SOFT_SLATE.green, bg: "#E1EBE5" }
+  if (score >= 42) return { label: "Caution", color: SOFT_SLATE.caution, bg: "#F1E3D8" }
+  return { label: "Avoid", color: SOFT_SLATE.unsafe, bg: "#F1DEDA" }
 }
-// Shared row used by both the Dashboard's Scan History panel and the full
-// Scan History page, so the two always look identical. The whole row is the
-// tap target; the trailing chevron is the visible "view detail" affordance.
-function ScanRow({ scan, onView }: { scan: ScanRecord; onView: () => void }) {
+// ── "1a Grouped activity list" ───────────────────────────────────────────────
+// Scan History layout direction: date sections, one panel per group, hairline
+// dividers between rows. RECENT_SCANS is already newest-first, so the first
+// distinct date present reads as "Today", the next as "Yesterday", and every
+// older date collapses into one combined "Earlier" section (grouping is based
+// on the data's own chronology rather than the wall clock, since these are
+// fixed demo dates). Rows inside "Earlier" keep showing their date, since the
+// section header no longer states it for them.
+const SCAN_DATE_ORDER = Array.from(new Set(RECENT_SCANS.map((scan) => scan.date)))
+function scanDateGroupLabel(date: string): string {
+  const index = SCAN_DATE_ORDER.indexOf(date)
+  if (index === 0) return "Today"
+  if (index === 1) return "Yesterday"
+  return "Earlier"
+}
+type ScanGroup = { label: string; showDate: boolean; scans: ScanRecord[] }
+function groupScans(scans: ScanRecord[]): ScanGroup[] {
+  const groups: ScanGroup[] = []
+  for (const scan of scans) {
+    const label = scanDateGroupLabel(scan.date)
+    const last = groups[groups.length - 1]
+    if (last && last.label === label) {
+      last.scans.push(scan)
+    } else {
+      groups.push({ label, showDate: label === "Earlier", scans: [scan] })
+    }
+  }
+  return groups
+}
+// Row used by the "1a Grouped activity list" Scan History page. The whole
+// row is the tap target; the trailing chevron is the visible "view detail"
+// affordance. `showDate` is turned off inside a "Today"/"Yesterday" group,
+// where the section header already says which day it is — the "Earlier"
+// group keeps the default of showing it. `isLast` drops the hairline
+// divider for the final row in a group panel, so the panel's own bottom
+// edge stays clean instead of doubling up with a divider.
+function ScanRow({
+  scan,
+  onView,
+  showDate = true,
+  isLast = false,
+}: {
+  scan: ScanRecord
+  onView: () => void
+  showDate?: boolean
+  isLast?: boolean
+}) {
   const status = scanStatusInfo(scan.score)
   return (
     <button
@@ -3993,7 +4039,7 @@ function ScanRow({ scan, onView }: { scan: ScanRecord; onView: () => void }) {
         padding: "9px 6px",
         background: "none",
         border: "none",
-        borderBottom: `1px solid ${PALETTE.border}`,
+        borderBottom: isLast ? "none" : "1px solid rgba(198,204,212,0.6)",
         boxSizing: "border-box",
         cursor: "pointer",
         textAlign: "left",
@@ -4001,11 +4047,11 @@ function ScanRow({ scan, onView }: { scan: ScanRecord; onView: () => void }) {
     >
       <div
         style={{
-          width: 38,
-          height: 38,
-          borderRadius: 10,
-          background: PALETTE.page,
-          border: `1px solid ${PALETTE.border}`,
+          width: 40,
+          height: 40,
+          borderRadius: 12,
+          background: SOFT_SLATE.thumbBg,
+          boxShadow: SOFT_SLATE.insetSm,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -4016,7 +4062,7 @@ function ScanRow({ scan, onView }: { scan: ScanRecord; onView: () => void }) {
         {scan.imageUrl ? (
           <img src={scan.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         ) : (
-          <i className="fa fa-shopping-bag" style={{ fontSize: 15, color: PALETTE.textMuted }} />
+          <i className="fa fa-cube" style={{ fontSize: 15, color: SOFT_SLATE.textMuted }} />
         )}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -4024,10 +4070,10 @@ function ScanRow({ scan, onView }: { scan: ScanRecord; onView: () => void }) {
           <p
             style={{
               margin: 0,
-              fontFamily: FONT_HEAD,
+              fontFamily: SOFT_SLATE.fontFamily,
               fontWeight: 700,
               fontSize: 12.5,
-              color: PALETTE.textDark,
+              color: SOFT_SLATE.textPrimary,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -4036,25 +4082,51 @@ function ScanRow({ scan, onView }: { scan: ScanRecord; onView: () => void }) {
             {scan.name}
           </p>
           {scan.favorite && (
-            <i className="fa fa-star" aria-label="Favorite" style={{ fontSize: 9.5, color: "#D9A600", flexShrink: 0 }} />
+            <i className="fa fa-star" aria-label="Favorite" style={{ fontSize: 9.5, color: SOFT_SLATE.gold, flexShrink: 0 }} />
           )}
         </div>
         <p
           style={{
             margin: "2px 0 0",
-            fontFamily: FONT_BODY,
+            fontFamily: SOFT_SLATE.fontFamily,
             fontSize: 9.5,
-            color: PALETTE.textMuted,
+            color: SOFT_SLATE.textMuted,
           }}
         >
-          {scan.date} • {scan.time} · {scan.method}
+          {showDate ? `${scan.date} • ${scan.time} · ${scan.method}` : `${scan.time} · ${scan.method}`}
         </p>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            padding: "1px 8px",
+            borderRadius: 999,
+            fontFamily: SOFT_SLATE.fontFamily,
+            fontWeight: 700,
+            fontSize: 8.5,
+            color: status.color,
+            background: status.bg,
+          }}
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              width: 4,
+              height: 4,
+              borderRadius: "50%",
+              background: status.color,
+              flexShrink: 0,
+            }}
+          />
+          {status.label}
+        </span>
         <p
           style={{
-            margin: 0,
-            fontFamily: FONT_HEAD,
+            margin: "4px 0 0",
+            fontFamily: SOFT_SLATE.fontFamily,
             fontWeight: 800,
             fontSize: 15,
             color: status.color,
@@ -4063,35 +4135,22 @@ function ScanRow({ scan, onView }: { scan: ScanRecord; onView: () => void }) {
         >
           {scan.score}
         </p>
-        <span
-          style={{
-            display: "inline-block",
-            marginTop: 4,
-            padding: "1px 7px",
-            borderRadius: 999,
-            fontFamily: FONT_BODY,
-            fontWeight: 700,
-            fontSize: 8.5,
-            color: status.color,
-            background: status.bg,
-          }}
-        >
-          {status.label}
-        </span>
       </div>
       <i
         className="fa fa-angle-right"
         aria-label="View details"
-        style={{ fontSize: 14, color: PALETTE.textMuted, flexShrink: 0, marginLeft: 2 }}
+        style={{ fontSize: 14, color: SOFT_SLATE.textMuted, flexShrink: 0, marginLeft: 2 }}
       />
     </button>
   )
 }
 // ── Dashboard Screen ──────────────────────────────────────────────────────────
 // ── Soft Slate (neumorphic) design tokens — DASHBOARD ONLY ─────────────────────
-// Scoped to the Dashboard screen only, per the "1a Soft Slate — extruded rail,
-// raised cards" direction from the design exploration. Every other screen keeps
-// the app's normal PALETTE/theme — do not reuse these tokens elsewhere.
+// Originally scoped to the Dashboard screen only, per the "1a Soft Slate —
+// extruded rail, raised cards" direction from the design exploration. Scan
+// History now opts into the same tokens too (by request, to match Dashboard's
+// shading) — every other screen still keeps the app's normal PALETTE/theme,
+// so don't reach for these elsewhere without a similar explicit reason.
 const SOFT_SLATE = {
   bg: "#e9edf2",
   raisedLg: "9px 9px 22px #c6ccd4, -9px -9px 22px #ffffff",
@@ -4120,62 +4179,97 @@ const SOFT_SLATE = {
 // decision). Always visible — no mobile drawer/overlay, it's slim enough to
 // stay put at any width. The Scanity wordmark/tagline live in the greeting
 // header instead of the rail.
+// Default nav set for DashboardIconRail — Dashboard's own four links. Scan
+// History passes its own SCAN_HISTORY_RAIL_ITEMS (below) instead, via the
+// `navItems` prop, so this default and Dashboard's call sites are untouched.
+const DASHBOARD_RAIL_ITEMS: {
+  screen: Screen
+  label: string
+  path: ReactNode
+}[] = [
+  {
+    screen: "dashboard",
+    label: "Dashboard",
+    path: (
+      <>
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <path d="M9 22V12h6v10" />
+      </>
+    ),
+  },
+  {
+    screen: "settings",
+    label: "Settings",
+    path: (
+      <>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />
+      </>
+    ),
+  },
+  {
+    screen: "help",
+    label: "Help & FAQ",
+    path: (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+        <path d="M12 17h.01" />
+      </>
+    ),
+  },
+  {
+    screen: "about",
+    label: "About",
+    path: (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </>
+    ),
+  },
+]
+
+// Same clock glyph style as the rest of this rail's Lucide-style icons, used
+// by Scan History's SCAN_HISTORY_RAIL_ITEMS below.
+const CLOCK_ICON_PATH: ReactNode = (
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </>
+)
+
+// Scan History reuses Dashboard's own rail (same shading, same shell) with
+// its own nav set: Dashboard, a "Scan History" entry the full sidebar has
+// never linked to directly, then the same Settings/Help/About as elsewhere.
+const SCAN_HISTORY_RAIL_ITEMS: {
+  screen: Screen
+  label: string
+  path: ReactNode
+}[] = [
+  DASHBOARD_RAIL_ITEMS[0],
+  { screen: "history", label: "Scan History", path: CLOCK_ICON_PATH },
+  DASHBOARD_RAIL_ITEMS[1],
+  DASHBOARD_RAIL_ITEMS[2],
+  DASHBOARD_RAIL_ITEMS[3],
+]
+
 function DashboardIconRail({
   go,
   isDesktop,
+  active = "dashboard",
+  navItems = DASHBOARD_RAIL_ITEMS,
 }: {
   go: (s: Screen) => void
   isDesktop: boolean
-}) {
-  const navItems: {
+  active?: Screen
+  navItems?: {
     screen: Screen
     label: string
     path: ReactNode
-  }[] = [
-    {
-      screen: "dashboard",
-      label: "Dashboard",
-      path: (
-        <>
-          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <path d="M9 22V12h6v10" />
-        </>
-      ),
-    },
-    {
-      screen: "settings",
-      label: "Settings",
-      path: (
-        <>
-          <circle cx="12" cy="12" r="3" />
-          <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" />
-        </>
-      ),
-    },
-    {
-      screen: "help",
-      label: "Help & FAQ",
-      path: (
-        <>
-          <circle cx="12" cy="12" r="10" />
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-          <path d="M12 17h.01" />
-        </>
-      ),
-    },
-    {
-      screen: "about",
-      label: "About",
-      path: (
-        <>
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 16v-4" />
-          <path d="M12 8h.01" />
-        </>
-      ),
-    },
-  ]
-
+  }[]
+}) {
   return (
     <div
       style={{
@@ -4237,7 +4331,7 @@ function DashboardIconRail({
         }}
       >
         {navItems.map((item) => {
-          const isActive = item.screen === "dashboard"
+          const isActive = item.screen === active
           return (
             <Tooltip key={item.screen} label={item.label}>
               <button
@@ -15366,7 +15460,6 @@ function ProductCompareScreen({
 }
 // Same data the Dashboard panel reads from — no separate placeholder set.
 function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
-  const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const isDesktop = useIsDesktop()
@@ -15374,6 +15467,13 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
   const scans = RECENT_SCANS.filter((scan) =>
     scan.name.toLowerCase().includes(query.toLowerCase()),
   )
+
+  // Rail geometry mirrors DashboardScreen's own fixed positioning exactly
+  // (top/left/bottom 22/26/22, width 80) so the two screens line up pixel
+  // for pixel, not just in color.
+  const RAIL_TOP = 22
+  const RAIL_SIDE = 26
+  const RAIL_W = 80
 
   return (
     <div
@@ -15383,18 +15483,44 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
         display: "flex",
         position: "relative",
         overflow: "hidden",
-        background: PALETTE.page,
-        fontFamily: FONT_BODY,
+        background: SOFT_SLATE.bg,
+        fontFamily: SOFT_SLATE.fontFamily,
       }}
     >
-      {/* SIDEBAR */}
-      <AppSidebar
-        go={go}
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        isDesktop={isDesktop}
-        active="history"
-      />
+      {/* SIDEBAR — mobile drawer only; desktop uses the Soft Slate rail below,
+          same component and shading as the Dashboard. */}
+      {!isDesktop && (
+        <AppSidebar
+          go={go}
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          isDesktop={false}
+          active="history"
+        />
+      )}
+
+      {/* ICON RAIL — Dashboard's own rail component, reused as-is: same
+          Soft Slate raised/inset shading, just its own "Scan History" nav
+          set with History highlighted instead of Dashboard. */}
+      {isDesktop && (
+        <div
+          style={{
+            position: "fixed",
+            top: RAIL_TOP,
+            left: RAIL_SIDE,
+            bottom: RAIL_TOP,
+            width: RAIL_W,
+            zIndex: 5,
+          }}
+        >
+          <DashboardIconRail
+            go={go}
+            isDesktop
+            active="history"
+            navItems={SCAN_HISTORY_RAIL_ITEMS}
+          />
+        </div>
+      )}
 
       <div
         style={{
@@ -15402,117 +15528,57 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
           minHeight: 0,
           display: "flex",
           flexDirection: "column",
-          background: PALETTE.page,
+          background: SOFT_SLATE.bg,
           overflow: "hidden",
-          marginLeft: isDesktop ? SIDEBAR_WIDTH : 0,
+          marginLeft: isDesktop ? RAIL_W + RAIL_SIDE + RAIL_SIDE : 0,
         }}
       >
-        {/* HEADER */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 10,
-
-            paddingTop: 8,
-            paddingLeft: 20,
-            paddingRight: 20,
-            paddingBottom: 12,
-
-            borderBottom: `1px solid ${PALETTE.border}`,
-            background: PALETTE.panel,
-            flexShrink: 0,
-            minHeight: 58,
-            boxSizing: "border-box",
-          }}
-        >
-          {/* LEFT SIDE */}
+        {/* MOBILE MENU BUTTON — the rail stands in for this on desktop */}
+        {!isDesktop && (
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 10,
+              flexShrink: 0,
+              padding: "14px 20px 0",
             }}
           >
-            {!isDesktop && (
-              <Tooltip label="Open menu">
-                <button
-                  type="button"
-                  onClick={() => setSidebarOpen(true)}
-                  aria-label="Open menu"
-                  style={{
-                    width: 34,
-                    height: 34,
-                    border: `1px solid ${PALETTE.border}`,
-                    borderRadius: 9,
-                    background: PALETTE.panel,
-                    color: PALETTE.green,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
-                  }}
+            <Tooltip label="Open menu">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                aria-label="Open menu"
+                style={{
+                  width: 34,
+                  height: 34,
+                  border: "none",
+                  borderRadius: 12,
+                  background: SOFT_SLATE.bg,
+                  color: SOFT_SLATE.green,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: SOFT_SLATE.raisedSm,
+                }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
                 >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  >
-                    <line x1="3" y1="6" x2="21" y2="6" />
-                    <line x1="3" y1="12" x2="21" y2="12" />
-                    <line x1="3" y1="18" x2="21" y2="18" />
-                  </svg>
-                </button>
-              </Tooltip>
-            )}
-
-            <h2
-              style={{
-                margin: 0,
-                color: PALETTE.textDark,
-                fontFamily: FONT_HEAD,
-                fontSize: 18,
-                fontWeight: 800,
-                lineHeight: 1,
-              }}
-            >
-              Scan History
-            </h2>
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
+            </Tooltip>
           </div>
-
-          {/* SEARCH BUTTON */}
-          <Tooltip
-            label={searchOpen ? "Close search" : "Search history"}
-          >
-            <button
-              type="button"
-              onClick={() => setSearchOpen((open) => !open)}
-              aria-label="Search history"
-              style={{
-                width: 38,
-                height: 38,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: `1px solid ${PALETTE.border}`,
-                borderRadius: 10,
-                background: PALETTE.page,
-                color: PALETTE.textDark,
-                fontSize: 15,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-            >
-              <i className="fa fa-search" />
-            </button>
-          </Tooltip>
-        </div>
+        )}
 
         {/* CONTENT */}
         <div
@@ -15526,69 +15592,159 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
             style={{
               width: "100%",
               boxSizing: "border-box",
-              padding: "20px 24px 32px",
+              padding: isDesktop ? "40px 32px 32px" : "16px 20px 32px",
             }}
           >
-            {/* SEARCH */}
-            {searchOpen && (
-              <input
-                autoFocus
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search scans"
-                style={{
-                  width: "100%",
-                  padding: "11px 14px",
-                  marginBottom: 14,
-                  boxSizing: "border-box",
-                  borderRadius: 11,
-                  border: `1px solid ${PALETTE.border}`,
-                  background: PALETTE.panel,
-                  color: PALETTE.textDark,
-                  outline: "none",
-                  fontFamily: FONT_BODY,
-                  fontSize: 12,
-                }}
-              />
-            )}
-
-            {/* SCAN HISTORY CARD */}
-            <div
+            {/* HEADER — "1a Grouped activity list" layout, Dashboard's Soft
+                Slate palette. */}
+            <h1
               style={{
-                width: "100%",
-                minHeight: 500,
-                borderRadius: 20,
-                background: PALETTE.panel,
-                border: `1.5px solid ${PALETTE.border}`,
-                boxShadow: cardShadow,
-
-                padding: "8px 16px",
-
-                boxSizing: "border-box",
+                margin: "0 0 4px",
+                color: SOFT_SLATE.textPrimary,
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: 26,
+                fontWeight: 800,
+                lineHeight: 1.2,
               }}
             >
-              {scans.map((scan) => (
-                <ScanRow
-                  key={`${scan.name}-${scan.time}`}
-                  scan={scan}
-                  onView={() => go("productResult")}
-                />
-              ))}
+              Scan History
+            </h1>
+            <p
+              style={{
+                margin: "0 0 18px",
+                color: SOFT_SLATE.textMuted,
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: 12.5,
+              }}
+            >
+              Everything you've scanned, newest first.
+            </p>
 
-              {/* EMPTY STATE */}
-              {scans.length === 0 && (
-                <p
+            {/* SEARCH — inset (pressed-in) like a Soft Slate field, rather
+                than the raised look used for buttons/cards. */}
+            <div style={{ position: "relative", marginBottom: 22 }}>
+              <i
+                className="fa fa-search"
+                aria-hidden="true"
+                style={{
+                  position: "absolute",
+                  left: 18,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  fontSize: 12,
+                  color: SOFT_SLATE.textMuted,
+                }}
+              />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search products"
+                aria-label="Search scans"
+                style={{
+                  width: "100%",
+                  padding: "12px 16px 12px 40px",
+                  boxSizing: "border-box",
+                  borderRadius: 999,
+                  border: "none",
+                  background: SOFT_SLATE.bg,
+                  color: SOFT_SLATE.textPrimary,
+                  outline: "none",
+                  fontFamily: SOFT_SLATE.fontFamily,
+                  fontSize: 12.5,
+                  boxShadow: SOFT_SLATE.insetMd,
+                }}
+              />
+            </div>
+
+            {/* SCAN HISTORY — a date-section header (label + count) sits on
+                the page background above its own panel, and each panel
+                holds only that day's rows. */}
+            <div style={{ width: "100%", minHeight: 500, boxSizing: "border-box" }}>
+              {scans.length === 0 ? (
+                <div
                   style={{
-                    margin: 0,
-                    padding: "40px 0",
-                    color: PALETTE.textMuted,
-                    fontFamily: FONT_BODY,
-                    fontSize: 12,
-                    textAlign: "center",
+                    borderRadius: 26,
+                    background: SOFT_SLATE.bg,
+                    boxShadow: SOFT_SLATE.raisedLg,
+                    padding: "8px 16px",
+                    boxSizing: "border-box",
                   }}
                 >
-                  No scans found.
-                </p>
+                  {/* EMPTY STATE */}
+                  <p
+                    style={{
+                      margin: 0,
+                      padding: "40px 0",
+                      color: SOFT_SLATE.textMuted,
+                      fontFamily: SOFT_SLATE.fontFamily,
+                      fontSize: 12,
+                      textAlign: "center",
+                    }}
+                  >
+                    No scans found.
+                  </p>
+                </div>
+              ) : (
+                groupScans(scans).map((group) => (
+                  <div
+                    key={`${group.label}-${group.scans[0].name}-${group.scans[0].time}`}
+                    style={{ marginBottom: 20 }}
+                  >
+                    {/* GROUP HEADER */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "baseline",
+                        gap: 8,
+                        padding: "0 4px 8px",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: SOFT_SLATE.fontFamily,
+                          fontWeight: 800,
+                          fontSize: 12,
+                          letterSpacing: 0.4,
+                          textTransform: "uppercase",
+                          color: SOFT_SLATE.textPrimary,
+                        }}
+                      >
+                        {group.label}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: SOFT_SLATE.fontFamily,
+                          fontSize: 11,
+                          color: SOFT_SLATE.textMuted,
+                        }}
+                      >
+                        {group.scans.length} scan{group.scans.length === 1 ? "" : "s"}
+                      </span>
+                    </div>
+
+                    {/* GROUP PANEL — raised, borderless, same shading as the
+                        Dashboard's own "Scan History" card. */}
+                    <div
+                      style={{
+                        borderRadius: 26,
+                        background: SOFT_SLATE.bg,
+                        boxShadow: SOFT_SLATE.raisedLg,
+                        padding: "8px 16px",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      {group.scans.map((scan, index) => (
+                        <ScanRow
+                          key={`${scan.name}-${scan.time}`}
+                          scan={scan}
+                          onView={() => go("productResult")}
+                          showDate={group.showDate}
+                          isLast={index === group.scans.length - 1}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </Center>
