@@ -9409,8 +9409,7 @@ function ComparePanel({
     </div>
   )
 }
-
-// ── Product Compare Screen ──────────────────────────────────────────────────
+// ── Product Compare Screen — Soft Slate Neumorphic ────────────────────────────
 
 type CompareScenario =
   | "initial"
@@ -9430,9 +9429,37 @@ function ProductCompareScreen({
   goBack: () => void
 }) {
   const isDesktop = useIsDesktop()
-
   const [scenario, setScenario] =
-    useState<CompareScenario>("initial")
+    useState<CompareScenario>("success-a")
+
+  const [navOpen, setNavOpen] = useState(false)
+
+  const H_PAD = isDesktop ? 40 : 20
+
+  // ── Neumorphic styles ─────────────────────────────────────────────────────
+
+  const raisedCard: CSSProperties = {
+    background: SOFT_SLATE.bg,
+    border: "none",
+    borderRadius: 24,
+    boxShadow: SOFT_SLATE.raisedMd,
+  }
+
+  const smallRaised: CSSProperties = {
+    background: SOFT_SLATE.bg,
+    border: "none",
+    borderRadius: 18,
+    boxShadow: SOFT_SLATE.raisedSm,
+  }
+
+  const insetCard: CSSProperties = {
+    background: SOFT_SLATE.bg,
+    border: "none",
+    borderRadius: 18,
+    boxShadow: SOFT_SLATE.insetMd,
+  }
+
+  // ── Comparison runner ─────────────────────────────────────────────────────
 
   const runComparison = (
     outcome: "success" | "error"
@@ -9448,35 +9475,233 @@ function ProductCompareScreen({
     }, 900)
   }
 
-  const [navOpen, setNavOpen] =
-    useState(false)
+  // ── Product data ──────────────────────────────────────────────────────────
 
-  const H_PAD = isDesktop ? 40 : 20
+  let a: CompareProduct = COMPARE_PRODUCT_A
+  let b: CompareProduct = COMPARE_PRODUCT_B
 
-  const content = (() => {
-    // ── Initial ────────────────────────────────────────────────────────────
-    if (scenario === "initial") {
-      return (
-        <ComparePanel dashed>
+  if (scenario === "success-none") {
+    a = {
+      ...a,
+      grade: "c",
+      verdict: "caution",
+    }
+
+    b = {
+      ...b,
+      grade: "c",
+      verdict: "caution",
+    }
+  }
+
+  if (scenario === "incomplete") {
+    b = {
+      ...b,
+      ingredientsText: undefined,
+      allergens: undefined,
+      breakdown: null,
+      grade: null,
+      verdict: null,
+      verdictReason: undefined,
+    }
+  }
+
+  // ── Recommendation ────────────────────────────────────────────────────────
+
+  const recommendation:
+    | "a"
+    | "b"
+    | "none" = (() => {
+    if (
+      a.grade === null ||
+      b.grade === null
+    ) {
+      return "none"
+    }
+
+    if (
+      a.verdict === "avoid" &&
+      b.verdict !== "avoid"
+    ) {
+      return "b"
+    }
+
+    if (
+      b.verdict === "avoid" &&
+      a.verdict !== "avoid"
+    ) {
+      return "a"
+    }
+
+    const aRank = GRADE_ORDER.indexOf(a.grade)
+    const bRank = GRADE_ORDER.indexOf(b.grade)
+
+    if (aRank === bRank) {
+      return "none"
+    }
+
+    return aRank < bRank ? "a" : "b"
+  })()
+
+  // ── Product card ──────────────────────────────────────────────────────────
+
+  const ProductCard = ({
+    label,
+    product,
+    winner,
+  }: {
+    label: "A" | "B"
+    product: CompareProduct
+    winner: boolean
+  }) => {
+    return (
+      <div
+        style={{
+          ...raisedCard,
+          position: "relative",
+          padding: isDesktop ? 22 : 15,
+          display: "flex",
+          flexDirection: "column",
+          gap: isDesktop ? 15 : 11,
+          boxSizing: "border-box",
+          minWidth: 0,
+
+          boxShadow: winner
+            ? `
+              0 0 0 2px ${SOFT_SLATE.green},
+              ${SOFT_SLATE.raisedMd}
+            `
+            : SOFT_SLATE.raisedMd,
+        }}
+      >
+        {/* Best choice badge */}
+        {winner && (
           <div
             style={{
-              width: 56,
-              height: 56,
+              position: "absolute",
+              top: isDesktop ? -12 : -9,
+              left: isDesktop ? 20 : 13,
+
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+
+              padding: isDesktop
+                ? "5px 12px"
+                : "4px 9px",
+
+              borderRadius: 999,
+
+              background: SOFT_SLATE.bg,
+              boxShadow: SOFT_SLATE.raisedSm,
+
+              fontFamily: SOFT_SLATE.fontFamily,
+              fontWeight: 800,
+              fontSize: isDesktop ? 9.5 : 8,
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+              color: SOFT_SLATE.green,
+
+              zIndex: 2,
+            }}
+          >
+            <span
+              style={{
+                fontSize: isDesktop ? 12 : 10,
+              }}
+            >
+              ★
+            </span>
+
+            Best choice
+          </div>
+        )}
+
+        {/* Product label */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <span
+            style={{
+              width: isDesktop ? 30 : 25,
+              height: isDesktop ? 30 : 25,
               borderRadius: "50%",
-              background: C.mochaPale,
-              border: `1.5px solid rgba(45,106,79,0.3)`,
+
+              background: SOFT_SLATE.bg,
+
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+
+              boxShadow: SOFT_SLATE.insetSm,
+
+              fontFamily: SOFT_SLATE.fontFamily,
+              fontWeight: 800,
+              fontSize: isDesktop ? 11 : 9,
+              color: SOFT_SLATE.green,
+
+              flexShrink: 0,
             }}
           >
+            {label}
+          </span>
+
+          <span
+            style={{
+              fontFamily: SOFT_SLATE.fontFamily,
+              fontSize: isDesktop ? 10 : 9,
+              fontWeight: 800,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: SOFT_SLATE.textMuted,
+            }}
+          >
+            Product {label}
+          </span>
+        </div>
+
+        {/* Image well */}
+        <div
+          style={{
+            width: "100%",
+            aspectRatio: "16/10",
+            borderRadius: 20,
+
+            background: SOFT_SLATE.thumbBg,
+
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+
+            boxShadow: SOFT_SLATE.insetMd,
+
+            overflow: "hidden",
+          }}
+        >
+          {product.imageUrl ? (
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                padding: isDesktop ? 15 : 10,
+                boxSizing: "border-box",
+              }}
+            />
+          ) : (
             <svg
-              width="24"
-              height="24"
+              width="34"
+              height="34"
               viewBox="0 0 24 24"
               fill="none"
-              stroke={C.green}
-              strokeWidth="1.6"
+              stroke={SOFT_SLATE.textMuted}
+              strokeWidth="1.5"
             >
               <rect
                 x="3"
@@ -9492,654 +9717,723 @@ function ProductCompareScreen({
               />
               <polyline points="21 15 16 10 5 21" />
             </svg>
-          </div>
+          )}
+        </div>
 
-          <h3
-            style={{
-              margin: 0,
-              fontFamily: FONT_HEAD,
-              fontSize: 15.5,
-              fontWeight: 700,
-              color: C.black,
-            }}
-          >
-            Ready to compare
-          </h3>
-
-          <p
-            style={{
-              margin: 0,
-              fontFamily: FONT_BODY,
-              fontSize: 12,
-              color: "rgba(26,18,9,0.65)",
-              maxWidth: 320,
-              lineHeight: 1.6,
-            }}
-          >
-            Scan two products and Scanity will line up
-            their ingredients, nutrition, and allergy
-            safety side by side.
-          </p>
-
-          <button
-            type="button"
-            onClick={() =>
-              runComparison("success")
-            }
-            style={{
-              padding: "12px 26px",
-              borderRadius: 13,
-              border: "none",
-              background: C.green,
-              color: C.white,
-              fontFamily: FONT_HEAD,
-              fontWeight: 700,
-              fontSize: 13,
-              cursor: "pointer",
-              boxShadow:
-                "0 6px 18px rgba(45,106,79,0.22)",
-            }}
-          >
-            Compare Products
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              runComparison("error")
-            }
-            style={{
-              marginTop: 2,
-              padding: 0,
-              border: "none",
-              background: "none",
-              color: "rgba(26,18,9,0.34)",
-              fontFamily: FONT_BODY,
-              fontSize: 10.5,
-              cursor: "pointer",
-              textDecoration: "underline",
-              textUnderlineOffset: 2,
-            }}
-          >
-            Trouble comparing? Simulate an error
-          </button>
-        </ComparePanel>
-      )
-    }
-
-    // ── Loading ────────────────────────────────────────────────────────────
-    if (scenario === "loading") {
-      const skeletonBar = (
-        width: string,
-        height: number
-      ) => (
+        {/* Product information */}
         <div
           style={{
-            width,
-            height,
-            borderRadius: 6,
-            background: "rgba(26,18,9,0.08)",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 10,
           }}
-        />
-      )
-
-      return (
-        <div
-          role="status"
-          aria-live="polite"
-          aria-busy="true"
         >
-          <span
+          <div
             style={{
-              position: "absolute",
-              width: 1,
-              height: 1,
-              padding: 0,
-              margin: -1,
-              overflow: "hidden",
-              clip: "rect(0,0,0,0)",
-              whiteSpace: "nowrap",
-              border: 0,
+              minWidth: 0,
+              flex: 1,
             }}
           >
-            Loading comparison results
-          </span>
+            <p
+              style={{
+                margin: 0,
 
-          <div style={cmpGrid(isDesktop)}>
-            {[0, 1].map((index) => (
-              <div
-                key={index}
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontWeight: 800,
+                fontSize: isDesktop ? 17 : 13,
+                lineHeight: 1.25,
+
+                color: SOFT_SLATE.textPrimary,
+
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {product.name}
+            </p>
+
+            <p
+              style={{
+                margin: "5px 0 0",
+
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: isDesktop ? 11.5 : 9.5,
+
+                color: SOFT_SLATE.textSecondary,
+              }}
+            >
+              {[
+                product.brand,
+                product.quantity,
+              ]
+                .filter(Boolean)
+                .join(" · ") ||
+                "Brand/size unavailable"}
+            </p>
+          </div>
+
+          {/* Grade */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 3,
+              flexShrink: 0,
+            }}
+          >
+            <div
+              style={{
+                borderRadius: "50%",
+                padding: 3,
+                background: SOFT_SLATE.bg,
+                boxShadow: SOFT_SLATE.raisedSm,
+              }}
+            >
+              <GradeBadge
+                grade={product.grade}
+                size={isDesktop ? 54 : 42}
+              />
+            </div>
+
+            <span
+              style={{
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: isDesktop ? 8.5 : 7,
+                fontWeight: 800,
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+                color: SOFT_SLATE.textMuted,
+              }}
+            >
+              Grade
+            </span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Neumorphic comparison card ───────────────────────────────────────────
+
+  const CompareCard = ({
+    children,
+    accent = false,
+  }: {
+    children: ReactNode
+    accent?: boolean
+  }) => (
+    <div
+      style={{
+        ...raisedCard,
+
+        padding: isDesktop ? 20 : 14,
+
+        display: "flex",
+        flexDirection: "column",
+        gap: isDesktop ? 16 : 11,
+
+        boxShadow: accent
+          ? `
+            0 0 0 2px ${SOFT_SLATE.green},
+            ${SOFT_SLATE.raisedMd}
+          `
+          : SOFT_SLATE.raisedMd,
+
+        boxSizing: "border-box",
+        minWidth: 0,
+      }}
+    >
+      {children}
+    </div>
+  )
+
+  // ── Section ───────────────────────────────────────────────────────────────
+
+  const Section = ({
+    title,
+    description,
+    children,
+  }: {
+    title: string
+    description?: string
+    children: ReactNode
+  }) => (
+    <section
+      style={{
+        marginTop: 30,
+      }}
+    >
+      <div
+        style={{
+          marginBottom: 16,
+          paddingLeft: 4,
+        }}
+      >
+        <h2
+          style={{
+            margin: 0,
+
+            fontFamily: SOFT_SLATE.fontFamily,
+            fontWeight: 800,
+            fontSize: isDesktop ? 18 : 16,
+
+            color: SOFT_SLATE.textPrimary,
+
+            letterSpacing: "-0.01em",
+          }}
+        >
+          {title}
+        </h2>
+
+        {description && (
+          <p
+            style={{
+              margin: "5px 0 0",
+
+              fontFamily: SOFT_SLATE.fontFamily,
+              fontSize: 12,
+              lineHeight: 1.55,
+
+              color: SOFT_SLATE.textSecondary,
+            }}
+          >
+            {description}
+          </p>
+        )}
+      </div>
+
+      {children}
+    </section>
+  )
+
+  // ── Loading ───────────────────────────────────────────────────────────────
+
+  if (scenario === "loading") {
+    return (
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+
+          background: SOFT_SLATE.bg,
+
+          overflow: "hidden",
+          position: "relative",
+
+          fontFamily: SOFT_SLATE.fontFamily,
+        }}
+      >
+        <DashboardIconRail
+          go={go}
+          isDesktop={isDesktop}
+          active="productCompare"
+          navItems={[
+            {
+              screen: "dashboard",
+              label: "Dashboard",
+              path: null,
+            },
+            {
+              screen: "productCompare",
+              label: "Compare Products",
+              path: null,
+            },
+            {
+              screen: "settings",
+              label: "Settings",
+              path: null,
+            },
+            {
+              screen: "help",
+              label: "Help & FAQ",
+              path: null,
+            },
+            {
+              screen: "about",
+              label: "About",
+              path: null,
+            },
+          ]}
+        />
+
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+
+            marginLeft: isDesktop ? 80 : 0,
+          }}
+        >
+          {!isDesktop && (
+            <button
+              type="button"
+              onClick={() => setNavOpen(true)}
+              style={{
+                position: "fixed",
+                top: `calc(${SAFE_TOP} + 14px)`,
+                left: 14,
+                zIndex: 50,
+
+                width: 42,
+                height: 42,
+
+                border: "none",
+                borderRadius: 14,
+
+                background: SOFT_SLATE.bg,
+                color: SOFT_SLATE.green,
+
+                boxShadow: SOFT_SLATE.raisedSm,
+
+                cursor: "pointer",
+              }}
+            >
+              ☰
+            </button>
+          )}
+
+          <div
+            style={{
+              padding: `${
+                isDesktop
+                  ? "40px"
+                  : `calc(${SAFE_TOP} + 66px)`
+              } ${H_PAD}px 10px`,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <BackBtn onPress={goBack} />
+
+              <h1
                 style={{
-                  borderRadius: 18,
-                  padding: 20,
-                  background: C.white,
-                  border: `1.5px solid ${C.border}`,
-                  boxShadow: cardShadow,
+                  margin: 0,
+                  fontFamily: SOFT_SLATE.fontFamily,
+                  fontWeight: 800,
+                  fontSize: 23,
+                  color: SOFT_SLATE.textPrimary,
+                }}
+              >
+                Compare Products
+              </h1>
+            </div>
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: `10px ${H_PAD}px 50px`,
+            }}
+          >
+            <Center maxWidth={1080}>
+              <div
+                style={{
+                  ...raisedCard,
+                  padding: 40,
+
                   display: "flex",
                   flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+
+                  textAlign: "center",
+                  gap: 15,
+                }}
+              >
+                <div
+                  style={{
+                    width: 62,
+                    height: 62,
+                    borderRadius: "50%",
+
+                    background: SOFT_SLATE.bg,
+
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+
+                    boxShadow: SOFT_SLATE.insetMd,
+
+                    color: SOFT_SLATE.green,
+
+                    fontSize: 25,
+                  }}
+                >
+                  ⟳
+                </div>
+
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily: SOFT_SLATE.fontFamily,
+                    fontSize: 16,
+                    fontWeight: 800,
+                    color: SOFT_SLATE.textPrimary,
+                  }}
+                >
+                  Comparing products
+                </h3>
+
+                <p
+                  style={{
+                    margin: 0,
+                    fontFamily: SOFT_SLATE.fontFamily,
+                    fontSize: 12.5,
+                    color: SOFT_SLATE.textSecondary,
+                  }}
+                >
+                  Checking nutrition, ingredients, and allergy safety...
+                </p>
+              </div>
+            </Center>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Error / Not Found ────────────────────────────────────────────────────
+
+  if (
+    scenario === "error" ||
+    scenario === "not-found"
+  ) {
+    const isError = scenario === "error"
+
+    return (
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+
+          background: SOFT_SLATE.bg,
+
+          overflow: "hidden",
+          position: "relative",
+
+          fontFamily: SOFT_SLATE.fontFamily,
+        }}
+      >
+        <DashboardIconRail
+          go={go}
+          isDesktop={isDesktop}
+          active="productCompare"
+          navItems={[
+            {
+              screen: "dashboard",
+              label: "Dashboard",
+              path: null,
+            },
+            {
+              screen: "productCompare",
+              label: "Compare Products",
+              path: null,
+            },
+            {
+              screen: "settings",
+              label: "Settings",
+              path: null,
+            },
+            {
+              screen: "help",
+              label: "Help & FAQ",
+              path: null,
+            },
+            {
+              screen: "about",
+              label: "About",
+              path: null,
+            },
+          ]}
+        />
+
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+            marginLeft: isDesktop ? 80 : 0,
+          }}
+        >
+          <div
+            style={{
+              padding: `${
+                isDesktop
+                  ? "40px"
+                  : `calc(${SAFE_TOP} + 66px)`
+              } ${H_PAD}px 10px`,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <BackBtn onPress={goBack} />
+
+              <h1
+                style={{
+                  margin: 0,
+                  fontFamily: SOFT_SLATE.fontFamily,
+                  fontWeight: 800,
+                  fontSize: 23,
+                  color: SOFT_SLATE.textPrimary,
+                }}
+              >
+                Compare Products
+              </h1>
+            </div>
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: `20px ${H_PAD}px 50px`,
+            }}
+          >
+            <Center maxWidth={700}>
+              <div
+                style={{
+                  ...raisedCard,
+
+                  padding: isDesktop ? 48 : 30,
+
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textAlign: "center",
                   gap: 14,
                 }}
               >
                 <div
                   style={{
-                    width: "100%",
-                    aspectRatio: "16/10",
-                    borderRadius: 14,
-                    background:
-                      "rgba(26,18,9,0.08)",
-                  }}
-                />
+                    width: 68,
+                    height: 68,
+                    borderRadius: "50%",
 
-                {skeletonBar("70%", 16)}
-                {skeletonBar("45%", 11)}
-                {skeletonBar("90px", 24)}
-                {skeletonBar("100%", 7)}
-                {skeletonBar("100%", 7)}
+                    background: SOFT_SLATE.bg,
+
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+
+                    boxShadow: SOFT_SLATE.insetMd,
+
+                    color: isError
+                      ? SOFT_SLATE.unsafe
+                      : SOFT_SLATE.caution,
+
+                    fontSize: 27,
+                    fontWeight: 800,
+                  }}
+                >
+                  {isError ? "!" : "?"}
+                </div>
+
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily: SOFT_SLATE.fontFamily,
+                    fontSize: 17,
+                    fontWeight: 800,
+                    color: SOFT_SLATE.textPrimary,
+                  }}
+                >
+                  {isError
+                    ? "Something went wrong"
+                    : "Product not found"}
+                </h3>
+
+                <p
+                  style={{
+                    margin: 0,
+                    maxWidth: 420,
+
+                    fontFamily: SOFT_SLATE.fontFamily,
+                    fontSize: 12.5,
+                    lineHeight: 1.6,
+
+                    color: SOFT_SLATE.textSecondary,
+                  }}
+                >
+                  {isError
+                    ? "We couldn't load this comparison. Check your connection and try again."
+                    : "We couldn't find a match for the second barcode. It may not be in the database yet — try scanning again or search by name."}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    isError
+                      ? setScenario("initial")
+                      : go("barcode")
+                  }
+                  style={{
+                    marginTop: 8,
+
+                    padding: "12px 24px",
+
+                    border: "none",
+                    borderRadius: 15,
+
+                    background: SOFT_SLATE.bg,
+                    color: SOFT_SLATE.green,
+
+                    fontFamily: SOFT_SLATE.fontFamily,
+                    fontWeight: 800,
+                    fontSize: 12.5,
+
+                    boxShadow: SOFT_SLATE.raisedBtn,
+
+                    cursor: "pointer",
+                  }}
+                >
+                  {isError ? "Retry" : "Try again"}
+                </button>
               </div>
-            ))}
+            </Center>
           </div>
         </div>
-      )
-    }
-
-    // ── Error / Not Found ─────────────────────────────────────────────────
-    if (
-      scenario === "error" ||
-      scenario === "not-found"
-    ) {
-      const isError = scenario === "error"
-
-      return (
-        <ComparePanel>
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: isError
-                ? C.statusDanger
-                : C.mochaPale,
-              color: isError
-                ? C.white
-                : C.green,
-            }}
-          >
-            {isError ? (
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-              >
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                />
-                <line
-                  x1="12"
-                  y1="8"
-                  x2="12"
-                  y2="12"
-                />
-                <line
-                  x1="12"
-                  y1="16"
-                  x2="12.01"
-                  y2="16"
-                />
-              </svg>
-            ) : (
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-              >
-                <rect
-                  x="3"
-                  y="3"
-                  width="18"
-                  height="18"
-                  rx="2"
-                />
-                <circle
-                  cx="8.5"
-                  cy="8.5"
-                  r="1.5"
-                />
-                <polyline points="21 15 16 10 5 21" />
-              </svg>
-            )}
-          </div>
-
-          <h3
-            style={{
-              margin: 0,
-              fontFamily: FONT_HEAD,
-              fontSize: 16,
-              fontWeight: 700,
-              color: C.black,
-            }}
-          >
-            {isError
-              ? "Something went wrong"
-              : "Product not found"}
-          </h3>
-
-          <p
-            style={{
-              margin: 0,
-              fontFamily: FONT_BODY,
-              fontSize: 12.5,
-              color: "rgba(26,18,9,0.68)",
-              maxWidth: 340,
-              lineHeight: 1.6,
-            }}
-          >
-            {isError
-              ? "We couldn't load this comparison. Check your connection and try again."
-              : "We couldn't find a match for the second barcode. It may not be in the database yet — try scanning again or search by name."}
-          </p>
-
-          <button
-            type="button"
-            onClick={() =>
-              isError
-                ? setScenario("initial")
-                : go("barcode")
-            }
-            style={{
-              padding: "10px 18px",
-              borderRadius: 13,
-              border: "none",
-              background: C.green,
-              color: C.white,
-              fontFamily: FONT_HEAD,
-              fontWeight: 700,
-              fontSize: 12,
-              cursor: "pointer",
-              boxShadow:
-                "0 6px 18px rgba(45,106,79,0.22)",
-            }}
-          >
-            {isError ? "Retry" : "Try again"}
-          </button>
-        </ComparePanel>
-      )
-    }
-
-    // ── Product Data ──────────────────────────────────────────────────────
-    let a: CompareProduct = COMPARE_PRODUCT_A
-    let b: CompareProduct = COMPARE_PRODUCT_B
-
-    if (scenario === "success-none") {
-      a = {
-        ...a,
-        grade: "c",
-        verdict: "caution",
-      }
-
-      b = {
-        ...b,
-        grade: "c",
-        verdict: "caution",
-      }
-    }
-
-    if (scenario === "incomplete") {
-      b = {
-        ...b,
-        ingredientsText: undefined,
-        allergens: undefined,
-        breakdown: null,
-        grade: null,
-        verdict: null,
-        verdictReason: undefined,
-      }
-    }
-
-    // ── Recommendation ───────────────────────────────────────────────────
-    const recommendation:
-      | "a"
-      | "b"
-      | "none" = (() => {
-      if (
-        a.grade === null ||
-        b.grade === null
-      ) {
-        return "none"
-      }
-
-      if (
-        a.verdict === "avoid" &&
-        b.verdict !== "avoid"
-      ) {
-        return "b"
-      }
-
-      if (
-        b.verdict === "avoid" &&
-        a.verdict !== "avoid"
-      ) {
-        return "a"
-      }
-
-      const aRank = GRADE_ORDER.indexOf(a.grade)
-      const bRank = GRADE_ORDER.indexOf(b.grade)
-
-      if (aRank === bRank) {
-        return "none"
-      }
-
-      // Lower index in GRADE_ORDER ("a") is the better grade.
-      return aRank < bRank ? "a" : "b"
-    })()
-
-    return (
-      <>
-        {/* ── Incomplete Data Notice ─────────────────────────────────────── */}
-        {scenario === "incomplete" && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 12,
-              padding: "13px 16px",
-              marginBottom: 24,
-              borderRadius: 14,
-              background:
-                "rgba(245,197,24,0.10)",
-              border:
-                "1px solid rgba(245,197,24,0.35)",
-            }}
-          >
-            <svg
-              width="17"
-              height="17"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke={C.statusCaution}
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{
-                flexShrink: 0,
-                marginTop: 1,
-              }}
-            >
-              <path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z" />
-              <line
-                x1="12"
-                y1="9"
-                x2="12"
-                y2="13"
-              />
-              <line
-                x1="12"
-                y1="17"
-                x2="12.01"
-                y2="17"
-              />
-            </svg>
-
-            <span
-              style={{
-                fontFamily: FONT_BODY,
-                fontSize: 12,
-                lineHeight: 1.55,
-                color: "rgba(26,18,9,0.75)",
-              }}
-            >
-              <strong
-                style={{
-                  fontFamily: FONT_HEAD,
-                  color: C.black,
-                }}
-              >
-                Product B is missing data
-              </strong>{" "}
-              — ingredients, allergens, and nutrition
-              grade weren't returned by the backend.
-              Nothing has been guessed to fill the gaps.
-            </span>
-          </div>
-        )}
-
-        {/* ── Section 1: Product ─────────────────────────────────────────── */}
-        <CmpSection
-          title="Product"
-          first
-        >
-          <div style={cmpGrid(isDesktop)}>
-            <ProductHeaderCard
-              label="A"
-              product={a}
-              isWinner={recommendation === "a"}
-            />
-
-            <ProductHeaderCard
-              label="B"
-              product={b}
-              isWinner={recommendation === "b"}
-            />
-          </div>
-        </CmpSection>
-
-        {/* ── Section 2: Allergy & Safety ───────────────────────────────── */}
-        <CmpSection
-          title="Allergy & Safety Verdict"
-          description="Whether each product is safe to eat against your saved allergy and health profile."
-        >
-          <div style={cmpGrid(isDesktop)}>
-            <CmpCard
-              accent={recommendation === "a"}
-            >
-              <StatusBadge
-                verdict={a.verdict}
-                reason={a.verdictReason}
-                size="lg"
-              />
-
-              <div>
-                <CmpLabel>
-                  Allergens detected
-                </CmpLabel>
-
-                <AllergenList
-                  allergens={a.allergens}
-                />
-              </div>
-            </CmpCard>
-
-            <CmpCard
-              accent={recommendation === "b"}
-            >
-              <StatusBadge
-                verdict={b.verdict}
-                reason={b.verdictReason}
-                size="lg"
-              />
-
-              <div>
-                <CmpLabel>
-                  Allergens detected
-                </CmpLabel>
-
-                <AllergenList
-                  allergens={b.allergens}
-                />
-              </div>
-            </CmpCard>
-          </div>
-        </CmpSection>
-
-        {/* ── Section 3: Ingredients ────────────────────────────────────── */}
-        <CmpSection
-          title="Ingredient Breakdown"
-          description="Ingredients tied to a flagged allergen are highlighted; the rest are listed for reference."
-        >
-          <div style={cmpGrid(isDesktop)}>
-            <CmpCard>
-              <CmpLabel>{a.name}</CmpLabel>
-
-              <IngredientBreakdown product={a} />
-            </CmpCard>
-
-            <CmpCard>
-              <CmpLabel>{b.name}</CmpLabel>
-
-              <IngredientBreakdown product={b} />
-            </CmpCard>
-          </div>
-        </CmpSection>
-
-        {/* ── Section 4: Nutrition ───────────────────────────────────────── */}
-        <CmpSection title="Nutrition Comparison">
-          <NutritionTable a={a} b={b} />
-        </CmpSection>
-
-        {/* ── Section 5: Key Insights ────────────────────────────────────── */}
-        <CmpSection
-          title="Key Insights"
-          description="What stands out between these two products, at a glance."
-        >
-          <KeyInsightsCard
-            a={a}
-            b={b}
-            recommendation={recommendation}
-          />
-        </CmpSection>
-
-        {/* ── Add Product ────────────────────────────────────────────────── */}
-        <button
-          type="button"
-          onClick={() => setScenario("initial")}
-          style={{
-            width: "100%",
-            marginTop: 28,
-            padding: 14,
-            borderRadius: 14,
-            border: `1.5px solid ${C.green}`,
-            background: "transparent",
-            color: C.greenMid,
-            fontFamily: FONT_HEAD,
-            fontWeight: 700,
-            fontSize: 13,
-            cursor: "pointer",
-          }}
-        >
-          + Add another product
-        </button>
-      </>
+      </div>
     )
-  })()
+  }
+
+  // ── Main content ─────────────────────────────────────────────────────────
+
+  const insights = buildInsights(
+    a,
+    b,
+    recommendation
+  )
 
   return (
     <div
       style={{
         flex: 1,
         display: "flex",
-        background: C.offWhite,
+
+        background: SOFT_SLATE.bg,
+
         overflow: "hidden",
         position: "relative",
+
+        fontFamily: SOFT_SLATE.fontFamily,
       }}
     >
-      {/* ── Sidebar ─────────────────────────────────────────────────────── */}
-      <AppSidebar
+      {/* ── Dashboard-style icon rail ───────────────────────────────────── */}
+
+      <DashboardIconRail
         go={go}
-        open={navOpen}
-        onClose={() => setNavOpen(false)}
         isDesktop={isDesktop}
         active="productCompare"
+        navItems={[
+          {
+            screen: "dashboard",
+            label: "Dashboard",
+            path: null,
+          },
+          {
+            screen: "productCompare",
+            label: "Compare Products",
+            path: null,
+          },
+          {
+            screen: "history",
+            label: "Scan History",
+            path: null,
+          },
+          {
+            screen: "settings",
+            label: "Settings",
+            path: null,
+          },
+          {
+            screen: "help",
+            label: "Help & FAQ",
+            path: null,
+          },
+          {
+            screen: "about",
+            label: "About",
+            path: null,
+          },
+        ]}
       />
 
-      {/* ── Mobile Menu ─────────────────────────────────────────────────── */}
+      {/* ── Mobile menu button ────────────────────────────────────────────── */}
+
       {!isDesktop && !navOpen && (
-        <Tooltip
-          label="Open menu"
-          wrapperStyle={{
+        <button
+          type="button"
+          onClick={() => setNavOpen(true)}
+          aria-label="Open menu"
+          style={{
             position: "fixed",
             top: `calc(${SAFE_TOP} + 14px)`,
             left: 14,
+
             zIndex: 55,
+
+            width: 42,
+            height: 42,
+
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+
+            border: "none",
+            borderRadius: 14,
+
+            background: SOFT_SLATE.bg,
+            color: SOFT_SLATE.green,
+
+            boxShadow: SOFT_SLATE.raisedSm,
+
+            cursor: "pointer",
+
+            fontSize: 18,
           }}
         >
-          <button
-            type="button"
-            onClick={() => setNavOpen(true)}
-            aria-label="Open menu"
-            style={{
-              width: 38,
-              height: 38,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 11,
-              border: `1px solid ${C.border}`,
-              background: C.white,
-              color: C.green,
-              cursor: "pointer",
-              boxShadow:
-                "0 4px 14px rgba(0,0,0,0.1)",
-            }}
-          >
-            <svg
-              width={16}
-              height={12}
-              viewBox="0 0 24 18"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-            >
-              <line
-                x1="0"
-                y1="1"
-                x2="24"
-                y2="1"
-              />
-              <line
-                x1="0"
-                y1="9"
-                x2="24"
-                y2="9"
-              />
-              <line
-                x1="0"
-                y1="17"
-                x2="24"
-                y2="17"
-              />
-            </svg>
-          </button>
-        </Tooltip>
+          ☰
+        </button>
       )}
 
-      {/* ── Main Content ────────────────────────────────────────────────── */}
+      {/* ── Main area ─────────────────────────────────────────────────────── */}
+
       <div
         style={{
           flex: 1,
+          minWidth: 0,
+
           display: "flex",
           flexDirection: "column",
-          minWidth: 0,
-          marginLeft: isDesktop
-            ? SIDEBAR_WIDTH
-            : 0,
+
+          marginLeft: isDesktop ? 80 : 0,
         }}
       >
-        {/* Page Header */}
+        {/* ── Header ─────────────────────────────────────────────────────── */}
+
         <div
           style={{
-            padding: `${isDesktop ? "40px" : `calc(${SAFE_TOP} + 66px)`} ${H_PAD}px 6px`,
+            padding: `${
+              isDesktop
+                ? "40px"
+                : `calc(${SAFE_TOP} + 66px)`
+            } ${H_PAD}px 10px`,
           }}
         >
           <div
@@ -10151,48 +10445,710 @@ function ProductCompareScreen({
           >
             <BackBtn onPress={goBack} />
 
-            <h1
-              style={{
-                margin: 0,
-                fontFamily: FONT_HEAD,
-                fontWeight: 800,
-                fontSize: 23,
-                color: C.black,
-              }}
-            >
-              Compare Products
-            </h1>
-          </div>
+            <div>
+              <h1
+                style={{
+                  margin: 0,
 
-          <p
-            style={{
-              margin: "5px 0 0",
-              fontFamily: FONT_BODY,
-              fontSize: 12.5,
-              color: "rgba(26,18,9,0.65)",
-            }}
-          >
-            Side-by-side ingredient, nutrition, and
-            allergy comparison.
-          </p>
+                  fontFamily: SOFT_SLATE.fontFamily,
+                  fontWeight: 800,
+                  fontSize: 23,
+
+                  color: SOFT_SLATE.textPrimary,
+
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                Compare Products
+              </h1>
+
+              <p
+                style={{
+                  margin: "5px 0 0",
+
+                  fontFamily: SOFT_SLATE.fontFamily,
+                  fontSize: 12.5,
+
+                  color: SOFT_SLATE.textSecondary,
+                }}
+              >
+                Side-by-side ingredient, nutrition, and allergy comparison.
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Scrollable Content */}
+        {/* ── Scroll content ─────────────────────────────────────────────── */}
+
         <div
           style={{
             flex: 1,
+
             overflowY: "auto",
-            padding: `0 ${H_PAD}px ${isDesktop ? 56 : 40}px`,
+
+            padding: `10px ${H_PAD}px ${
+              isDesktop ? 60 : 45
+            }px`,
           }}
         >
           <Center maxWidth={1080}>
-            {content}
+
+            {/* ── Incomplete data notice ─────────────────────────────────── */}
+
+            {scenario === "incomplete" && (
+              <div
+                style={{
+                  ...raisedCard,
+
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 12,
+
+                  padding: "15px 18px",
+
+                  marginBottom: 24,
+
+                  borderRadius: 18,
+
+                  boxShadow: SOFT_SLATE.raisedSm,
+                }}
+              >
+                <div
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: "50%",
+
+                    flexShrink: 0,
+
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+
+                    background: SOFT_SLATE.bg,
+
+                    boxShadow: SOFT_SLATE.insetSm,
+
+                    color: SOFT_SLATE.caution,
+
+                    fontWeight: 900,
+                    fontSize: 15,
+                  }}
+                >
+                  !
+                </div>
+
+                <div>
+                  <strong
+                    style={{
+                      display: "block",
+
+                      fontFamily: SOFT_SLATE.fontFamily,
+                      fontSize: 12.5,
+                      fontWeight: 800,
+
+                      color: SOFT_SLATE.textPrimary,
+                    }}
+                  >
+                    Product B is missing data
+                  </strong>
+
+                  <span
+                    style={{
+                      display: "block",
+                      marginTop: 3,
+
+                      fontFamily: SOFT_SLATE.fontFamily,
+                      fontSize: 11.5,
+                      lineHeight: 1.5,
+
+                      color: SOFT_SLATE.textSecondary,
+                    }}
+                  >
+                    Ingredients, allergens, and nutrition grade weren't
+                    returned by the backend. Nothing has been guessed to
+                    fill the gaps.
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* ── Product ─────────────────────────────────────────────────── */}
+
+            <Section title="Product">
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: isDesktop
+                    ? "repeat(2, minmax(0, 1fr))"
+                    : "1fr 1fr",
+                  gap: isDesktop ? 22 : 11,
+                }}
+              >
+                <ProductCard
+                  label="A"
+                  product={a}
+                  winner={recommendation === "a"}
+                />
+
+                <ProductCard
+                  label="B"
+                  product={b}
+                  winner={recommendation === "b"}
+                />
+              </div>
+            </Section>
+
+            {/* ── Allergy & Safety ───────────────────────────────────────── */}
+
+            <Section
+              title="Allergy & Safety Verdict"
+              description="Whether each product is safe to eat against your saved allergy and health profile."
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: isDesktop
+                    ? "repeat(2, minmax(0, 1fr))"
+                    : "1fr 1fr",
+                  gap: isDesktop ? 22 : 11,
+                }}
+              >
+                <CompareCard
+                  accent={recommendation === "a"}
+                >
+                  <StatusBadge
+                    verdict={a.verdict}
+                    reason={a.verdictReason}
+                    size="lg"
+                  />
+
+                  <div>
+                    <p
+                      style={{
+                        margin: "0 0 10px",
+
+                        fontFamily: SOFT_SLATE.fontFamily,
+                        fontSize: 10.5,
+                        fontWeight: 800,
+                        letterSpacing: "0.07em",
+                        textTransform: "uppercase",
+
+                        color: SOFT_SLATE.textMuted,
+                      }}
+                    >
+                      Allergens detected
+                    </p>
+
+                    <AllergenList
+                      allergens={a.allergens}
+                    />
+                  </div>
+                </CompareCard>
+
+                <CompareCard
+                  accent={recommendation === "b"}
+                >
+                  <StatusBadge
+                    verdict={b.verdict}
+                    reason={b.verdictReason}
+                    size="lg"
+                  />
+
+                  <div>
+                    <p
+                      style={{
+                        margin: "0 0 10px",
+
+                        fontFamily: SOFT_SLATE.fontFamily,
+                        fontSize: 10.5,
+                        fontWeight: 800,
+                        letterSpacing: "0.07em",
+                        textTransform: "uppercase",
+
+                        color: SOFT_SLATE.textMuted,
+                      }}
+                    >
+                      Allergens detected
+                    </p>
+
+                    <AllergenList
+                      allergens={b.allergens}
+                    />
+                  </div>
+                </CompareCard>
+              </div>
+            </Section>
+
+            {/* ── Ingredients ────────────────────────────────────────────── */}
+
+            <Section
+              title="Ingredient Breakdown"
+              description="Ingredients tied to a flagged allergen are highlighted; the rest are listed for reference."
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: isDesktop
+                    ? "repeat(2, minmax(0, 1fr))"
+                    : "1fr 1fr",
+                  gap: isDesktop ? 22 : 11,
+                }}
+              >
+                <CompareCard>
+                  <p
+                    style={{
+                      margin: 0,
+
+                      fontFamily: SOFT_SLATE.fontFamily,
+                      fontSize: 11,
+                      fontWeight: 800,
+
+                      color: SOFT_SLATE.textPrimary,
+                    }}
+                  >
+                    {a.name}
+                  </p>
+
+                  <div
+                    style={{
+                      ...insetCard,
+                      padding: 10,
+                    }}
+                  >
+                    <IngredientBreakdown
+                      product={a}
+                    />
+                  </div>
+                </CompareCard>
+
+                <CompareCard>
+                  <p
+                    style={{
+                      margin: 0,
+
+                      fontFamily: SOFT_SLATE.fontFamily,
+                      fontSize: 11,
+                      fontWeight: 800,
+
+                      color: SOFT_SLATE.textPrimary,
+                    }}
+                  >
+                    {b.name}
+                  </p>
+
+                  <div
+                    style={{
+                      ...insetCard,
+                      padding: 10,
+                    }}
+                  >
+                    <IngredientBreakdown
+                      product={b}
+                    />
+                  </div>
+                </CompareCard>
+              </div>
+            </Section>
+
+            {/* ── Nutrition ──────────────────────────────────────────────── */}
+
+            <Section title="Nutrition Comparison">
+              <div
+                style={{
+                  ...raisedCard,
+
+                  padding: isDesktop ? 22 : 14,
+
+                  overflow: "hidden",
+                }}
+              >
+                <p
+                  style={{
+                    margin: "0 0 15px",
+
+                    fontFamily: SOFT_SLATE.fontFamily,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    letterSpacing: "0.07em",
+                    textTransform: "uppercase",
+
+                    color: SOFT_SLATE.textMuted,
+                  }}
+                >
+                  Nutrition Comparison — per 100g
+                </p>
+
+                <div
+                  style={{
+                    ...insetCard,
+
+                    padding: isDesktop ? 12 : 8,
+
+                    overflowX: "auto",
+                  }}
+                >
+                  <table
+                    style={{
+                      width: "100%",
+                      minWidth: 500,
+
+                      borderCollapse: "separate",
+                      borderSpacing: "0 5px",
+
+                      fontFamily: SOFT_SLATE.fontFamily,
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        <th
+                          style={{
+                            textAlign: "left",
+                            padding: "7px 10px",
+
+                            fontSize: 10,
+                            fontWeight: 800,
+
+                            color: SOFT_SLATE.textMuted,
+                          }}
+                        >
+                          Nutrition
+                        </th>
+
+                        <th
+                          style={{
+                            textAlign: "right",
+                            padding: "7px 10px",
+
+                            fontSize: 10.5,
+                            fontWeight: 800,
+
+                            color: SOFT_SLATE.textPrimary,
+                          }}
+                        >
+                          {a.name}
+                        </th>
+
+                        <th
+                          style={{
+                            textAlign: "right",
+                            padding: "7px 10px",
+
+                            fontSize: 10.5,
+                            fontWeight: 800,
+
+                            color: SOFT_SLATE.textPrimary,
+                          }}
+                        >
+                          {b.name}
+                        </th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {NUTRITION_ROWS.map((row) => {
+                        const av =
+                          a.nutrition?.[row.key]
+
+                        const bv =
+                          b.nutrition?.[row.key]
+
+                        return (
+                          <tr key={row.key}>
+                            <td
+                              style={{
+                                padding: "10px",
+
+                                background: SOFT_SLATE.bg,
+
+                                borderRadius: 10,
+
+                                fontSize: 12,
+                                color: SOFT_SLATE.textSecondary,
+
+                                boxShadow:
+                                  SOFT_SLATE.raisedSm,
+                              }}
+                            >
+                              {row.label}
+                            </td>
+
+                            <td
+                              style={{
+                                padding: "10px",
+
+                                textAlign: "right",
+
+                                background: SOFT_SLATE.bg,
+
+                                fontSize: 12.5,
+                                fontWeight:
+                                  av === undefined
+                                    ? 400
+                                    : 800,
+
+                                color:
+                                  av === undefined
+                                    ? SOFT_SLATE.textMuted
+                                    : SOFT_SLATE.textPrimary,
+
+                                fontStyle:
+                                  av === undefined
+                                    ? "italic"
+                                    : "normal",
+
+                                boxShadow:
+                                  SOFT_SLATE.raisedSm,
+                              }}
+                            >
+                              {av === undefined
+                                ? "—"
+                                : `${av}${row.unit}`}
+                            </td>
+
+                            <td
+                              style={{
+                                padding: "10px",
+
+                                textAlign: "right",
+
+                                background: SOFT_SLATE.bg,
+
+                                fontSize: 12.5,
+                                fontWeight:
+                                  bv === undefined
+                                    ? 400
+                                    : 800,
+
+                                color:
+                                  bv === undefined
+                                    ? SOFT_SLATE.textMuted
+                                    : SOFT_SLATE.textPrimary,
+
+                                fontStyle:
+                                  bv === undefined
+                                    ? "italic"
+                                    : "normal",
+
+                                boxShadow:
+                                  SOFT_SLATE.raisedSm,
+                              }}
+                            >
+                              {bv === undefined
+                                ? "—"
+                                : `${bv}${row.unit}`}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </Section>
+
+            {/* ── Key Insights ───────────────────────────────────────────── */}
+
+            <Section
+              title="Key Insights"
+              description="What stands out between these two products, at a glance."
+            >
+              <div
+                style={{
+                  ...raisedCard,
+
+                  padding: isDesktop ? 24 : 16,
+
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 17,
+
+                  boxShadow:
+                    recommendation === "none"
+                      ? SOFT_SLATE.raisedMd
+                      : `
+                        0 0 0 2px ${SOFT_SLATE.green},
+                        ${SOFT_SLATE.raisedMd}
+                      `,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 13,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: "50%",
+
+                      flexShrink: 0,
+
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+
+                      background: SOFT_SLATE.bg,
+
+                      boxShadow:
+                        recommendation === "none"
+                          ? SOFT_SLATE.insetMd
+                          : SOFT_SLATE.raisedSm,
+
+                      color:
+                        recommendation === "none"
+                          ? SOFT_SLATE.textMuted
+                          : SOFT_SLATE.green,
+
+                      fontSize: 18,
+                      fontWeight: 900,
+                    }}
+                  >
+                    {recommendation === "none"
+                      ? "—"
+                      : "✓"}
+                  </div>
+
+                  <div>
+                    <p
+                      style={{
+                        margin: 0,
+
+                        fontFamily: SOFT_SLATE.fontFamily,
+                        fontWeight: 800,
+                        fontSize: 16,
+
+                        color: SOFT_SLATE.textPrimary,
+                      }}
+                    >
+                      {recommendation === "none"
+                        ? "No clear recommendation"
+                        : (
+                          <>
+                            <span
+                              style={{
+                                color: SOFT_SLATE.green,
+                              }}
+                            >
+                              {recommendation === "a"
+                                ? a.name
+                                : b.name}
+                            </span>{" "}
+                            is the better choice
+                          </>
+                        )}
+                    </p>
+
+                    <p
+                      style={{
+                        margin: "4px 0 0",
+
+                        fontFamily: SOFT_SLATE.fontFamily,
+                        fontSize: 12,
+                        lineHeight: 1.55,
+
+                        color: SOFT_SLATE.textSecondary,
+                      }}
+                    >
+                      {recommendation === "none"
+                        ? "Both products score too closely, or key data is missing, for Scanity to call a clear winner."
+                        : "Based on nutrition grade, ingredient quality, and your saved health profile."}
+                    </p>
+                  </div>
+                </div>
+
+                {insights.length > 0 && (
+                  <div
+                    style={{
+                      ...insetCard,
+
+                      padding: 14,
+
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 8,
+                    }}
+                  >
+                    {insights.map(
+                      (insight, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            display: "flex",
+                            gap: 9,
+
+                            fontFamily:
+                              SOFT_SLATE.fontFamily,
+
+                            fontSize: 12,
+                            lineHeight: 1.55,
+
+                            color:
+                              SOFT_SLATE.textSecondary,
+                          }}
+                        >
+                          <span
+                            style={{
+                              color:
+                                SOFT_SLATE.green,
+                              fontWeight: 900,
+                            }}
+                          >
+                            •
+                          </span>
+
+                          <span>{insight}</span>
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
+            </Section>
+
+            {/* ── Add another product ────────────────────────────────────── */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setScenario("initial")
+              }
+              style={{
+                width: "100%",
+
+                marginTop: 30,
+
+                padding: 15,
+
+                border: "none",
+                borderRadius: 17,
+
+                background: SOFT_SLATE.bg,
+
+                color: SOFT_SLATE.green,
+
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontWeight: 800,
+                fontSize: 13,
+
+                boxShadow: SOFT_SLATE.raisedBtn,
+
+                cursor: "pointer",
+              }}
+            >
+              + Add another product
+            </button>
+
           </Center>
         </div>
       </div>
     </div>
   )
 }
+
 // Same data the Dashboard panel reads from — no separate placeholder set.
 function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
   const [query, setQuery] = useState("")
@@ -10248,12 +11204,8 @@ function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
             zIndex: 5,
           }}
         >
-          <DashboardIconRail
-            go={go}
-            isDesktop
-            active="history"
-            navItems={SCAN_HISTORY_RAIL_ITEMS}
-          />
+        <DashboardIconRail go={go} isDesktop />
+
         </div>
       )}
 
