@@ -4184,7 +4184,7 @@ function DashboardIconRail({
         flex: "none",
         background: SOFT_SLATE.bg,
         borderRadius: 26,
-        padding: isDesktop ? "36px 0 12px" : "0 18px",
+        padding: isDesktop ? "36px 0 6px" : "0 18px",
         display: "flex",
         flexDirection: isDesktop ? "column" : "row",
         alignItems: "center",
@@ -4275,27 +4275,30 @@ function DashboardIconRail({
         })}
       </div>
 
-      {/* Divider — visually separates logout from the nav icons above it */}
+      {/* Divider — sits right above logout; the auto top-margin here (not on
+          logout) is what pushes this whole bottom group down to the bottom
+          of the rail, so the divider and the logout icon stay right next to
+          each other instead of drifting apart. */}
       {isDesktop && (
         <div
           style={{
             width: 32,
             height: 1,
             background: "#c6ccd4",
-            margin: "8px 0 0",
+            margin: "auto 0 8px",
             flexShrink: 0,
           }}
         />
       )}
 
-      {/* Logout — pinned to the bottom of the rail */}
+      {/* Logout — pinned to the bottom of the rail, right under the divider */}
       <Tooltip label="Log out">
         <button
           type="button"
           onClick={() => go("splash")}
           aria-label="Log out"
           style={{
-            marginTop: isDesktop ? "auto" : 0,
+            marginTop: 0,
             flexShrink: 0,
             width: 42,
             height: 42,
