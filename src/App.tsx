@@ -20753,7 +20753,6 @@ export default function App() {
     forgotPassword: <ForgotPasswordScreen go={go} goBack={goBack} />,
     resetPassword: <ResetPasswordScreen go={go} />,
     confirmationPassword: <ConfirmationPasswordScreen go={go} />,
-    language: <LanguageScreen go={go} />,
     productResult: <ProductResultScreen go={go} />,
     productCompare: <ProductCompareScreen go={go} goBack={goBack} />,
   }
