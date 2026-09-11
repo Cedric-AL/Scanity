@@ -4936,7 +4936,18 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
-// ── Barcode Scanner Screen ────────────────────────────────────────────────────
+// ── Barcode Scanner Screen — Soft Slate ─────────────────────────────────────
+// Reskinned to match DashboardScreen's neumorphic "Soft Slate" direction:
+// same SOFT_SLATE token set, same DashboardIconRail nav shell, raised/inset
+// shadows instead of flat borders, and the same green/gold/caution/unsafe
+// status vocabulary the Dashboard's scan history already uses. All scanning
+// logic (camera, ZXing, backend lookup, validation) is untouched — only the
+// render layer changed.
+//
+// Assumes this file lives alongside dashboard.tsx and can import: SOFT_SLATE,
+// DashboardIconRail, DASHBOARD_RAIL_ITEMS, Screen, Tooltip, Center, SAFE_TOP,
+// useIsDesktop, BrowserMultiFormatReader. Adjust the import paths below to
+// match your project structure.
 
 type ScannerStatus =
   | "ready"
@@ -4954,7 +4965,6 @@ type ScannerStatus =
 
 type ProductResult = {
   barcode?: string
-
   productInformation?: {
     name?: string
     brand?: string
@@ -4962,7 +4972,6 @@ type ProductResult = {
     image?: string
     imageUrl?: string
   }
-
   product?: {
     name?: string
     brand?: string
@@ -4973,4109 +4982,1220 @@ type ProductResult = {
     ingredients_text?: string
     nutrition?: Record<string, any>
   }
-
   ingredients?: string | string[]
-
   nutrition?: Record<string, any>
-
-  healthAnalysis?: {
-    score?: number
-    rating?: string
-    summary?: string
-  }
-
-  allergyCheck?: {
-    hasAllergy?: boolean
-    matchedAllergies?: string[]
-  }
-
+  healthAnalysis?: { score?: number; rating?: string; summary?: string }
+  allergyCheck?: { hasAllergy?: boolean; matchedAllergies?: string[] }
   allergyStatus?: string
-
   [key: string]: any
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
+// Barcode icon path reused from Dashboard's "Scan Barcode" card icon, so the
+// rail entry for this screen matches the same glyph the dashboard uses to
+// link here.
+const BARCODE_ICON_PATH: ReactNode = (
+  <>
+    <path d="M3 5V3h2" />
+    <path d="M19 3h2v2" />
+    <path d="M21 19v2h-2" />
+    <path d="M5 21H3v-2" />
+    <path d="M7 8v8" />
+    <path d="M11 8v8" />
+    <path d="M15 8v8" />
+  </>
+)
 
-function BarcodeScannerScreen({
-  go,
-}: {
-  go: (s: Screen) => void
-}) {
-  // ───────────────────────────────────────────────────────────────────────────
-  // UI STATE
-  // ───────────────────────────────────────────────────────────────────────────
+// Barcode Scanner's own rail set: Dashboard, this screen, then the usual
+// Settings/Help/About — same pattern SCAN_HISTORY_RAIL_ITEMS uses on the
+// Scan History screen.
+const BARCODE_RAIL_ITEMS: { screen: Screen; label: string; path: ReactNode }[] = [
+  DASHBOARD_RAIL_ITEMS[0],
+  { screen: "barcode", label: "Barcode Scanner", path: BARCODE_ICON_PATH },
+  DASHBOARD_RAIL_ITEMS[1],
+  DASHBOARD_RAIL_ITEMS[2],
+  DASHBOARD_RAIL_ITEMS[3],
+]
 
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+// Soft-tinted status backgrounds — the exact pairs scanStatusInfo() uses on
+// the Dashboard, so a "Safe/Caution/Avoid" reads the same everywhere.
+const STATUS_TINTS = {
+  green: { fg: SOFT_SLATE.green, bg: "#E1EBE5" },
+  caution: { fg: SOFT_SLATE.caution, bg: "#F1E3D8" },
+  unsafe: { fg: SOFT_SLATE.unsafe, bg: "#F1DEDA" },
+}
 
+function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
+  // ── UI STATE ──────────────────────────────────────────────────────────────
   const [showHelp, setShowHelp] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [showLogoutLoading, setShowLogoutLoading] = useState(false)
+  const [scanStatus, setScanStatus] = useState<ScannerStatus>("ready")
+  const [barcodeValue, setBarcodeValue] = useState("")
+  const [manualBarcode, setManualBarcode] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
+  const [cameraFacing, setCameraFacing] = useState<"environment" | "user">("environment")
+  const [flashOn, setFlashOn] = useState(false)
+  const [galleryImage, setGalleryImage] = useState<string | null>(null)
+  const [productResult, setProductResult] = useState<ProductResult | null>(null)
 
-  const [showLogoutConfirm, setShowLogoutConfirm] =
-    useState(false)
-
-  const [showLogoutLoading, setShowLogoutLoading] =
-    useState(false)
-
-  const [scanStatus, setScanStatus] =
-    useState<ScannerStatus>("ready")
-
-  const [barcodeValue, setBarcodeValue] =
-    useState("")
-
-  const [manualBarcode, setManualBarcode] =
-    useState("")
-
-  const [errorMessage, setErrorMessage] =
-    useState("")
-
-  const [cameraFacing, setCameraFacing] =
-    useState<"environment" | "user">(
-      "environment"
-    )
-
-  const [flashOn, setFlashOn] =
-    useState(false)
-
-  const [galleryImage, setGalleryImage] =
-    useState<string | null>(null)
-
-  const [productResult, setProductResult] =
-    useState<ProductResult | null>(null)
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // REFS
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const videoRef =
-    useRef<HTMLVideoElement | null>(null)
-
-  const streamRef =
-    useRef<MediaStream | null>(null)
-
-  const readerRef =
-    useRef<BrowserMultiFormatReader | null>(null)
-
-  const processingRef =
-    useRef(false)
-
-  const lastScannedBarcodeRef =
-    useRef<string>("")
-
-  const lastScanTimeRef =
-    useRef<number>(0)
-
-  const isMountedRef =
-    useRef(true)
-
-  const galleryObjectUrlRef =
-    useRef<string | null>(null)
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // DESKTOP
-  // ───────────────────────────────────────────────────────────────────────────
+  // ── REFS ──────────────────────────────────────────────────────────────────
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const readerRef = useRef<BrowserMultiFormatReader | null>(null)
+  const processingRef = useRef(false)
+  const lastScannedBarcodeRef = useRef<string>("")
+  const lastScanTimeRef = useRef<number>(0)
+  const isMountedRef = useRef(true)
+  const galleryObjectUrlRef = useRef<string | null>(null)
 
   const isDesktop = useIsDesktop()
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // FONT
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const FONT = "'Poppins', sans-serif"
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // COLORS
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const PALETTE = {
-    pageBg: "#E8E5E0",
-
-    sidebarBg: "#176B3A",
-    sidebarDark: "#155B32",
-
-    green: "#176B3A",
-    greenLight: "#2E8B57",
-
-    white: "#FFFFFF",
-
-    textDark: "#1A1A1A",
-    textMuted: "#6B6B6B",
-
-    border: "#E5E3DC",
-
-    yellow: "#E0A72E",
-
-    red: "#C94C4C",
-    redSoft: "#FBECEC",
-
-    greenSoft: "#E8F4EC",
-
-    blue: "#3B6EA8",
-    blueSoft: "#EDF4FC",
-  }
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // BACKEND API
-  // ───────────────────────────────────────────────────────────────────────────
-
-  /*
-   * IMPORTANT:
-   *
-   * Change this if your backend endpoint is different.
-   *
-   * Example:
-   * VITE_API_URL=http://localhost:8000
-   *
-   * Then:
-   * VITE_BARCODE_LOOKUP_URL=http://localhost:8000/api/barcode/lookup
-   */
-
+  // ── BACKEND API ───────────────────────────────────────────────────────────
   const BACKEND_API_URL =
-    import.meta.env.VITE_BARCODE_LOOKUP_URL ||
-    "/api/barcode/lookup"
+    import.meta.env.VITE_BARCODE_LOOKUP_URL || "/api/barcode/lookup"
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // SIDEBAR
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const sidebarItems = [
-    {
-      icon: "fa-home",
-      label: "Dashboard",
-      screen: "dashboard" as Screen,
-    },
-    {
-      icon: "fa-gear",
-      label: "Settings",
-      screen: "settings" as Screen,
-    },
-    {
-      icon: "fa-question-circle",
-      label: "Help & FAQ",
-      screen: "help" as Screen,
-    },
-  ]
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // STOP CAMERA
-  // ───────────────────────────────────────────────────────────────────────────
-
+  // ── STOP CAMERA ───────────────────────────────────────────────────────────
   const stopCamera = () => {
     try {
       if (readerRef.current) {
         try {
           readerRef.current.reset()
         } catch (error) {
-          console.warn(
-            "ZXing reader reset failed:",
-            error
-          )
+          console.warn("ZXing reader reset failed:", error)
         }
-
         readerRef.current = null
       }
-
       if (streamRef.current) {
-        streamRef.current
-          .getTracks()
-          .forEach((track) => {
-            track.stop()
-          })
-
+        streamRef.current.getTracks().forEach((track) => track.stop())
         streamRef.current = null
       }
-
       if (videoRef.current) {
         videoRef.current.pause()
         videoRef.current.srcObject = null
       }
     } catch (error) {
-      console.warn(
-        "Unable to completely stop camera:",
-        error
-      )
+      console.warn("Unable to completely stop camera:", error)
     }
-
     setFlashOn(false)
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // VALIDATE BARCODE
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const validateBarcode = (
-    barcode: string
-  ) => {
+  // ── VALIDATE BARCODE ──────────────────────────────────────────────────────
+  const validateBarcode = (barcode: string) => {
     const value = barcode.trim()
-
-    if (!value) {
-      return {
-        valid: false,
-        message:
-          "Please enter a barcode number.",
-      }
+    if (!value) return { valid: false, message: "Please enter a barcode number." }
+    if (!/^\d+$/.test(value)) return { valid: false, message: "Barcode must contain numbers only." }
+    if (![8, 12, 13, 14].includes(value.length)) {
+      return { valid: false, message: "Please enter a valid 8, 12, 13, or 14-digit product barcode." }
     }
-
-    /*
-     * Food product barcodes commonly use:
-     * EAN-8  = 8 digits
-     * UPC-A  = 12 digits
-     * EAN-13 = 13 digits
-     * GTIN-14 = 14 digits
-     *
-     * This prevents random text from being sent
-     * to the backend.
-     */
-
-    if (!/^\d+$/.test(value)) {
-      return {
-        valid: false,
-        message:
-          "Barcode must contain numbers only.",
-      }
-    }
-
-    if (
-      ![8, 12, 13, 14].includes(
-        value.length
-      )
-    ) {
-      return {
-        valid: false,
-        message:
-          "Please enter a valid 8, 12, 13, or 14-digit product barcode.",
-      }
-    }
-
-    return {
-      valid: true,
-      message: "",
-    }
+    return { valid: true, message: "" }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // DUPLICATE SCAN PROTECTION
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const isDuplicateScan = (
-    barcode: string
-  ) => {
+  // ── DUPLICATE SCAN PROTECTION ─────────────────────────────────────────────
+  const isDuplicateScan = (barcode: string) => {
     const now = Date.now()
-
-    const sameBarcode =
-      lastScannedBarcodeRef.current ===
-      barcode
-
-    const scannedRecently =
-      now - lastScanTimeRef.current <
-      5000
-
-    return (
-      sameBarcode &&
-      scannedRecently
-    )
+    const sameBarcode = lastScannedBarcodeRef.current === barcode
+    const scannedRecently = now - lastScanTimeRef.current < 5000
+    return sameBarcode && scannedRecently
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // NORMALIZE BACKEND RESULT
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const normalizeProductResult = (
-    result: any,
-    barcode: string
-  ): ProductResult => {
-    /*
-     * The frontend intentionally does not call
-     * OpenFoodFacts directly.
-     *
-     * Everything displayed comes from the
-     * backend response.
-     */
-
+  // ── NORMALIZE BACKEND RESULT ──────────────────────────────────────────────
+  const normalizeProductResult = (result: any, barcode: string): ProductResult => {
     return {
       ...result,
-
-      barcode:
-        result?.barcode ||
-        barcode,
-
+      barcode: result?.barcode || barcode,
       productInformation:
-        result?.productInformation ||
-        result?.product_information ||
-        result?.product ||
-        {},
-
-      product:
-        result?.product ||
-        result?.productInformation ||
-        {},
-
+        result?.productInformation || result?.product_information || result?.product || {},
+      product: result?.product || result?.productInformation || {},
       ingredients:
         result?.ingredients ||
         result?.product?.ingredients ||
         result?.product?.ingredients_text ||
         result?.productInformation?.ingredients ||
         "",
-
-      nutrition:
-        result?.nutrition ||
-        result?.nutriments ||
-        result?.product?.nutrition ||
-        {},
+      nutrition: result?.nutrition || result?.nutriments || result?.product?.nutrition || {},
     }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // LOOKUP BARCODE THROUGH BACKEND
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const lookupBarcode = async (
-    barcode: string
-  ) => {
-    const cleanBarcode =
-      barcode.trim()
-
+  // ── LOOKUP BARCODE THROUGH BACKEND ────────────────────────────────────────
+  const lookupBarcode = async (barcode: string) => {
+    const cleanBarcode = barcode.trim()
     try {
-      const response =
-        await fetch(
-          BACKEND_API_URL,
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              Accept:
-                "application/json",
-            },
-
-            body: JSON.stringify({
-              barcode:
-                cleanBarcode,
-            }),
-          }
-        )
+      const response = await fetch(BACKEND_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ barcode: cleanBarcode }),
+      })
 
       let data: any = null
-
       try {
-        data =
-          await response.json()
+        data = await response.json()
       } catch {
         data = null
       }
-
-      // ───────────────────────────────────────────────────────────────────────
-      // PRODUCT NOT FOUND
-      // ───────────────────────────────────────────────────────────────────────
 
       if (
         response.status === 404 ||
         data?.found === false ||
         data?.productFound === false ||
         data?.product_found === false ||
-        data?.status ===
-          "not_found"
+        data?.status === "not_found"
       ) {
-        throw new Error(
-          "__PRODUCT_NOT_FOUND__"
-        )
+        throw new Error("__PRODUCT_NOT_FOUND__")
       }
 
-      // ───────────────────────────────────────────────────────────────────────
-      // VALIDATION ERROR
-      // ───────────────────────────────────────────────────────────────────────
-
-      if (
-        response.status === 400 ||
-        response.status === 422
-      ) {
-        throw new Error(
-          data?.message ||
-            data?.error ||
-            "The barcode sent to the server is invalid."
-        )
+      if (response.status === 400 || response.status === 422) {
+        throw new Error(data?.message || data?.error || "The barcode sent to the server is invalid.")
       }
-
-      // ───────────────────────────────────────────────────────────────────────
-      // SERVER ERROR
-      // ───────────────────────────────────────────────────────────────────────
 
       if (!response.ok) {
-        throw new Error(
-          data?.message ||
-            data?.error ||
-            "The server could not retrieve the product information."
-        )
+        throw new Error(data?.message || data?.error || "The server could not retrieve the product information.")
       }
 
-      // ───────────────────────────────────────────────────────────────────────
-      // EMPTY RESPONSE
-      // ───────────────────────────────────────────────────────────────────────
+      if (!data) throw new Error("The server returned an empty response.")
 
-      if (!data) {
-        throw new Error(
-          "The server returned an empty response."
-        )
-      }
-
-      // ───────────────────────────────────────────────────────────────────────
-      // OTHER NOT-FOUND STRUCTURES
-      // ───────────────────────────────────────────────────────────────────────
-
-      if (
-        data?.product === null ||
-        data?.productInformation ===
-          null ||
-        data?.data === null
-      ) {
-        throw new Error(
-          "__PRODUCT_NOT_FOUND__"
-        )
+      if (data?.product === null || data?.productInformation === null || data?.data === null) {
+        throw new Error("__PRODUCT_NOT_FOUND__")
       }
 
       return data
     } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message ===
-          "__PRODUCT_NOT_FOUND__"
-      ) {
-        throw error
-      }
-
-      /*
-       * fetch() usually throws TypeError for
-       * network connection problems.
-       */
-      if (
-        error instanceof TypeError
-      ) {
-        throw new Error(
-          "__NETWORK_ERROR__"
-        )
-      }
-
+      if (error instanceof Error && error.message === "__PRODUCT_NOT_FOUND__") throw error
+      if (error instanceof TypeError) throw new Error("__NETWORK_ERROR__")
       throw error
     }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // PROCESS BARCODE
-  //
-  // CAMERA AND MANUAL INPUT BOTH USE THIS FUNCTION
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const processBarcode = async (
-    barcode: string
-  ) => {
-    const cleanBarcode =
-      barcode.trim()
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // VALIDATE
-    // ─────────────────────────────────────────────────────────────────────────
-
-    const validation =
-      validateBarcode(
-        cleanBarcode
-      )
-
+  // ── PROCESS BARCODE (camera + manual share this) ─────────────────────────
+  const processBarcode = async (barcode: string) => {
+    const cleanBarcode = barcode.trim()
+    const validation = validateBarcode(cleanBarcode)
     if (!validation.valid) {
-      setErrorMessage(
-        validation.message
-      )
-
+      setErrorMessage(validation.message)
       setScanStatus("invalid")
-
       return
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // DUPLICATE PROTECTION
-    // ─────────────────────────────────────────────────────────────────────────
-
-    if (
-      isDuplicateScan(
-        cleanBarcode
-      )
-    ) {
-      return
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // ALREADY PROCESSING
-    // ─────────────────────────────────────────────────────────────────────────
-
-    if (processingRef.current) {
-      return
-    }
+    if (isDuplicateScan(cleanBarcode)) return
+    if (processingRef.current) return
 
     processingRef.current = true
-
-    lastScannedBarcodeRef.current =
-      cleanBarcode
-
-    lastScanTimeRef.current =
-      Date.now()
+    lastScannedBarcodeRef.current = cleanBarcode
+    lastScanTimeRef.current = Date.now()
 
     try {
       setErrorMessage("")
-
-      setBarcodeValue(
-        cleanBarcode
-      )
-
-      setManualBarcode(
-        cleanBarcode
-      )
-
-      // ───────────────────────────────────────────────────────────────────────
-      // BARCODE DETECTED
-      // ───────────────────────────────────────────────────────────────────────
+      setBarcodeValue(cleanBarcode)
+      setManualBarcode(cleanBarcode)
 
       setScanStatus("captured")
-
       stopCamera()
-
-      // Short visual confirmation
-      await new Promise(
-        (resolve) =>
-          setTimeout(
-            resolve,
-            1500
-          )
-      )
-
-      if (!isMountedRef.current) {
-        return
-      }
-
-      // ───────────────────────────────────────────────────────────────────────
-      // BACKEND LOOKUP
-      // ───────────────────────────────────────────────────────────────────────
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      if (!isMountedRef.current) return
 
       setScanStatus("processing")
+      const result = await lookupBarcode(cleanBarcode)
+      if (!isMountedRef.current) return
 
-      const result =
-        await lookupBarcode(
-          cleanBarcode
-        )
-
-      if (!isMountedRef.current) {
-        return
-      }
-
-      // ───────────────────────────────────────────────────────────────────────
-      // SUCCESS
-      // ───────────────────────────────────────────────────────────────────────
-
-      const normalized =
-        normalizeProductResult(
-          result,
-          cleanBarcode
-        )
-
-      setProductResult(
-        normalized
-      )
+      const normalized = normalizeProductResult(result, cleanBarcode)
+      setProductResult(normalized)
 
       try {
-        localStorage.setItem(
-          "scanityProductResult",
-          JSON.stringify(
-            normalized
-          )
-        )
-
-        localStorage.setItem(
-          "scanityLastBarcode",
-          cleanBarcode
-        )
+        localStorage.setItem("scanityProductResult", JSON.stringify(normalized))
+        localStorage.setItem("scanityLastBarcode", cleanBarcode)
       } catch (storageError) {
-        console.warn(
-          "Unable to save scan result:",
-          storageError
-        )
+        console.warn("Unable to save scan result:", storageError)
       }
 
       setScanStatus("success")
-
-      // Give the success state a short time
-      // to be visible before opening Product Result.
-      await new Promise(
-        (resolve) =>
-          setTimeout(
-            resolve,
-            1500
-          )
-      )
-
-      if (
-        isMountedRef.current
-      ) {
-        go(
-          "productResult"
-        )
-      }
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      if (isMountedRef.current) go("productResult")
     } catch (error) {
-      console.error(
-        "Barcode processing error:",
-        error
-      )
-
-      if (
-        !isMountedRef.current
-      ) {
-        return
-      }
-
+      console.error("Barcode processing error:", error)
+      if (!isMountedRef.current) return
       stopCamera()
 
-      // ───────────────────────────────────────────────────────────────────────
-      // PRODUCT NOT FOUND
-      // ───────────────────────────────────────────────────────────────────────
-
-      if (
-        error instanceof Error &&
-        error.message ===
-          "__PRODUCT_NOT_FOUND__"
-      ) {
-        setErrorMessage(
-          "We couldn't find a product for this barcode."
-        )
-
-        setScanStatus(
-          "not-found"
-        )
-
+      if (error instanceof Error && error.message === "__PRODUCT_NOT_FOUND__") {
+        setErrorMessage("We couldn't find a product for this barcode.")
+        setScanStatus("not-found")
         return
       }
 
-      // ───────────────────────────────────────────────────────────────────────
-      // NETWORK ERROR
-      // ───────────────────────────────────────────────────────────────────────
-
-      if (
-        error instanceof Error &&
-        error.message ===
-          "__NETWORK_ERROR__"
-      ) {
-        setErrorMessage(
-          "Unable to connect to the server. Please check your internet connection and try again."
-        )
-
-        setScanStatus(
-          "network-error"
-        )
-
+      if (error instanceof Error && error.message === "__NETWORK_ERROR__") {
+        setErrorMessage("Unable to connect to the server. Please check your internet connection and try again.")
+        setScanStatus("network-error")
         return
       }
-
-      // ───────────────────────────────────────────────────────────────────────
-      // SERVER ERROR
-      // ───────────────────────────────────────────────────────────────────────
 
       setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong while looking up the product."
+        error instanceof Error ? error.message : "Something went wrong while looking up the product."
       )
-
       setScanStatus("error")
     } finally {
-      processingRef.current =
-        false
+      processingRef.current = false
     }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // START CAMERA
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const startCamera = async (
-    requestedFacing?:
-      | "environment"
-      | "user"
-  ) => {
-    if (
-      processingRef.current
-    ) {
-      return
-    }
-
+  // ── START CAMERA ──────────────────────────────────────────────────────────
+  const startCamera = async (requestedFacing?: "environment" | "user") => {
+    if (processingRef.current) return
     try {
       setErrorMessage("")
       setBarcodeValue("")
       setGalleryImage(null)
       setFlashOn(false)
+      lastScannedBarcodeRef.current = ""
+      lastScanTimeRef.current = 0
 
-      // Reset duplicate protection
-      lastScannedBarcodeRef.current =
-        ""
-
-      lastScanTimeRef.current =
-        0
-
-      // ───────────────────────────────────────────────────────────────────────
-      // CAMERA LOADING
-      // ───────────────────────────────────────────────────────────────────────
-
-      setScanStatus(
-        "camera-loading"
-      )
-
+      setScanStatus("camera-loading")
       stopCamera()
 
-      // ───────────────────────────────────────────────────────────────────────
-      // SECURE CONTEXT
-      // ───────────────────────────────────────────────────────────────────────
-
-      if (
-        !window.isSecureContext
-      ) {
-        throw new Error(
-          "__UNSUPPORTED_CAMERA__"
-        )
+      if (!window.isSecureContext) throw new Error("__UNSUPPORTED_CAMERA__")
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("__UNSUPPORTED_CAMERA__")
       }
+      if (!videoRef.current) throw new Error("Camera preview could not be initialized.")
 
-      // ───────────────────────────────────────────────────────────────────────
-      // MEDIA DEVICES
-      // ───────────────────────────────────────────────────────────────────────
-
-      if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices
-          .getUserMedia
-      ) {
-        throw new Error(
-          "__UNSUPPORTED_CAMERA__"
-        )
-      }
-
-      // ───────────────────────────────────────────────────────────────────────
-      // VIDEO ELEMENT
-      // ───────────────────────────────────────────────────────────────────────
-
-      if (!videoRef.current) {
-        throw new Error(
-          "Camera preview could not be initialized."
-        )
-      }
-
-      const facing =
-        requestedFacing ||
-        cameraFacing
-
-      // ───────────────────────────────────────────────────────────────────────
-      // CREATE ZXING READER
-      // ───────────────────────────────────────────────────────────────────────
-
-      const reader =
-        new BrowserMultiFormatReader()
-
-      readerRef.current =
-        reader
-
-      // ───────────────────────────────────────────────────────────────────────
-      // ZXING CAMERA SCAN
-      // ───────────────────────────────────────────────────────────────────────
+      const facing = requestedFacing || cameraFacing
+      const reader = new BrowserMultiFormatReader()
+      readerRef.current = reader
 
       await reader.decodeFromConstraints(
         {
-          video: {
-            facingMode: {
-              ideal: facing,
-            },
-
-            width: {
-              ideal: 1280,
-            },
-
-            height: {
-              ideal: 720,
-            },
-          },
-
+          video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 720 } },
           audio: false,
         },
         videoRef.current,
-        async (
-          result,
-          error,
-          controls
-        ) => {
-          // ───────────────────────────────────────────────────────────────────
-          // BARCODE FOUND
-          // ───────────────────────────────────────────────────────────────────
-
+        async (result, error, controls) => {
           if (result) {
-            const value =
-              result
-                .getText()
-                .trim()
-
-            if (!value) {
-              return
-            }
-
-            // Stop continuous detection immediately
+            const value = result.getText().trim()
+            if (!value) return
             try {
               controls.stop()
             } catch {
               // ignore
             }
-
-            // Same processing flow as manual input
-            await processBarcode(
-              value
-            )
-
+            await processBarcode(value)
             return
           }
-
-          // ZXing continuously reports decoding
-          // attempts. We intentionally don't show
-          // an error for every unsuccessful frame.
-          if (error) {
-            // Ignore normal "not found" decoding
-            // attempts.
-            return
-          }
+          if (error) return
         }
       )
 
-      if (
-        !isMountedRef.current
-      ) {
-        return
+      if (!isMountedRef.current) return
+
+      const video = videoRef.current
+      if (video && video.srcObject instanceof MediaStream) {
+        streamRef.current = video.srcObject
+      }
+      if (!streamRef.current && video?.srcObject) {
+        streamRef.current = video.srcObject as MediaStream
       }
 
-      // ───────────────────────────────────────────────────────────────────────
-      // GET ACTIVE STREAM
-      // ───────────────────────────────────────────────────────────────────────
-
-      const video =
-        videoRef.current
-
-      if (
-        video &&
-        video.srcObject instanceof
-          MediaStream
-      ) {
-        streamRef.current =
-          video.srcObject
-      }
-
-      // Some browsers don't immediately expose
-      // srcObject through the reader callback.
-      if (
-        !streamRef.current &&
-        video?.srcObject
-      ) {
-        streamRef.current =
-          video.srcObject as MediaStream
-      }
-
-      // ───────────────────────────────────────────────────────────────────────
-      // SCANNING STATE
-      // ───────────────────────────────────────────────────────────────────────
-
-      if (
-        !processingRef.current
-      ) {
-        setScanStatus(
-          "scanning"
-        )
-      }
+      if (!processingRef.current) setScanStatus("scanning")
     } catch (error) {
-      console.error(
-        "Camera start error:",
-        error
-      )
-
+      console.error("Camera start error:", error)
       stopCamera()
-
-      if (
-        !isMountedRef.current
-      ) {
-        return
-      }
-
-      // ───────────────────────────────────────────────────────────────────────
-      // PERMISSION DENIED
-      // ───────────────────────────────────────────────────────────────────────
+      if (!isMountedRef.current) return
 
       if (
         error instanceof DOMException &&
-        (
-          error.name ===
-            "NotAllowedError" ||
-          error.name ===
-            "PermissionDeniedError"
-        )
+        (error.name === "NotAllowedError" || error.name === "PermissionDeniedError")
       ) {
-        setErrorMessage(
-          "Camera permission was denied. Please allow camera access in your browser settings and try again."
-        )
-
-        setScanStatus(
-          "permission-denied"
-        )
-
+        setErrorMessage("Camera permission was denied. Please allow camera access in your browser settings and try again.")
+        setScanStatus("permission-denied")
         return
       }
 
-      // ───────────────────────────────────────────────────────────────────────
-      // CAMERA ALREADY IN USE
-      // ───────────────────────────────────────────────────────────────────────
-
-      if (
-        error instanceof DOMException &&
-        error.name ===
-          "NotReadableError"
-      ) {
-        setErrorMessage(
-          "The camera is already being used by another application or browser tab."
-        )
-
+      if (error instanceof DOMException && error.name === "NotReadableError") {
+        setErrorMessage("The camera is already being used by another application or browser tab.")
         setScanStatus("error")
-
         return
       }
 
-      // ───────────────────────────────────────────────────────────────────────
-      // CAMERA NOT FOUND
-      // ───────────────────────────────────────────────────────────────────────
-
-      if (
-        error instanceof DOMException &&
-        error.name ===
-          "NotFoundError"
-      ) {
-        setErrorMessage(
-          "No camera was found on this device."
-        )
-
+      if (error instanceof DOMException && error.name === "NotFoundError") {
+        setErrorMessage("No camera was found on this device.")
         setScanStatus("error")
-
         return
       }
 
-      // ───────────────────────────────────────────────────────────────────────
-      // UNSUPPORTED
-      // ───────────────────────────────────────────────────────────────────────
-
-      if (
-        error instanceof Error &&
-        error.message ===
-          "__UNSUPPORTED_CAMERA__"
-      ) {
+      if (error instanceof Error && error.message === "__UNSUPPORTED_CAMERA__") {
         setErrorMessage(
           "Camera access is not supported here. Open Scanity using localhost or HTTPS and use a modern browser such as Chrome, Edge, or Safari."
         )
-
-        setScanStatus(
-          "unsupported"
-        )
-
+        setScanStatus("unsupported")
         return
       }
 
-      // ───────────────────────────────────────────────────────────────────────
-      // GENERIC CAMERA ERROR
-      // ───────────────────────────────────────────────────────────────────────
-
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Camera access could not be started."
-      )
-
+      setErrorMessage(error instanceof Error ? error.message : "Camera access could not be started.")
       setScanStatus("error")
     }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // ROTATE CAMERA
-  // ───────────────────────────────────────────────────────────────────────────
-
+  // ── ROTATE CAMERA ─────────────────────────────────────────────────────────
   const rotateCamera = async () => {
-    const nextFacing =
-      cameraFacing ===
-      "environment"
-        ? "user"
-        : "environment"
-
-    setCameraFacing(
-      nextFacing
-    )
-
-    if (
-      scanStatus ===
-        "scanning" ||
-      scanStatus ===
-        "camera-loading"
-    ) {
-      await startCamera(
-        nextFacing
-      )
+    const nextFacing = cameraFacing === "environment" ? "user" : "environment"
+    setCameraFacing(nextFacing)
+    if (scanStatus === "scanning" || scanStatus === "camera-loading") {
+      await startCamera(nextFacing)
     }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // FLASH
-  // ───────────────────────────────────────────────────────────────────────────
-
+  // ── FLASH ─────────────────────────────────────────────────────────────────
   const toggleFlash = async () => {
-    const stream =
-      streamRef.current
-
+    const stream = streamRef.current
     if (!stream) {
-      setErrorMessage(
-        "Start the camera first before using the flash."
-      )
-
+      setErrorMessage("Start the camera first before using the flash.")
       setScanStatus("error")
-
       return
     }
-
-    const track =
-      stream.getVideoTracks()[0]
-
+    const track = stream.getVideoTracks()[0]
     if (!track) {
-      setErrorMessage(
-        "No active camera track was found."
-      )
-
+      setErrorMessage("No active camera track was found.")
       return
     }
-
     try {
-      const capabilities =
-        typeof track.getCapabilities ===
-        "function"
-          ? track.getCapabilities()
-          : null
-
-      if (
-        !(capabilities as any)
-          ?.torch
-      ) {
-        setErrorMessage(
-          "Flash is not supported by this camera."
-        )
-
+      const capabilities = typeof track.getCapabilities === "function" ? track.getCapabilities() : null
+      if (!(capabilities as any)?.torch) {
+        setErrorMessage("Flash is not supported by this camera.")
         return
       }
-
-      const nextFlash =
-        !flashOn
-
-      await track.applyConstraints({
-        advanced: [
-          {
-            torch:
-              nextFlash,
-          } as any,
-        ],
-      })
-
-      setFlashOn(
-        nextFlash
-      )
-
+      const nextFlash = !flashOn
+      await track.applyConstraints({ advanced: [{ torch: nextFlash } as any] })
+      setFlashOn(nextFlash)
       setErrorMessage("")
     } catch (error) {
-      console.error(
-        "Flash error:",
-        error
-      )
-
-      setErrorMessage(
-        "The flash could not be controlled on this device."
-      )
+      console.error("Flash error:", error)
+      setErrorMessage("The flash could not be controlled on this device.")
     }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // MANUAL BARCODE
-  // ───────────────────────────────────────────────────────────────────────────
-
+  // ── MANUAL BARCODE ────────────────────────────────────────────────────────
   const handleManualScan = () => {
-    const value =
-      manualBarcode.trim()
-
-    const validation =
-      validateBarcode(value)
-
+    const value = manualBarcode.trim()
+    const validation = validateBarcode(value)
     if (!validation.valid) {
-      setErrorMessage(
-        validation.message
-      )
-
+      setErrorMessage(validation.message)
       setScanStatus("invalid")
-
       return
     }
-
-    // Same flow used by camera scanning
     processBarcode(value)
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // GALLERY
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const handleGallery = (
-    event:
-      React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file =
-      event.target.files?.[0]
-
-    if (!file) {
-      return
-    }
-
-    if (
-      !file.type.startsWith(
-        "image/"
-      )
-    ) {
-      setErrorMessage(
-        "Please select a valid image."
-      )
-
+  // ── GALLERY ───────────────────────────────────────────────────────────────
+  const handleGallery = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith("image/")) {
+      setErrorMessage("Please select a valid image.")
       setScanStatus("invalid")
-
       return
     }
-
-    if (
-      galleryObjectUrlRef.current
-    ) {
-      URL.revokeObjectURL(
-        galleryObjectUrlRef.current
-      )
-    }
-
-    const imageUrl =
-      URL.createObjectURL(file)
-
-    galleryObjectUrlRef.current =
-      imageUrl
-
-    setGalleryImage(
-      imageUrl
-    )
-
+    if (galleryObjectUrlRef.current) URL.revokeObjectURL(galleryObjectUrlRef.current)
+    const imageUrl = URL.createObjectURL(file)
+    galleryObjectUrlRef.current = imageUrl
+    setGalleryImage(imageUrl)
     setErrorMessage("")
-
-    /*
-     * Gallery image is only displayed here.
-     *
-     * Barcode decoding still uses the camera
-     * decoder. This keeps this Scanner feature
-     * focused on camera + manual barcode input.
-     */
     setScanStatus("ready")
-
     event.target.value = ""
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // RETRY
-  // ───────────────────────────────────────────────────────────────────────────
-
+  // ── RETRY / RESCAN ────────────────────────────────────────────────────────
   const handleRetry = () => {
     stopCamera()
-
-    processingRef.current =
-      false
-
-    lastScannedBarcodeRef.current =
-      ""
-
-    lastScanTimeRef.current =
-      0
-
+    processingRef.current = false
+    lastScannedBarcodeRef.current = ""
+    lastScanTimeRef.current = 0
     setErrorMessage("")
     setBarcodeValue("")
     setManualBarcode("")
     setGalleryImage(null)
     setProductResult(null)
-
     setScanStatus("ready")
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // RESCAN
-  // ───────────────────────────────────────────────────────────────────────────
-
   const handleRescan = () => {
     stopCamera()
-
-    processingRef.current =
-      false
-
-    lastScannedBarcodeRef.current =
-      ""
-
-    lastScanTimeRef.current =
-      0
-
+    processingRef.current = false
+    lastScannedBarcodeRef.current = ""
+    lastScanTimeRef.current = 0
     setErrorMessage("")
     setBarcodeValue("")
     setGalleryImage(null)
     setProductResult(null)
-
     setScanStatus("ready")
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // LOGOUT
-  // ───────────────────────────────────────────────────────────────────────────
-
+  // ── LOGOUT ────────────────────────────────────────────────────────────────
   const handleLogout = () => {
-    setShowLogoutConfirm(
-      false
-    )
-
-    setShowLogoutLoading(
-      true
-    )
-
+    setShowLogoutConfirm(false)
+    setShowLogoutLoading(true)
     stopCamera()
-
     setTimeout(() => {
-      setShowLogoutLoading(
-        false
-      )
-
-      setSidebarOpen(false)
-
+      setShowLogoutLoading(false)
       go("splash")
     }, 1800)
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // CLEANUP
-  // ───────────────────────────────────────────────────────────────────────────
-
+  // ── CLEANUP ───────────────────────────────────────────────────────────────
   useEffect(() => {
-    isMountedRef.current =
-      true
-
+    isMountedRef.current = true
     return () => {
-      isMountedRef.current =
-        false
-
+      isMountedRef.current = false
       stopCamera()
-
-      if (
-        galleryObjectUrlRef.current
-      ) {
-        URL.revokeObjectURL(
-          galleryObjectUrlRef.current
-        )
-
-        galleryObjectUrlRef.current =
-          null
+      if (galleryObjectUrlRef.current) {
+        URL.revokeObjectURL(galleryObjectUrlRef.current)
+        galleryObjectUrlRef.current = null
       }
     }
   }, [])
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // STATUS TITLE
-  // ───────────────────────────────────────────────────────────────────────────
-
+  // ── STATUS COPY ───────────────────────────────────────────────────────────
   const getStatusTitle = () => {
     switch (scanStatus) {
-      case "ready":
-        return "Ready to scan"
-
-      case "camera-loading":
-        return "Starting camera..."
-
-      case "scanning":
-        return "Scanning barcode..."
-
-      case "captured":
-        return "Barcode captured"
-
-      case "processing":
-        return "Analyzing product..."
-
-      case "success":
-        return "Product found!"
-
-      case "invalid":
-        return "Invalid barcode"
-
-      case "not-found":
-        return "Product not found"
-
-      case "permission-denied":
-        return "Camera permission denied"
-
-      case "unsupported":
-        return "Camera unavailable"
-
-      case "network-error":
-        return "Connection problem"
-
-      case "error":
-        return "Unable to scan"
-
-      default:
-        return "Ready to scan"
+      case "ready": return "Ready to scan"
+      case "camera-loading": return "Starting camera..."
+      case "scanning": return "Scanning barcode..."
+      case "captured": return "Barcode captured"
+      case "processing": return "Analyzing product..."
+      case "success": return "Product found!"
+      case "invalid": return "Invalid barcode"
+      case "not-found": return "Product not found"
+      case "permission-denied": return "Camera permission denied"
+      case "unsupported": return "Camera unavailable"
+      case "network-error": return "Connection problem"
+      case "error": return "Unable to scan"
+      default: return "Ready to scan"
     }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // STATUS DESCRIPTION
-  // ───────────────────────────────────────────────────────────────────────────
-
-  const getStatusDescription =
-    () => {
-      switch (scanStatus) {
-        case "ready":
-          return "Scan a food product barcode to get nutrition and allergy information."
-
-        case "camera-loading":
-          return "Please wait while Scanity starts your camera."
-
-        case "scanning":
-          return "Position the barcode inside the frame and keep it steady."
-
-        case "captured":
-          return barcodeValue
-            ? `Barcode: ${barcodeValue}`
-            : "Barcode successfully detected."
-
-        case "processing":
-          return "Getting product information from the Scanity backend."
-
-        case "success":
-          return productResult
-            ?.productInformation
-            ?.name
-            ? `${productResult.productInformation.name} was found.`
-            : "Product information was successfully retrieved."
-
-        case "invalid":
-          return (
-            errorMessage ||
-            "Please enter a valid product barcode."
-          )
-
-        case "not-found":
-          return (
-            errorMessage ||
-            "No product information was found for this barcode."
-          )
-
-        case "permission-denied":
-          return (
-            errorMessage ||
-            "Allow camera access in your browser settings and try again."
-          )
-
-        case "unsupported":
-          return (
-            errorMessage ||
-            "Your current browser or connection does not support camera access."
-          )
-
-        case "network-error":
-          return (
-            errorMessage ||
-            "Check your internet connection and try again."
-          )
-
-        case "error":
-          return (
-            errorMessage ||
-            "Something went wrong while scanning."
-          )
-
-        default:
-          return ""
-      }
+  const getStatusDescription = () => {
+    switch (scanStatus) {
+      case "ready": return "Scan a food product barcode to get nutrition and allergy information."
+      case "camera-loading": return "Please wait while Scanity starts your camera."
+      case "scanning": return "Position the barcode inside the frame and keep it steady."
+      case "captured": return barcodeValue ? `Barcode: ${barcodeValue}` : "Barcode successfully detected."
+      case "processing": return "Getting product information from the Scanity backend."
+      case "success":
+        return productResult?.productInformation?.name
+          ? `${productResult.productInformation.name} was found.`
+          : "Product information was successfully retrieved."
+      case "invalid": return errorMessage || "Please enter a valid product barcode."
+      case "not-found": return errorMessage || "No product information was found for this barcode."
+      case "permission-denied": return errorMessage || "Allow camera access in your browser settings and try again."
+      case "unsupported": return errorMessage || "Your current browser or connection does not support camera access."
+      case "network-error": return errorMessage || "Check your internet connection and try again."
+      case "error": return errorMessage || "Something went wrong while scanning."
+      default: return ""
     }
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // STATUS ICON
-  // ───────────────────────────────────────────────────────────────────────────
+  }
 
   const getStatusIcon = () => {
     switch (scanStatus) {
       case "success":
       case "captured":
         return "fa-check"
-
-      case "invalid":
-        return "fa-exclamation"
-
-      case "not-found":
-        return "fa-search"
-
-      case "permission-denied":
-        return "fa-lock"
-
-      case "unsupported":
-        return "fa-video-camera"
-
-      case "network-error":
-        return "fa-wifi"
-
-      case "error":
-        return "fa-exclamation-triangle"
-
-      default:
-        return "fa-camera"
+      case "invalid": return "fa-exclamation"
+      case "not-found": return "fa-search"
+      case "permission-denied": return "fa-lock"
+      case "unsupported": return "fa-video-camera"
+      case "network-error": return "fa-wifi"
+      case "error": return "fa-exclamation-triangle"
+      default: return "fa-camera"
     }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // SIDEBAR MENU
-  // ───────────────────────────────────────────────────────────────────────────
+  // "not-found" reads as informational (gold), everything else that's a
+  // problem reads as unsafe (red) — same two-tier vocabulary the Dashboard
+  // uses for Caution vs Avoid.
+  const errorTint = scanStatus === "not-found" ? STATUS_TINTS.caution : STATUS_TINTS.unsafe
 
-  const sidebarMenu = (
-    <>
-      {/* LOGO */}
+  const isBusy =
+    scanStatus === "processing" || scanStatus === "captured" || scanStatus === "success"
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-
-          padding: isDesktop
-            ? "20px 20px 24px"
-            : "18px 16px 22px",
-        }}
-      >
-        <img
-          src={logoImg}
-          alt="Scanity"
-          style={{
-            width:
-              isDesktop
-                ? 48
-                : 42,
-
-            height:
-              isDesktop
-                ? 48
-                : 42,
-
-            objectFit:
-              "contain",
-
-            flexShrink: 0,
-          }}
-        />
-
-        <span
-          style={{
-            fontFamily: FONT,
-            fontWeight: 800,
-
-            fontSize:
-              isDesktop
-                ? 22
-                : 18,
-
-            letterSpacing:
-              "-0.01em",
-
-            lineHeight: 1,
-            whiteSpace:
-              "nowrap",
-          }}
-        >
-          <span
-            style={{
-              color:
-                "#FFFFFF",
-            }}
-          >
-            Scan
-          </span>
-
-          <span
-            style={{
-              color:
-                "#9CE6B8",
-            }}
-          >
-            ity
-          </span>
-        </span>
-      </div>
-
-      {/* MENU TITLE */}
-
-      <p
-        style={{
-          margin: 0,
-
-          padding:
-            isDesktop
-              ? "0 20px 10px"
-              : "0 16px 10px",
-
-          fontFamily: FONT,
-          fontWeight: 600,
-          fontSize: 10,
-
-          letterSpacing:
-            "0.14em",
-
-          color:
-            "rgba(255,255,255,0.50)",
-        }}
-      >
-        MENU
-      </p>
-
-      {/* MENU ITEMS */}
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection:
-            "column",
-          gap: 6,
-
-          padding:
-            isDesktop
-              ? "0 10px"
-              : "0 9px",
-        }}
-      >
-        {sidebarItems.map(
-          (item) => (
-            <button
-              key={
-                item.screen
-              }
-              type="button"
-              className="scanity-sidebar-item"
-              onClick={() => {
-                stopCamera()
-
-                setSidebarOpen(
-                  false
-                )
-
-                go(
-                  item.screen
-                )
-              }}
-              style={{
-                display: "flex",
-                alignItems:
-                  "center",
-                gap: 12,
-
-                padding:
-                  isDesktop
-                    ? "12px 14px"
-                    : "11px 12px",
-
-                background:
-                  "transparent",
-
-                border: "none",
-                borderRadius: 14,
-
-                cursor:
-                  "pointer",
-
-                width: "100%",
-                textAlign:
-                  "left",
-              }}
-            >
-              <i
-                className={`fa ${item.icon}`}
-                style={{
-                  fontSize: 15,
-                  width: 19,
-
-                  textAlign:
-                    "center",
-
-                  color:
-                    "#FFFFFF",
-                }}
-              />
-
-              <span
-                style={{
-                  fontFamily:
-                    FONT,
-
-                  fontWeight: 500,
-
-                  fontSize:
-                    isDesktop
-                      ? 13
-                      : 12,
-
-                  color:
-                    "#FFFFFF",
-                }}
-              >
-                {item.label}
-              </span>
-            </button>
-          )
-        )}
-
-        {/* LOGOUT */}
-
-        <button
-          type="button"
-          className="scanity-sidebar-item"
-          onClick={() =>
-            setShowLogoutConfirm(
-              true
-            )
-          }
-          style={{
-            display: "flex",
-            alignItems:
-              "center",
-            gap: 12,
-
-            padding:
-              isDesktop
-                ? "12px 14px"
-                : "11px 12px",
-
-            background:
-              "transparent",
-
-            border: "none",
-            borderRadius: 14,
-
-            cursor:
-              "pointer",
-
-            width: "100%",
-            textAlign:
-              "left",
-          }}
-        >
-          <i
-            className="fa fa-sign-out"
-            style={{
-              fontSize: 15,
-              width: 19,
-
-              textAlign:
-                "center",
-
-              color:
-                "#FFFFFF",
-
-              transform:
-                "scaleX(-1)",
-            }}
-          />
-
-          <span
-            style={{
-              fontFamily:
-                FONT,
-
-              fontWeight: 500,
-
-              fontSize:
-                isDesktop
-                  ? 13
-                  : 12,
-
-              color:
-                "#FFFFFF",
-            }}
-          >
-            Logout
-          </span>
-        </button>
-      </div>
-    </>
-  )
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // MAIN
-  // ───────────────────────────────────────────────────────────────────────────
-
+  // ── MAIN ──────────────────────────────────────────────────────────────────
   return (
     <div
       style={{
         flex: 1,
         minHeight: 0,
-
         display: "flex",
-        flexDirection:
-          "column",
-
-        position:
-          "relative",
-
-        overflow:
-          "hidden",
-
-        background:
-          PALETTE.pageBg,
-
-        fontFamily: FONT,
+        flexDirection: "column",
+        position: "relative",
+        overflow: "hidden",
+        background: SOFT_SLATE.bg,
+        fontFamily: SOFT_SLATE.fontFamily,
       }}
     >
-      <AppSidebar
-        go={go}
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        isDesktop={isDesktop}
-        active="barcode"
-      />
       <style>
         {`
           @keyframes scanityScanLine {
-            0% {
-              top: 10%;
-              opacity: 0.4;
-            }
-
-            50% {
-              top: 85%;
-              opacity: 1;
-            }
-
-            100% {
-              top: 10%;
-              opacity: 0.4;
-            }
+            0% { top: 10%; opacity: 0.4; }
+            50% { top: 85%; opacity: 1; }
+            100% { top: 10%; opacity: 0.4; }
           }
-
           @keyframes scanitySpin {
-            from {
-              transform: rotate(0deg);
-            }
-
-            to {
-              transform: rotate(360deg);
-            }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
           }
-
-          @keyframes scanitySidebarSlideIn {
-            from {
-              opacity: 0;
-              transform: translateX(-45px);
-            }
-
-            to {
-              opacity: 1;
-              transform: translateX(0);
-            }
-          }
-
           @keyframes scanitySuccessPop {
-            0% {
-              transform: scale(0.7);
-              opacity: 0;
-            }
-
-            70% {
-              transform: scale(1.08);
-              opacity: 1;
-            }
-
-            100% {
-              transform: scale(1);
-              opacity: 1;
-            }
+            0% { transform: scale(0.7); opacity: 0; }
+            70% { transform: scale(1.08); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
           }
-
-          .scanity-sidebar-item {
-            transition:
-              background 0.18s ease,
-              transform 0.15s ease;
-          }
-
-          .scanity-sidebar-item:hover {
-            background:
-              rgba(255,255,255,0.10) !important;
-
-            transform:
-              translateX(3px);
-          }
-
-          .scanity-sidebar-item:active {
-            transform:
-              scale(0.97);
-          }
-
           .scanity-scanner-button {
-            transition:
-              transform 0.15s ease,
-              box-shadow 0.15s ease,
-              background 0.15s ease;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
           }
-
-          .scanity-scanner-button:hover {
-            transform:
-              translateY(-2px);
+          .scanity-scanner-button:hover:not(:disabled) {
+            transform: translateY(-2px);
           }
-
-          .scanity-scanner-button:active {
-            transform:
-              scale(0.97);
+          .scanity-scanner-button:active:not(:disabled) {
+            transform: scale(0.97);
           }
-
           .scanity-manual-input:focus {
             outline: none;
-
-            border-color:
-              #176B3A !important;
-
-            box-shadow:
-              0 0 0 3px
-              rgba(23,107,58,0.12);
+            box-shadow: ${SOFT_SLATE.insetMd};
           }
         `}
       </style>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          SIDEBAR
-      ══════════════════════════════════════════════════════════════════════ */}
-
-      {false && (
-        <div
-          style={{
-            position:
-              "absolute",
-
-            inset: 0,
-
-            zIndex: 50,
-
-            display: "flex",
-          }}
-        >
-          {/* BACKDROP */}
-
-          <div
-            onClick={() =>
-              setSidebarOpen(
-                false
-              )
-            }
-            style={{
-              position:
-                "absolute",
-
-              inset: 0,
-
-              background:
-                isDesktop
-                  ? "transparent"
-                  : "rgba(0,0,0,0.40)",
-
-              backdropFilter:
-                isDesktop
-                  ? "none"
-                  : "blur(4px)",
-
-              WebkitBackdropFilter:
-                isDesktop
-                  ? "none"
-                  : "blur(4px)",
-            }}
-          />
-
-          {/* SIDEBAR */}
-
-          <div
-            style={{
-              position:
-                "relative",
-
-              zIndex: 51,
-
-              width:
-                isDesktop
-                  ? 205
-                  : 220,
-
-              height: `calc(100% - ${
-                isDesktop
-                  ? 32
-                  : 20
-              }px)`,
-
-              margin:
-                isDesktop
-                  ? "16px 0 16px 8px"
-                  : "10px",
-
-              background: `linear-gradient(
-                160deg,
-                ${PALETTE.sidebarDark} 0%,
-                ${PALETTE.sidebarBg} 48%,
-                ${PALETTE.greenLight} 100%
-              )`,
-
-              borderRadius:
-                "0 24px 24px 0",
-
-              boxShadow:
-                "0 25px 55px rgba(0,0,0,0.28)",
-
-              display:
-                "flex",
-
-              flexDirection:
-                "column",
-
-              paddingTop:
-                SAFE_TOP,
-
-              paddingBottom:
-                24,
-
-              boxSizing:
-                "border-box",
-
-              overflow:
-                "hidden",
-
-              animation:
-                "scanitySidebarSlideIn 0.28s cubic-bezier(0.22,1,0.36,1) both",
-            }}
-          >
-            {/* Decorative circle */}
-
-            <div
-              style={{
-                position:
-                  "absolute",
-
-                width: 150,
-                height: 150,
-
-                borderRadius:
-                  "50%",
-
-                top: -85,
-                right: -75,
-
-                background:
-                  "rgba(255,255,255,0.055)",
-
-                pointerEvents:
-                  "none",
-              }}
-            />
-
-            <div
-              style={{
-                position:
-                  "absolute",
-
-                width: 115,
-                height: 115,
-
-                borderRadius:
-                  "50%",
-
-                bottom: 15,
-                left: -70,
-
-                background:
-                  "rgba(255,255,255,0.035)",
-
-                pointerEvents:
-                  "none",
-              }}
-            />
-
-            {sidebarMenu}
-          </div>
+      {/* ── Icon rail — same shell as Dashboard/Scan History ───────────────── */}
+      {isDesktop && (
+        <div style={{ position: "fixed", top: 22, left: 26, bottom: 22, width: 80, zIndex: 5 }}>
+          <DashboardIconRail go={go} isDesktop active="barcode" navItems={BARCODE_RAIL_ITEMS} />
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          HEADER
-      ══════════════════════════════════════════════════════════════════════ */}
-
-      <header
+      <div
         style={{
-          marginLeft:
-            isDesktop
-              ? SIDEBAR_WIDTH
-              : 0,
-
-          height:
-            isDesktop
-              ? 88
-              : 68,
-
-          flexShrink: 0,
-
-          display:
-            "flex",
-
-          alignItems:
-            "center",
-
-          justifyContent:
-            "space-between",
-
-          padding:
-            isDesktop
-              ? "0 28px"
-              : "0 18px",
-
-          boxSizing:
-            "border-box",
-
-          background:
-            "transparent",
-
-          zIndex: 20,
-        }}
-      >
-        <div
-          style={{
-            display:
-              "flex",
-
-            alignItems:
-              "center",
-
-            gap: 13,
-          }}
-        >
-          {/* HAMBURGER */}
-
-          <button
-            type="button"
-            className="scanity-hamburger scanity-scanner-button"
-            onClick={() =>
-              setSidebarOpen(
-                true
-              )
-            }
-            style={{
-              width: 42,
-              height: 42,
-
-              borderRadius: 15,
-
-              border:
-                `1px solid ${PALETTE.border}`,
-
-              background:
-                PALETTE.white,
-
-              boxShadow:
-                "0 6px 16px rgba(0,0,0,0.05)",
-
-              padding: 0,
-
-              color:
-                PALETTE.green,
-
-              cursor:
-                "pointer",
-
-              display:
-                isDesktop
-                  ? "none"
-                  : "flex",
-
-              alignItems:
-                "center",
-
-              justifyContent:
-                "center",
-            }}
-          >
-            <div
-              style={{
-                width: 20,
-
-                display:
-                  "flex",
-
-                flexDirection:
-                  "column",
-
-                gap: 5,
-              }}
-            >
-              <span
-                style={{
-                  width: 20,
-                  height: 2.5,
-
-                  borderRadius: 5,
-
-                  background:
-                    PALETTE.textDark,
-                }}
-              />
-
-              <span
-                style={{
-                  width: 20,
-                  height: 2.5,
-
-                  borderRadius: 5,
-
-                  background:
-                    PALETTE.textDark,
-                }}
-              />
-
-              <span
-                style={{
-                  width: 20,
-                  height: 2.5,
-
-                  borderRadius: 5,
-
-                  background:
-                    PALETTE.textDark,
-                }}
-              />
-            </div>
-          </button>
-
-          {/* TITLE */}
-
-          <div>
-            <h1
-              style={{
-                margin: 0,
-
-                fontFamily: FONT,
-                fontWeight: 800,
-
-                fontSize:
-                  isDesktop
-                    ? 23
-                    : 19,
-
-                color:
-                  PALETTE.textDark,
-
-                lineHeight:
-                  1.2,
-              }}
-            >
-              Barcode Scanner
-            </h1>
-
-            <p
-              style={{
-                margin:
-                  "4px 0 0",
-
-                fontFamily:
-                  FONT,
-
-                fontSize:
-                  isDesktop
-                    ? 11
-                    : 9,
-
-                color:
-                  PALETTE.textMuted,
-              }}
-            >
-              Scan a food product barcode
-            </p>
-          </div>
-        </div>
-
-        {/* HELP */}
-
-        <button
-          type="button"
-          className="scanity-scanner-button"
-          onClick={() =>
-            setShowHelp(true)
-          }
-          style={{
-            width: 38,
-            height: 38,
-
-            borderRadius:
-              "50%",
-
-            border:
-              `1px solid ${PALETTE.border}`,
-
-            background:
-              PALETTE.white,
-
-            color:
-              PALETTE.green,
-
-            cursor:
-              "pointer",
-          }}
-        >
-          <i className="fa fa-question" />
-        </button>
-      </header>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          MAIN
-      ══════════════════════════════════════════════════════════════════════ */}
-
-      <main
-        style={{
-          marginLeft:
-            isDesktop
-              ? SIDEBAR_WIDTH
-              : 0,
-
           flex: 1,
-
-          overflowY:
-            "auto",
-
-          padding:
-            isDesktop
-              ? "8px 28px 32px"
-              : "20px 16px 30px",
-
-          boxSizing:
-            "border-box",
+          overflowY: "auto",
+          minHeight: 0,
+          paddingTop: SAFE_TOP,
+          boxSizing: "border-box",
+          marginLeft: isDesktop ? 80 + 26 + 26 : 0,
         }}
       >
-        <div
-          style={{
-            width:
-              "100%",
-
-            maxWidth:
-              isDesktop
-                ? 1100
-                : 760,
-
-            margin:
-              "0 auto",
-          }}
-        >
-          {/* SCANNER CARD */}
-
-          <section
+        <Center maxWidth={isDesktop ? 1420 - (80 + 26 + 26) : undefined}>
+          <div
             style={{
-              background:
-                PALETTE.white,
-
-              border:
-                `1px solid ${PALETTE.border}`,
-
-              borderRadius:
-                24,
-
-              padding:
-                isDesktop
-                  ? 12
-                  : 16,
-
-              boxShadow:
-                "0 8px 28px rgba(50,40,30,0.08)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 22,
+              padding: isDesktop ? "26px 40px 40px 0" : "16px 14px 30px",
+              boxSizing: "border-box",
+              color: SOFT_SLATE.textPrimary,
+              minWidth: 0,
             }}
           >
-            {/* ═══════════════════════════════════════════════════════════════
-                CAMERA AREA
-            ═══════════════════════════════════════════════════════════════ */}
+            {!isDesktop && (
+              <DashboardIconRail go={go} isDesktop={false} active="barcode" navItems={BARCODE_RAIL_ITEMS} />
+            )}
 
+            {/* ── Header ───────────────────────────────────────────────── */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20 }}>
+              <div>
+                <div
+                  style={{
+                    fontSize: isDesktop ? 30 : 24,
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    color: SOFT_SLATE.textPrimary,
+                  }}
+                >
+                  Barcode Scanner
+                </div>
+                <div style={{ fontSize: 14, color: SOFT_SLATE.textSecondary, marginTop: 4 }}>
+                  Scan a food product barcode
+                </div>
+              </div>
+
+              <Tooltip label="How to scan">
+                <button
+                  type="button"
+                  className="scanity-scanner-button"
+                  onClick={() => setShowHelp(true)}
+                  aria-label="How to scan"
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: "50%",
+                    background: SOFT_SLATE.bg,
+                    border: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: SOFT_SLATE.raisedSm,
+                    cursor: "pointer",
+                    color: SOFT_SLATE.green,
+                    fontSize: 15,
+                  }}
+                >
+                  <i className="fa fa-question" />
+                </button>
+              </Tooltip>
+            </div>
+
+            {/* ── Scanner card ─────────────────────────────────────────── */}
             <div
               style={{
-                position:
-                  "relative",
-
-                width:
-                  "100%",
-
-                maxWidth:
-                  isDesktop
-                    ? 900
-                    : 640,
-
-                height:
-                  isDesktop
-                    ? 520
-                    : 285,
-
-                margin:
-                  "0 auto",
-
-                background:
-                  "#111111",
-
-                borderRadius:
-                  isDesktop
-                    ? 8
-                    : 20,
-
-                overflow:
-                  "hidden",
+                background: SOFT_SLATE.bg,
+                borderRadius: 26,
+                padding: isDesktop ? 28 : 18,
+                boxShadow: SOFT_SLATE.raisedLg,
+                boxSizing: "border-box",
               }}
             >
-              {/* VIDEO */}
-
-              <video
-                ref={videoRef}
-                muted
-                playsInline
-                autoPlay
+              {/* Camera well */}
+              <div
                 style={{
-                  position:
-                    "absolute",
-
-                  inset: 0,
-
-                  width:
-                    "100%",
-
-                  height:
-                    "100%",
-
-                  objectFit:
-                    "cover",
-
-                  transform:
-                    cameraFacing ===
-                    "user"
-                      ? "scaleX(-1)"
-                      : "none",
-
-                  display:
-                    scanStatus ===
-                      "captured" ||
-                    scanStatus ===
-                      "processing" ||
-                    scanStatus ===
-                      "success"
-                      ? "none"
-                      : "block",
+                  position: "relative",
+                  width: "100%",
+                  maxWidth: isDesktop ? 900 : 640,
+                  height: isDesktop ? 480 : 280,
+                  margin: "0 auto",
+                  background: "#111111",
+                  borderRadius: 20,
+                  overflow: "hidden",
+                  boxShadow: SOFT_SLATE.insetLg,
                 }}
-              />
-
-              {/* GALLERY */}
-
-              {galleryImage && (
-                <img
-                  src={
-                    galleryImage
-                  }
-                  alt="Selected barcode"
+              >
+                <video
+                  ref={videoRef}
+                  muted
+                  playsInline
+                  autoPlay
                   style={{
-                    position:
-                      "absolute",
-
+                    position: "absolute",
                     inset: 0,
-
-                    width:
-                      "100%",
-
-                    height:
-                      "100%",
-
-                    objectFit:
-                      "contain",
-
-                    background:
-                      "#111111",
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    transform: cameraFacing === "user" ? "scaleX(-1)" : "none",
+                    display: isBusy ? "none" : "block",
                   }}
                 />
-              )}
 
-              {/* ═════════════════════════════════════════════════════════════
-                  READY STATE
-              ═════════════════════════════════════════════════════════════ */}
+                {galleryImage && (
+                  <img
+                    src={galleryImage}
+                    alt="Selected barcode"
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", background: "#111111" }}
+                  />
+                )}
 
-              {scanStatus ===
-                "ready" &&
-                !galleryImage && (
+                {/* READY */}
+                {scanStatus === "ready" && !galleryImage && (
                   <div
                     style={{
-                      position:
-                        "absolute",
-
+                      position: "absolute",
                       inset: 0,
-
-                      display:
-                        "flex",
-
-                      flexDirection:
-                        "column",
-
-                      alignItems:
-                        "center",
-
-                      justifyContent:
-                        "center",
-
-                      textAlign:
-                        "center",
-
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
                       padding: 20,
-
-                      color:
-                        "#FFFFFF",
+                      color: "#FFFFFF",
                     }}
                   >
                     <div
                       style={{
                         width: 66,
                         height: 66,
-
-                        borderRadius:
-                          "50%",
-
-                        background:
-                          "rgba(255,255,255,0.12)",
-
-                        display:
-                          "flex",
-
-                        alignItems:
-                          "center",
-
-                        justifyContent:
-                          "center",
-
-                        marginBottom:
-                          14,
+                        borderRadius: "50%",
+                        background: "rgba(255,255,255,0.12)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: 14,
                       }}
                     >
-                      <i
-                        className="fa fa-camera"
-                        style={{
-                          fontSize: 27,
-                        }}
-                      />
+                      <i className="fa fa-camera" style={{ fontSize: 27 }} />
                     </div>
-
-                    <strong
-                      style={{
-                        fontSize:
-                          16,
-                      }}
-                    >
-                      Camera ready
-                    </strong>
-
-                    <span
-                      style={{
-                        marginTop:
-                          7,
-
-                        fontSize:
-                          10,
-
-                        color:
-                          "rgba(255,255,255,0.7)",
-                      }}
-                    >
+                    <strong style={{ fontSize: 16 }}>Camera ready</strong>
+                    <span style={{ marginTop: 7, fontSize: 10, color: "rgba(255,255,255,0.7)" }}>
                       Tap Camera to begin
                     </span>
                   </div>
                 )}
 
-              {/* ═════════════════════════════════════════════════════════════
-                  CAMERA LOADING
-              ═════════════════════════════════════════════════════════════ */}
-
-              {scanStatus ===
-                "camera-loading" && (
-                <div
-                  style={{
-                    position:
-                      "absolute",
-
-                    inset: 0,
-
-                    background:
-                      "rgba(0,0,0,0.88)",
-
-                    display:
-                      "flex",
-
-                    flexDirection:
-                      "column",
-
-                    alignItems:
-                      "center",
-
-                    justifyContent:
-                      "center",
-
-                    textAlign:
-                      "center",
-
-                    color:
-                      "#FFFFFF",
-                  }}
-                >
+                {/* CAMERA LOADING */}
+                {scanStatus === "camera-loading" && (
                   <div
                     style={{
-                      width: 45,
-                      height: 45,
-
-                      borderRadius:
-                        "50%",
-
-                      border:
-                        "4px solid rgba(255,255,255,0.25)",
-
-                      borderTopColor:
-                        PALETTE.greenLight,
-
-                      animation:
-                        "scanitySpin 0.8s linear infinite",
-
-                      marginBottom:
-                        15,
-                    }}
-                  />
-
-                  <strong
-                    style={{
-                      fontSize:
-                        16,
+                      position: "absolute",
+                      inset: 0,
+                      background: "rgba(0,0,0,0.88)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      color: "#FFFFFF",
                     }}
                   >
-                    Starting camera...
-                  </strong>
-
-                  <span
-                    style={{
-                      marginTop:
-                        7,
-
-                      fontSize:
-                        10,
-
-                      color:
-                        "rgba(255,255,255,0.7)",
-                    }}
-                  >
-                    Please allow camera access if requested.
-                  </span>
-                </div>
-              )}
-
-              {/* ═════════════════════════════════════════════════════════════
-                  SCANNING FRAME
-              ═════════════════════════════════════════════════════════════ */}
-
-              {scanStatus ===
-                "scanning" && (
-                <>
-                  <div
-                    style={{
-                      position:
-                        "absolute",
-
-                      left: "50%",
-                      top: "50%",
-
-                      width:
-                        isDesktop
-                          ? "68%"
-                          : "76%",
-
-                      height:
-                        isDesktop
-                          ? "45%"
-                          : "42%",
-
-                      transform:
-                        "translate(-50%, -50%)",
-
-                      border:
-                        "2px solid rgba(255,255,255,0.9)",
-
-                      borderRadius:
-                        18,
-
-                      boxShadow:
-                        "0 0 0 9999px rgba(0,0,0,0.32)",
-                    }}
-                  >
-                    {/* CORNERS */}
-
-                    <span
+                    <div
                       style={{
-                        position:
-                          "absolute",
-
-                        left: -2,
-                        top: -2,
-
-                        width: 32,
-                        height: 32,
-
-                        borderTop:
-                          `4px solid ${PALETTE.yellow}`,
-
-                        borderLeft:
-                          `4px solid ${PALETTE.yellow}`,
-
-                        borderRadius:
-                          "10px 0 0 0",
+                        width: 45,
+                        height: 45,
+                        borderRadius: "50%",
+                        border: "4px solid rgba(255,255,255,0.25)",
+                        borderTopColor: SOFT_SLATE.green,
+                        animation: "scanitySpin 0.8s linear infinite",
+                        marginBottom: 15,
                       }}
                     />
-
-                    <span
-                      style={{
-                        position:
-                          "absolute",
-
-                        right: -2,
-                        top: -2,
-
-                        width: 32,
-                        height: 32,
-
-                        borderTop:
-                          `4px solid ${PALETTE.yellow}`,
-
-                        borderRight:
-                          `4px solid ${PALETTE.yellow}`,
-
-                        borderRadius:
-                          "0 10px 0 0",
-                      }}
-                    />
-
-                    <span
-                      style={{
-                        position:
-                          "absolute",
-
-                        left: -2,
-                        bottom: -2,
-
-                        width: 32,
-                        height: 32,
-
-                        borderBottom:
-                          `4px solid ${PALETTE.yellow}`,
-
-                        borderLeft:
-                          `4px solid ${PALETTE.yellow}`,
-
-                        borderRadius:
-                          "0 0 0 10px",
-                      }}
-                    />
-
-                    <span
-                      style={{
-                        position:
-                          "absolute",
-
-                        right: -2,
-                        bottom: -2,
-
-                        width: 32,
-                        height: 32,
-
-                        borderBottom:
-                          `4px solid ${PALETTE.yellow}`,
-
-                        borderRight:
-                          `4px solid ${PALETTE.yellow}`,
-
-                        borderRadius:
-                          "0 0 10px 0",
-                      }}
-                    />
-
-                    {/* SCAN LINE */}
-
-                    <span
-                      style={{
-                        position:
-                          "absolute",
-
-                        left:
-                          "4%",
-
-                        right:
-                          "4%",
-
-                        height: 2,
-
-                        background:
-                          PALETTE.yellow,
-
-                        boxShadow:
-                          "0 0 10px rgba(224,167,46,0.9)",
-
-                        animation:
-                          "scanityScanLine 2s ease-in-out infinite",
-                      }}
-                    />
+                    <strong style={{ fontSize: 16 }}>Starting camera...</strong>
+                    <span style={{ marginTop: 7, fontSize: 10, color: "rgba(255,255,255,0.7)" }}>
+                      Please allow camera access if requested.
+                    </span>
                   </div>
+                )}
 
-                  <div
-                    style={{
-                      position:
-                        "absolute",
-
-                      bottom: 18,
-
-                      left: 0,
-                      right: 0,
-
-                      textAlign:
-                        "center",
-
-                      color:
-                        "#FFFFFF",
-
-                      fontSize: 10,
-
-                      fontWeight: 600,
-
-                      textShadow:
-                        "0 1px 5px rgba(0,0,0,0.8)",
-                    }}
-                  >
-                    Position the barcode inside the frame
-                  </div>
-                </>
-              )}
-
-              {/* ═════════════════════════════════════════════════════════════
-                  CAPTURED
-              ═════════════════════════════════════════════════════════════ */}
-
-              {scanStatus ===
-                "captured" && (
-                <div
-                  style={{
-                    position:
-                      "absolute",
-
-                    inset: 0,
-
-                    background:
-                      "rgba(23,107,58,0.96)",
-
-                    display:
-                      "flex",
-
-                    flexDirection:
-                      "column",
-
-                    alignItems:
-                      "center",
-
-                    justifyContent:
-                      "center",
-
-                    color:
-                      "#FFFFFF",
-
-                    textAlign:
-                      "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 70,
-                      height: 70,
-
-                      borderRadius:
-                        "50%",
-
-                      background:
-                        "#FFFFFF",
-
-                      color:
-                        PALETTE.green,
-
-                      display:
-                        "flex",
-
-                      alignItems:
-                        "center",
-
-                      justifyContent:
-                        "center",
-
-                      marginBottom:
-                        14,
-
-                      animation:
-                        "scanitySuccessPop 0.35s ease both",
-                    }}
-                  >
-                    <i
-                      className="fa fa-check"
+                {/* SCANNING FRAME */}
+                {scanStatus === "scanning" && (
+                  <>
+                    <div
                       style={{
-                        fontSize:
-                          34,
+                        position: "absolute",
+                        left: "50%",
+                        top: "50%",
+                        width: isDesktop ? "68%" : "76%",
+                        height: isDesktop ? "45%" : "42%",
+                        transform: "translate(-50%, -50%)",
+                        border: "2px solid rgba(255,255,255,0.9)",
+                        borderRadius: 18,
+                        boxShadow: "0 0 0 9999px rgba(0,0,0,0.32)",
+                      }}
+                    >
+                      <span style={{ position: "absolute", left: -2, top: -2, width: 32, height: 32, borderTop: `4px solid ${SOFT_SLATE.gold}`, borderLeft: `4px solid ${SOFT_SLATE.gold}`, borderRadius: "10px 0 0 0" }} />
+                      <span style={{ position: "absolute", right: -2, top: -2, width: 32, height: 32, borderTop: `4px solid ${SOFT_SLATE.gold}`, borderRight: `4px solid ${SOFT_SLATE.gold}`, borderRadius: "0 10px 0 0" }} />
+                      <span style={{ position: "absolute", left: -2, bottom: -2, width: 32, height: 32, borderBottom: `4px solid ${SOFT_SLATE.gold}`, borderLeft: `4px solid ${SOFT_SLATE.gold}`, borderRadius: "0 0 0 10px" }} />
+                      <span style={{ position: "absolute", right: -2, bottom: -2, width: 32, height: 32, borderBottom: `4px solid ${SOFT_SLATE.gold}`, borderRight: `4px solid ${SOFT_SLATE.gold}`, borderRadius: "0 0 10px 0" }} />
+                      <span
+                        style={{
+                          position: "absolute",
+                          left: "4%",
+                          right: "4%",
+                          height: 2,
+                          background: SOFT_SLATE.gold,
+                          boxShadow: "0 0 10px rgba(216,160,42,0.9)",
+                          animation: "scanityScanLine 2s ease-in-out infinite",
+                        }}
+                      />
+                    </div>
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 18,
+                        left: 0,
+                        right: 0,
+                        textAlign: "center",
+                        color: "#FFFFFF",
+                        fontSize: 10,
+                        fontWeight: 600,
+                        textShadow: "0 1px 5px rgba(0,0,0,0.8)",
+                      }}
+                    >
+                      Position the barcode inside the frame
+                    </div>
+                  </>
+                )}
+
+                {/* CAPTURED */}
+                {scanStatus === "captured" && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: `${SOFT_SLATE.green}f5`,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#FFFFFF",
+                      textAlign: "center",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: "50%",
+                        background: "#FFFFFF",
+                        color: SOFT_SLATE.green,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: 14,
+                        animation: "scanitySuccessPop 0.35s ease both",
+                      }}
+                    >
+                      <i className="fa fa-check" style={{ fontSize: 34 }} />
+                    </div>
+                    <strong style={{ fontSize: 18 }}>Barcode Captured</strong>
+                    <span style={{ marginTop: 7, fontSize: 12, opacity: 0.9 }}>{barcodeValue}</span>
+                  </div>
+                )}
+
+                {/* PROCESSING */}
+                {scanStatus === "processing" && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "rgba(233,237,242,0.97)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 45,
+                        height: 45,
+                        borderRadius: "50%",
+                        border: "4px solid #c6ccd4",
+                        borderTopColor: SOFT_SLATE.green,
+                        animation: "scanitySpin 0.8s linear infinite",
+                        marginBottom: 15,
                       }}
                     />
+                    <strong style={{ fontSize: 16, color: SOFT_SLATE.textPrimary }}>Analyzing product...</strong>
+                    <span style={{ maxWidth: 390, marginTop: 7, padding: "0 20px", fontSize: 10, lineHeight: 1.6, color: SOFT_SLATE.textMuted }}>
+                      Getting real product information from the Scanity backend.
+                    </span>
                   </div>
+                )}
 
-                  <strong
-                    style={{
-                      fontSize:
-                        18,
-                    }}
-                  >
-                    Barcode Captured
-                  </strong>
-
-                  <span
-                    style={{
-                      marginTop:
-                        7,
-
-                      fontSize:
-                        12,
-
-                      opacity:
-                        0.9,
-                    }}
-                  >
-                    {barcodeValue}
-                  </span>
-                </div>
-              )}
-
-              {/* ═════════════════════════════════════════════════════════════
-                  BACKEND PROCESSING
-              ═════════════════════════════════════════════════════════════ */}
-
-              {scanStatus ===
-                "processing" && (
-                <div
-                  style={{
-                    position:
-                      "absolute",
-
-                    inset: 0,
-
-                    background:
-                      "rgba(255,255,255,0.97)",
-
-                    display:
-                      "flex",
-
-                    flexDirection:
-                      "column",
-
-                    alignItems:
-                      "center",
-
-                    justifyContent:
-                      "center",
-
-                    textAlign:
-                      "center",
-                  }}
-                >
+                {/* SUCCESS */}
+                {scanStatus === "success" && (
                   <div
                     style={{
-                      width: 45,
-                      height: 45,
-
-                      borderRadius:
-                        "50%",
-
-                      border:
-                        `4px solid ${PALETTE.border}`,
-
-                      borderTopColor:
-                        PALETTE.green,
-
-                      animation:
-                        "scanitySpin 0.8s linear infinite",
-
-                      marginBottom:
-                        15,
-                    }}
-                  />
-
-                  <strong
-                    style={{
-                      fontSize:
-                        16,
-
-                      color:
-                        PALETTE.textDark,
+                      position: "absolute",
+                      inset: 0,
+                      background: `${SOFT_SLATE.green}f5`,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#FFFFFF",
+                      textAlign: "center",
+                      padding: 20,
                     }}
                   >
-                    Analyzing product...
-                  </strong>
-
-                  <span
-                    style={{
-                      maxWidth:
-                        390,
-
-                      marginTop:
-                        7,
-
-                      padding:
-                        "0 20px",
-
-                      fontSize:
-                        10,
-
-                      lineHeight:
-                        1.6,
-
-                      color:
-                        PALETTE.textMuted,
-                    }}
-                  >
-                    Getting real product information from the Scanity backend.
-                  </span>
-                </div>
-              )}
-
-              {/* ═════════════════════════════════════════════════════════════
-                  SUCCESS
-              ═════════════════════════════════════════════════════════════ */}
-
-              {scanStatus ===
-                "success" && (
-                <div
-                  style={{
-                    position:
-                      "absolute",
-
-                    inset: 0,
-
-                    background:
-                      "rgba(23,107,58,0.96)",
-
-                    display:
-                      "flex",
-
-                    flexDirection:
-                      "column",
-
-                    alignItems:
-                      "center",
-
-                    justifyContent:
-                      "center",
-
-                    color:
-                      "#FFFFFF",
-
-                    textAlign:
-                      "center",
-
-                    padding:
-                      20,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 72,
-                      height: 72,
-
-                      borderRadius:
-                        "50%",
-
-                      background:
-                        "#FFFFFF",
-
-                      color:
-                        PALETTE.green,
-
-                      display:
-                        "flex",
-
-                      alignItems:
-                        "center",
-
-                      justifyContent:
-                        "center",
-
-                      marginBottom:
-                        14,
-
-                      animation:
-                        "scanitySuccessPop 0.35s ease both",
-                    }}
-                  >
-                    <i
-                      className="fa fa-check"
+                    <div
                       style={{
-                        fontSize:
-                          36,
+                        width: 72,
+                        height: 72,
+                        borderRadius: "50%",
+                        background: "#FFFFFF",
+                        color: SOFT_SLATE.green,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: 14,
+                        animation: "scanitySuccessPop 0.35s ease both",
                       }}
-                    />
+                    >
+                      <i className="fa fa-check" style={{ fontSize: 36 }} />
+                    </div>
+                    <strong style={{ fontSize: 18 }}>Product Found!</strong>
+                    <span style={{ marginTop: 8, fontSize: 11, opacity: 0.9 }}>Opening product information...</span>
                   </div>
+                )}
 
-                  <strong
-                    style={{
-                      fontSize:
-                        18,
-                    }}
-                  >
-                    Product Found!
-                  </strong>
-
-                  <span
-                    style={{
-                      marginTop:
-                        8,
-
-                      fontSize:
-                        11,
-
-                      opacity:
-                        0.9,
-                    }}
-                  >
-                    Opening product information...
-                  </span>
-                </div>
-              )}
-
-              {/* ═════════════════════════════════════════════════════════════
-                  ERROR STATES
-              ═════════════════════════════════════════════════════════════ */}
-
-              {[
-                "invalid",
-                "not-found",
-                "permission-denied",
-                "unsupported",
-                "network-error",
-                "error",
-              ].includes(
-                scanStatus
-              ) && (
-                <div
-                  style={{
-                    position:
-                      "absolute",
-
-                    inset: 0,
-
-                    background:
-                      "rgba(255,255,255,0.97)",
-
-                    display:
-                      "flex",
-
-                    flexDirection:
-                      "column",
-
-                    alignItems:
-                      "center",
-
-                    justifyContent:
-                      "center",
-
-                    textAlign:
-                      "center",
-
-                    padding:
-                      25,
-                  }}
-                >
+                {/* ERROR STATES */}
+                {["invalid", "not-found", "permission-denied", "unsupported", "network-error", "error"].includes(scanStatus) && (
                   <div
                     style={{
-                      width: 64,
-                      height: 64,
-
-                      borderRadius:
-                        "50%",
-
-                      background:
-                        scanStatus ===
-                          "not-found"
-                          ? PALETTE.blueSoft
-                          : PALETTE.redSoft,
-
-                      color:
-                        scanStatus ===
-                          "not-found"
-                          ? PALETTE.blue
-                          : PALETTE.red,
-
-                      display:
-                        "flex",
-
-                      alignItems:
-                        "center",
-
-                      justifyContent:
-                        "center",
-
-                      marginBottom:
-                        13,
+                      position: "absolute",
+                      inset: 0,
+                      background: "rgba(233,237,242,0.97)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      padding: 25,
                     }}
                   >
-                    <i
-                      className={`fa ${getStatusIcon()}`}
+                    <div
                       style={{
-                        fontSize:
-                          24,
+                        width: 64,
+                        height: 64,
+                        borderRadius: "50%",
+                        background: errorTint.bg,
+                        color: errorTint.fg,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: 13,
                       }}
-                    />
+                    >
+                      <i className={`fa ${getStatusIcon()}`} style={{ fontSize: 24 }} />
+                    </div>
+                    <strong style={{ fontSize: 16, color: SOFT_SLATE.textPrimary }}>{getStatusTitle()}</strong>
+                    <span style={{ maxWidth: 440, marginTop: 8, fontSize: 10, lineHeight: 1.6, color: SOFT_SLATE.textMuted }}>
+                      {getStatusDescription()}
+                    </span>
+                    <button
+                      type="button"
+                      className="scanity-scanner-button"
+                      onClick={handleRetry}
+                      style={{
+                        marginTop: 17,
+                        padding: "11px 22px",
+                        border: "none",
+                        borderRadius: 14,
+                        background: SOFT_SLATE.green,
+                        color: "#ffffff",
+                        fontWeight: 700,
+                        fontSize: 11,
+                        cursor: "pointer",
+                        boxShadow: SOFT_SLATE.raisedBtn,
+                      }}
+                    >
+                      Try Again
+                    </button>
                   </div>
+                )}
+              </div>
 
-                  <strong
-                    style={{
-                      fontSize:
-                        16,
+              {/* ── Status copy ───────────────────────────────────────── */}
+              <div style={{ textAlign: "center", marginTop: 20 }}>
+                <h2 style={{ margin: 0, fontWeight: 800, fontSize: isDesktop ? 19 : 17, color: SOFT_SLATE.textPrimary }}>
+                  {getStatusTitle()}
+                </h2>
+                <p style={{ maxWidth: 530, margin: "7px auto 0", fontSize: 10, lineHeight: 1.6, color: SOFT_SLATE.textMuted }}>
+                  {getStatusDescription()}
+                </p>
+              </div>
 
-                      color:
-                        PALETTE.textDark,
-                    }}
-                  >
-                    {getStatusTitle()}
-                  </strong>
-
-                  <span
-                    style={{
-                      maxWidth:
-                        440,
-
-                      marginTop:
-                        8,
-
-                      fontSize:
-                        10,
-
-                      lineHeight:
-                        1.6,
-
-                      color:
-                        PALETTE.textMuted,
-                    }}
-                  >
-                    {getStatusDescription()}
-                  </span>
-
-                  {/* RETRY */}
-
+              {/* ── Controls ──────────────────────────────────────────── */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, maxWidth: 560, margin: "22px auto 0" }}>
+                {[
+                  { key: "camera", label: "Camera", icon: "fa-camera", onClick: () => startCamera(), disabled: isBusy, active: false },
+                  { key: "rotate", label: "Rotate Camera", icon: "fa-refresh", onClick: rotateCamera, disabled: false, active: false },
+                  { key: "flash", label: "Flash", icon: "fa-bolt", onClick: toggleFlash, disabled: false, active: flashOn },
+                ].map((control) => (
                   <button
+                    key={control.key}
                     type="button"
-                    onClick={
-                      handleRetry
-                    }
+                    className="scanity-scanner-button"
+                    onClick={control.onClick}
+                    disabled={control.disabled}
                     style={{
-                      marginTop:
-                        17,
-
-                      padding:
-                        "10px 19px",
-
-                      border:
-                        "none",
-
-                      borderRadius:
-                        12,
-
-                      background:
-                        PALETTE.green,
-
-                      color:
-                        PALETTE.white,
-
-                      fontFamily:
-                        FONT,
-
-                      fontWeight:
-                        700,
-
-                      fontSize:
-                        11,
-
-                      cursor:
-                        "pointer",
+                      border: "none",
+                      background: SOFT_SLATE.bg,
+                      borderRadius: 16,
+                      padding: isDesktop ? "16px 8px" : "13px 5px",
+                      color: control.active ? SOFT_SLATE.gold : SOFT_SLATE.green,
+                      cursor: control.disabled ? "default" : "pointer",
+                      opacity: control.disabled ? 0.5 : 1,
+                      boxShadow: control.active ? SOFT_SLATE.insetMd : SOFT_SLATE.raisedSm,
                     }}
                   >
-                    Try Again
+                    <i className={`fa ${control.icon}`} style={{ fontSize: 17 }} />
+                    <div style={{ marginTop: 6, fontWeight: 600, fontSize: 9 }}>{control.label}</div>
                   </button>
-                </div>
-              )}
-            </div>
+                ))}
 
-            {/* ═══════════════════════════════════════════════════════════════
-                STATUS
-            ═══════════════════════════════════════════════════════════════ */}
-
-            <div
-              style={{
-                textAlign:
-                  "center",
-
-                marginTop:
-                  19,
-              }}
-            >
-              <h2
-                style={{
-                  margin: 0,
-
-                  fontFamily:
-                    FONT,
-
-                  fontWeight:
-                    800,
-
-                  fontSize:
-                    isDesktop
-                      ? 19
-                      : 17,
-
-                  color:
-                    PALETTE.textDark,
-                }}
-              >
-                {getStatusTitle()}
-              </h2>
-
-              <p
-                style={{
-                  maxWidth:
-                    530,
-
-                  margin:
-                    "7px auto 0",
-
-                  fontFamily:
-                    FONT,
-
-                  fontSize:
-                    10,
-
-                  lineHeight:
-                    1.6,
-
-                  color:
-                    PALETTE.textMuted,
-                }}
-              >
-                {getStatusDescription()}
-              </p>
-            </div>
-
-            {/* ═══════════════════════════════════════════════════════════════
-                CONTROLS
-            ═══════════════════════════════════════════════════════════════ */}
-
-            <div
-              style={{
-                display:
-                  "grid",
-
-                gridTemplateColumns:
-                  "repeat(4, 1fr)",
-
-                gap: 9,
-
-                maxWidth:
-                  560,
-
-                margin:
-                  "20px auto 0",
-              }}
-            >
-              {/* CAMERA */}
-
-              <button
-                type="button"
-                className="scanity-scanner-button"
-                onClick={() =>
-                  startCamera()
-                }
-                disabled={
-                  scanStatus ===
-                    "processing" ||
-                  scanStatus ===
-                    "captured" ||
-                  scanStatus ===
-                    "success"
-                }
-                style={{
-                  border:
-                    `1px solid ${PALETTE.border}`,
-
-                  background:
-                    PALETTE.white,
-
-                  borderRadius:
-                    14,
-
-                  padding:
-                    isDesktop
-                      ? "13px 8px"
-                      : "11px 5px",
-
-                  color:
-                    PALETTE.green,
-
-                  cursor:
-                    "pointer",
-
-                  opacity:
-                    scanStatus ===
-                      "processing" ||
-                    scanStatus ===
-                      "captured" ||
-                    scanStatus ===
-                      "success"
-                      ? 0.5
-                      : 1,
-                }}
-              >
-                <i
-                  className="fa fa-camera"
+                <label
+                  className="scanity-scanner-button"
                   style={{
-                    fontSize:
-                      17,
-                  }}
-                />
-
-                <div
-                  style={{
-                    marginTop:
-                      6,
-
-                    fontFamily:
-                      FONT,
-
-                    fontWeight:
-                      600,
-
-                    fontSize:
-                      9,
+                    border: "none",
+                    background: SOFT_SLATE.bg,
+                    borderRadius: 16,
+                    padding: isDesktop ? "16px 8px" : "13px 5px",
+                    color: SOFT_SLATE.green,
+                    cursor: "pointer",
+                    textAlign: "center",
+                    boxShadow: SOFT_SLATE.raisedSm,
                   }}
                 >
-                  Camera
-                </div>
-              </button>
+                  <i className="fa fa-picture-o" style={{ fontSize: 17 }} />
+                  <div style={{ marginTop: 6, fontWeight: 600, fontSize: 9 }}>Gallery</div>
+                  <input type="file" accept="image/*" onChange={handleGallery} style={{ display: "none" }} />
+                </label>
+              </div>
 
-              {/* ROTATE */}
-
-              <button
-                type="button"
-                className="scanity-scanner-button"
-                onClick={
-                  rotateCamera
-                }
-                style={{
-                  border:
-                    `1px solid ${PALETTE.border}`,
-
-                  background:
-                    PALETTE.white,
-
-                  borderRadius:
-                    14,
-
-                  padding:
-                    isDesktop
-                      ? "13px 8px"
-                      : "11px 5px",
-
-                  color:
-                    PALETTE.green,
-
-                  cursor:
-                    "pointer",
-                }}
-              >
-                <i
-                  className="fa fa-refresh"
-                  style={{
-                    fontSize:
-                      17,
-                  }}
-                />
-
-                <div
-                  style={{
-                    marginTop:
-                      6,
-
-                    fontFamily:
-                      FONT,
-
-                    fontWeight:
-                      600,
-
-                    fontSize:
-                      9,
-                  }}
-                >
-                  Rotate Camera
-                </div>
-              </button>
-
-              {/* GALLERY */}
-
-              <label
-                className="scanity-scanner-button"
-                style={{
-                  border:
-                    `1px solid ${PALETTE.border}`,
-
-                  background:
-                    PALETTE.white,
-
-                  borderRadius:
-                    14,
-
-                  padding:
-                    isDesktop
-                      ? "13px 8px"
-                      : "11px 5px",
-
-                  color:
-                    PALETTE.green,
-
-                  cursor:
-                    "pointer",
-
-                  textAlign:
-                    "center",
-                }}
-              >
-                <i
-                  className="fa fa-picture-o"
-                  style={{
-                    fontSize:
-                      17,
-                  }}
-                />
-
-                <div
-                  style={{
-                    marginTop:
-                      6,
-
-                    fontFamily:
-                      FONT,
-
-                    fontWeight:
-                      600,
-
-                    fontSize:
-                      9,
-                  }}
-                >
-                  Gallery
-                </div>
-
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={
-                    handleGallery
-                  }
-                  style={{
-                    display:
-                      "none",
-                  }}
-                />
-              </label>
-
-              {/* FLASH */}
-
-              <button
-                type="button"
-                className="scanity-scanner-button"
-                onClick={
-                  toggleFlash
-                }
-                style={{
-                  border:
-                    `1px solid ${
-                      flashOn
-                        ? PALETTE.yellow
-                        : PALETTE.border
-                    }`,
-
-                  background:
-                    flashOn
-                      ? "#FFF6DD"
-                      : PALETTE.white,
-
-                  borderRadius:
-                    14,
-
-                  padding:
-                    isDesktop
-                      ? "13px 8px"
-                      : "11px 5px",
-
-                  color:
-                    flashOn
-                      ? "#C98A1F"
-                      : PALETTE.green,
-
-                  cursor:
-                    "pointer",
-                }}
-              >
-                <i
-                  className="fa fa-bolt"
-                  style={{
-                    fontSize:
-                      17,
-                  }}
-                />
-
-                <div
-                  style={{
-                    marginTop:
-                      6,
-
-                    fontFamily:
-                      FONT,
-
-                    fontWeight:
-                      600,
-
-                    fontSize:
-                      9,
-                  }}
-                >
-                  Flash
-                </div>
-              </button>
-            </div>
-
-            {/* ═══════════════════════════════════════════════════════════════
-                START CAMERA
-            ═══════════════════════════════════════════════════════════════ */}
-
-            {scanStatus !==
-              "scanning" &&
-              scanStatus !==
-                "captured" &&
-              scanStatus !==
-                "processing" &&
-              scanStatus !==
-                "camera-loading" &&
-              scanStatus !==
-                "success" && (
+              {/* ── Start camera ──────────────────────────────────────── */}
+              {!["scanning", "captured", "processing", "camera-loading", "success"].includes(scanStatus) && (
                 <button
                   type="button"
                   className="scanity-scanner-button"
-                  onClick={() =>
-                    startCamera()
-                  }
+                  onClick={() => startCamera()}
                   style={{
-                    display:
-                      "block",
-
-                    width:
-                      "100%",
-
-                    maxWidth:
-                      560,
-
-                    margin:
-                      "18px auto 0",
-
-                    padding:
-                      15,
-
-                    border:
-                      "none",
-
-                    borderRadius:
-                      15,
-
-                    background:
-                      PALETTE.green,
-
-                    color:
-                      PALETTE.white,
-
-                    fontFamily:
-                      FONT,
-
-                    fontWeight:
-                      700,
-
-                    fontSize:
-                      13,
-
-                    cursor:
-                      "pointer",
-
-                    boxShadow:
-                      "0 7px 20px rgba(23,107,58,0.22)",
+                    display: "block",
+                    width: "100%",
+                    maxWidth: 560,
+                    margin: "20px auto 0",
+                    padding: 16,
+                    border: "none",
+                    borderRadius: 16,
+                    background: SOFT_SLATE.green,
+                    color: "#ffffff",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    boxShadow: SOFT_SLATE.raisedBtn,
                   }}
                 >
-                  <i
-                    className="fa fa-camera"
-                    style={{
-                      marginRight:
-                        8,
-                    }}
-                  />
-
+                  <i className="fa fa-camera" style={{ marginRight: 8 }} />
                   Start Camera
                 </button>
               )}
 
-            {/* ═══════════════════════════════════════════════════════════════
-                RESCAN
-            ═══════════════════════════════════════════════════════════════ */}
-
-            {(scanStatus ===
-              "success" ||
-              scanStatus ===
-                "not-found") && (
-              <button
-                type="button"
-                onClick={
-                  handleRescan
-                }
-                style={{
-                  display:
-                    "block",
-
-                  width:
-                    "100%",
-
-                  maxWidth:
-                    560,
-
-                  margin:
-                    "18px auto 0",
-
-                  padding:
-                    14,
-
-                  border:
-                    `1px solid ${PALETTE.green}`,
-
-                  borderRadius:
-                    15,
-
-                  background:
-                    PALETTE.white,
-
-                  color:
-                    PALETTE.green,
-
-                  fontFamily:
-                    FONT,
-
-                  fontWeight:
-                    700,
-
-                  fontSize:
-                    12,
-
-                  cursor:
-                    "pointer",
-                }}
-              >
-                <i
-                  className="fa fa-refresh"
-                  style={{
-                    marginRight:
-                      7,
-                  }}
-                />
-
-                Scan Another Product
-              </button>
-            )}
-
-            {/* ═══════════════════════════════════════════════════════════════
-                MANUAL BARCODE
-            ═══════════════════════════════════════════════════════════════ */}
-
-            <div
-              style={{
-                maxWidth:
-                  560,
-
-                margin:
-                  "24px auto 0",
-
-                paddingTop:
-                  20,
-
-                borderTop:
-                  `1px solid ${PALETTE.border}`,
-              }}
-            >
-              <div
-                style={{
-                  display:
-                    "flex",
-
-                  alignItems:
-                    "center",
-
-                  gap: 8,
-
-                  marginBottom:
-                    9,
-                }}
-              >
-                <i
-                  className="fa fa-keyboard-o"
-                  style={{
-                    color:
-                      PALETTE.green,
-
-                    fontSize:
-                      14,
-                  }}
-                />
-
-                <span
-                  style={{
-                    fontFamily:
-                      FONT,
-
-                    fontWeight:
-                      700,
-
-                    fontSize:
-                      11,
-
-                    color:
-                      PALETTE.textDark,
-                  }}
-                >
-                  Enter barcode manually
-                </span>
-              </div>
-
-              <div
-                style={{
-                  display:
-                    "flex",
-
-                  gap: 8,
-                }}
-              >
-                <input
-                  className="scanity-manual-input"
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={14}
-                  value={
-                    manualBarcode
-                  }
-                  onChange={(
-                    event
-                  ) => {
-                    const value =
-                      event.target
-                        .value
-
-                    /*
-                     * Keep numeric characters only.
-                     */
-                    const numeric =
-                      value.replace(
-                        /\D/g,
-                        ""
-                      )
-
-                    setManualBarcode(
-                      numeric
-                    )
-
-                    if (
-                      scanStatus ===
-                        "invalid" ||
-                      scanStatus ===
-                        "error" ||
-                      scanStatus ===
-                        "network-error"
-                    ) {
-                      setErrorMessage(
-                        ""
-                      )
-
-                      setScanStatus(
-                        "ready"
-                      )
-                    }
-                  }}
-                  onKeyDown={(
-                    event
-                  ) => {
-                    if (
-                      event.key ===
-                      "Enter"
-                    ) {
-                      handleManualScan()
-                    }
-                  }}
-                  placeholder="e.g. 4800012345678"
-                  style={{
-                    flex: 1,
-
-                    minWidth: 0,
-
-                    height: 46,
-
-                    boxSizing:
-                      "border-box",
-
-                    border:
-                      `1px solid ${PALETTE.border}`,
-
-                    borderRadius:
-                      12,
-
-                    background:
-                      "#F8F6F2",
-
-                    padding:
-                      "0 13px",
-
-                    fontFamily:
-                      FONT,
-
-                    fontSize:
-                      11,
-
-                    color:
-                      PALETTE.textDark,
-                  }}
-                />
-
+              {/* ── Rescan ────────────────────────────────────────────── */}
+              {(scanStatus === "success" || scanStatus === "not-found") && (
                 <button
                   type="button"
-                  onClick={
-                    handleManualScan
-                  }
-                  disabled={
-                    scanStatus ===
-                      "processing" ||
-                    scanStatus ===
-                      "captured" ||
-                    scanStatus ===
-                      "camera-loading"
-                  }
+                  className="scanity-scanner-button"
+                  onClick={handleRescan}
                   style={{
-                    height: 46,
-
-                    padding:
-                      "0 18px",
-
-                    border:
-                      "none",
-
-                    borderRadius:
-                      12,
-
-                    background:
-                      PALETTE.green,
-
-                    color:
-                      PALETTE.white,
-
-                    fontFamily:
-                      FONT,
-
-                    fontWeight:
-                      700,
-
-                    fontSize:
-                      11,
-
-                    cursor:
-                      "pointer",
-
-                    opacity:
-                      scanStatus ===
-                        "processing" ||
-                      scanStatus ===
-                        "captured" ||
-                      scanStatus ===
-                        "camera-loading"
-                        ? 0.5
-                        : 1,
+                    display: "block",
+                    width: "100%",
+                    maxWidth: 560,
+                    margin: "20px auto 0",
+                    padding: 15,
+                    border: "none",
+                    borderRadius: 16,
+                    background: SOFT_SLATE.bg,
+                    color: SOFT_SLATE.green,
+                    fontWeight: 700,
+                    fontSize: 12,
+                    cursor: "pointer",
+                    boxShadow: SOFT_SLATE.raisedBtnAlt,
                   }}
                 >
-                  Scan
+                  <i className="fa fa-refresh" style={{ marginRight: 7 }} />
+                  Scan Another Product
                 </button>
-              </div>
+              )}
 
-              {/* VALIDATION MESSAGE */}
+              {/* ── Manual barcode entry ──────────────────────────────── */}
+              <div style={{ maxWidth: 560, margin: "26px auto 0" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                  <i className="fa fa-keyboard-o" style={{ color: SOFT_SLATE.green, fontSize: 14 }} />
+                  <span style={{ fontWeight: 700, fontSize: 11, color: SOFT_SLATE.textPrimary }}>
+                    Enter barcode manually
+                  </span>
+                </div>
 
-              {scanStatus ===
-                "invalid" && (
-                <p
-                  style={{
-                    margin:
-                      "8px 0 0",
-
-                    fontFamily:
-                      FONT,
-
-                    fontSize:
-                      9,
-
-                    color:
-                      PALETTE.red,
-
-                    lineHeight:
-                      1.5,
-                  }}
-                >
-                  <i
-                    className="fa fa-exclamation-circle"
+                <div style={{ display: "flex", gap: 10 }}>
+                  <input
+                    className="scanity-manual-input"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={14}
+                    value={manualBarcode}
+                    onChange={(event) => {
+                      const numeric = event.target.value.replace(/\D/g, "")
+                      setManualBarcode(numeric)
+                      if (["invalid", "error", "network-error"].includes(scanStatus)) {
+                        setErrorMessage("")
+                        setScanStatus("ready")
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") handleManualScan()
+                    }}
+                    placeholder="e.g. 4800012345678"
                     style={{
-                      marginRight:
-                        5,
+                      flex: 1,
+                      minWidth: 0,
+                      height: 48,
+                      boxSizing: "border-box",
+                      border: "none",
+                      borderRadius: 14,
+                      background: SOFT_SLATE.bg,
+                      boxShadow: SOFT_SLATE.insetSm,
+                      padding: "0 14px",
+                      fontFamily: SOFT_SLATE.fontFamily,
+                      fontSize: 11,
+                      color: SOFT_SLATE.textPrimary,
                     }}
                   />
 
-                  {errorMessage}
-                </p>
-              )}
+                  <button
+                    type="button"
+                    className="scanity-scanner-button"
+                    onClick={handleManualScan}
+                    disabled={scanStatus === "processing" || scanStatus === "captured" || scanStatus === "camera-loading"}
+                    style={{
+                      height: 48,
+                      padding: "0 20px",
+                      border: "none",
+                      borderRadius: 14,
+                      background: SOFT_SLATE.green,
+                      color: "#ffffff",
+                      fontWeight: 700,
+                      fontSize: 11,
+                      cursor: "pointer",
+                      boxShadow: SOFT_SLATE.raisedBtn,
+                      opacity:
+                        scanStatus === "processing" || scanStatus === "captured" || scanStatus === "camera-loading"
+                          ? 0.5
+                          : 1,
+                    }}
+                  >
+                    Scan
+                  </button>
+                </div>
+
+                {scanStatus === "invalid" && (
+                  <p style={{ margin: "9px 0 0", fontSize: 9, color: SOFT_SLATE.unsafe, lineHeight: 1.5 }}>
+                    <i className="fa fa-exclamation-circle" style={{ marginRight: 5 }} />
+                    {errorMessage}
+                  </p>
+                )}
+              </div>
             </div>
-          </section>
-        </div>
-      </main>
+          </div>
+        </Center>
+      </div>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          HELP MODAL
-      ══════════════════════════════════════════════════════════════════════ */}
-
+      {/* ── Help modal ───────────────────────────────────────────────────── */}
       {showHelp && (
         <div
           style={{
-            position:
-              "fixed",
-
+            position: "fixed",
             inset: 0,
-
-            background:
-              "rgba(0,0,0,0.45)",
-
+            background: "rgba(36,41,47,0.45)",
             zIndex: 200,
-
-            display:
-              "flex",
-
-            alignItems:
-              "center",
-
-            justifyContent:
-              "center",
-
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             padding: 20,
           }}
         >
           <div
             style={{
-              width:
-                "100%",
-
-              maxWidth:
-                430,
-
-              background:
-                PALETTE.white,
-
-              borderRadius:
-                22,
-
-              padding:
-                24,
-
-              boxShadow:
-                "0 20px 50px rgba(0,0,0,0.2)",
+              width: "100%",
+              maxWidth: 430,
+              background: SOFT_SLATE.bg,
+              borderRadius: 26,
+              padding: 26,
+              boxShadow: SOFT_SLATE.raisedLg,
+              boxSizing: "border-box",
             }}
           >
-            <div
-              style={{
-                display:
-                  "flex",
-
-                alignItems:
-                  "center",
-
-                justifyContent:
-                  "space-between",
-
-                marginBottom:
-                  18,
-              }}
-            >
-              <h3
-                style={{
-                  margin: 0,
-
-                  fontFamily:
-                    FONT,
-
-                  fontWeight:
-                    800,
-
-                  fontSize:
-                    18,
-
-                  color:
-                    PALETTE.textDark,
-                }}
-              >
-                How to scan
-              </h3>
-
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+              <h3 style={{ margin: 0, fontWeight: 800, fontSize: 18, color: SOFT_SLATE.textPrimary }}>How to scan</h3>
               <button
                 type="button"
-                onClick={() =>
-                  setShowHelp(
-                    false
-                  )
-                }
+                onClick={() => setShowHelp(false)}
                 style={{
-                  width: 34,
-                  height: 34,
-
-                  borderRadius:
-                    "50%",
-
-                  border:
-                    "none",
-
-                  background:
-                    "#F3F1ED",
-
-                  cursor:
-                    "pointer",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  border: "none",
+                  background: SOFT_SLATE.bg,
+                  boxShadow: SOFT_SLATE.raisedSm,
+                  cursor: "pointer",
+                  color: SOFT_SLATE.textMuted,
                 }}
               >
                 <i className="fa fa-times" />
@@ -9091,123 +6211,46 @@ function BarcodeScannerScreen({
               "The barcode will be sent to the backend.",
               "The backend retrieves product information from OpenFoodFacts.",
               "The Product Result page will display the returned information.",
-            ].map(
-              (
-                instruction,
-                index
-              ) => (
+            ].map((instruction, index) => (
+              <div key={instruction} style={{ display: "flex", gap: 12, marginBottom: 13 }}>
                 <div
-                  key={
-                    instruction
-                  }
                   style={{
-                    display:
-                      "flex",
-
-                    gap: 11,
-
-                    marginBottom:
-                      12,
+                    width: 26,
+                    height: 26,
+                    flexShrink: 0,
+                    borderRadius: "50%",
+                    background: SOFT_SLATE.bg,
+                    boxShadow: SOFT_SLATE.insetSm,
+                    color: SOFT_SLATE.green,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 10,
+                    fontWeight: 800,
                   }}
                 >
-                  <div
-                    style={{
-                      width: 25,
-                      height: 25,
-
-                      flexShrink: 0,
-
-                      borderRadius:
-                        "50%",
-
-                      background:
-                        PALETTE.greenSoft,
-
-                      color:
-                        PALETTE.green,
-
-                      display:
-                        "flex",
-
-                      alignItems:
-                        "center",
-
-                      justifyContent:
-                        "center",
-
-                      fontSize:
-                        10,
-
-                      fontWeight:
-                        800,
-                    }}
-                  >
-                    {index + 1}
-                  </div>
-
-                  <span
-                    style={{
-                      fontFamily:
-                        FONT,
-
-                      fontSize:
-                        10,
-
-                      lineHeight:
-                        1.6,
-
-                      color:
-                        PALETTE.textMuted,
-                    }}
-                  >
-                    {
-                      instruction
-                    }
-                  </span>
+                  {index + 1}
                 </div>
-              )
-            )}
+                <span style={{ fontSize: 10, lineHeight: 1.6, color: SOFT_SLATE.textMuted }}>{instruction}</span>
+              </div>
+            ))}
 
             <button
               type="button"
-              onClick={() =>
-                setShowHelp(
-                  false
-                )
-              }
+              className="scanity-scanner-button"
+              onClick={() => setShowHelp(false)}
               style={{
-                width:
-                  "100%",
-
-                marginTop:
-                  8,
-
-                padding:
-                  13,
-
-                border:
-                  "none",
-
-                borderRadius:
-                  13,
-
-                background:
-                  PALETTE.green,
-
-                color:
-                  PALETTE.white,
-
-                fontFamily:
-                  FONT,
-
-                fontWeight:
-                  700,
-
-                fontSize:
-                  11,
-
-                cursor:
-                  "pointer",
+                width: "100%",
+                marginTop: 10,
+                padding: 14,
+                border: "none",
+                borderRadius: 15,
+                background: SOFT_SLATE.green,
+                color: "#ffffff",
+                fontWeight: 700,
+                fontSize: 11,
+                cursor: "pointer",
+                boxShadow: SOFT_SLATE.raisedBtn,
               }}
             >
               Got it
@@ -9216,216 +6259,90 @@ function BarcodeScannerScreen({
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          LOGOUT CONFIRMATION
-      ══════════════════════════════════════════════════════════════════════ */}
-
+      {/* ── Logout confirmation ──────────────────────────────────────────── */}
       {showLogoutConfirm && (
         <div
           style={{
-            position:
-              "fixed",
-
+            position: "fixed",
             inset: 0,
-
-            background:
-              "rgba(0,0,0,0.45)",
-
+            background: "rgba(36,41,47,0.45)",
             zIndex: 210,
-
-            display:
-              "flex",
-
-            alignItems:
-              "center",
-
-            justifyContent:
-              "center",
-
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             padding: 20,
           }}
         >
           <div
             style={{
-              width:
-                "100%",
-
-              maxWidth:
-                390,
-
-              background:
-                PALETTE.white,
-
-              borderRadius:
-                22,
-
-              padding:
-                24,
-
-              textAlign:
-                "center",
+              width: "100%",
+              maxWidth: 390,
+              background: SOFT_SLATE.bg,
+              borderRadius: 26,
+              padding: 26,
+              textAlign: "center",
+              boxShadow: SOFT_SLATE.raisedLg,
+              boxSizing: "border-box",
             }}
           >
             <div
               style={{
-                width: 56,
-                height: 56,
-
-                borderRadius:
-                  "50%",
-
-                background:
-                  PALETTE.redSoft,
-
-                color:
-                  PALETTE.red,
-
-                display:
-                  "flex",
-
-                alignItems:
-                  "center",
-
-                justifyContent:
-                  "center",
-
-                margin:
-                  "0 auto 14px",
+                width: 58,
+                height: 58,
+                borderRadius: "50%",
+                background: STATUS_TINTS.unsafe.bg,
+                color: STATUS_TINTS.unsafe.fg,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 14px",
               }}
             >
-              <i
-                className="fa fa-sign-out"
-                style={{
-                  fontSize:
-                    22,
-                }}
-              />
+              <i className="fa fa-sign-out" style={{ fontSize: 22 }} />
             </div>
 
-            <h3
-              style={{
-                margin: 0,
-
-                fontFamily:
-                  FONT,
-
-                fontWeight:
-                  800,
-
-                fontSize:
-                  17,
-
-                color:
-                  PALETTE.textDark,
-              }}
-            >
+            <h3 style={{ margin: 0, fontWeight: 800, fontSize: 17, color: SOFT_SLATE.textPrimary }}>
               Are you sure you want to logout?
             </h3>
-
-            <p
-              style={{
-                margin:
-                  "8px 0 20px",
-
-                fontFamily:
-                  FONT,
-
-                fontSize:
-                  10,
-
-                lineHeight:
-                  1.6,
-
-                color:
-                  PALETTE.textMuted,
-              }}
-            >
+            <p style={{ margin: "8px 0 20px", fontSize: 10, lineHeight: 1.6, color: SOFT_SLATE.textMuted }}>
               You will be returned to the login screen.
             </p>
 
-            <div
-              style={{
-                display:
-                  "flex",
-
-                gap: 9,
-              }}
-            >
+            <div style={{ display: "flex", gap: 10 }}>
               <button
                 type="button"
-                onClick={() =>
-                  setShowLogoutConfirm(
-                    false
-                  )
-                }
+                className="scanity-scanner-button"
+                onClick={() => setShowLogoutConfirm(false)}
                 style={{
                   flex: 1,
-
-                  padding:
-                    13,
-
-                  border:
-                    `1px solid ${PALETTE.border}`,
-
-                  borderRadius:
-                    13,
-
-                  background:
-                    PALETTE.white,
-
-                  color:
-                    PALETTE.textDark,
-
-                  fontFamily:
-                    FONT,
-
-                  fontWeight:
-                    700,
-
-                  fontSize:
-                    11,
-
-                  cursor:
-                    "pointer",
+                  padding: 14,
+                  border: "none",
+                  borderRadius: 15,
+                  background: SOFT_SLATE.bg,
+                  color: SOFT_SLATE.textPrimary,
+                  fontWeight: 700,
+                  fontSize: 11,
+                  cursor: "pointer",
+                  boxShadow: SOFT_SLATE.raisedBtnAlt,
                 }}
               >
                 Cancel
               </button>
-
               <button
                 type="button"
-                onClick={
-                  handleLogout
-                }
+                className="scanity-scanner-button"
+                onClick={handleLogout}
                 style={{
                   flex: 1,
-
-                  padding:
-                    13,
-
-                  border:
-                    "none",
-
-                  borderRadius:
-                    13,
-
-                  background:
-                    PALETTE.red,
-
-                  color:
-                    PALETTE.white,
-
-                  fontFamily:
-                    FONT,
-
-                  fontWeight:
-                    700,
-
-                  fontSize:
-                    11,
-
-                  cursor:
-                    "pointer",
+                  padding: 14,
+                  border: "none",
+                  borderRadius: 15,
+                  background: SOFT_SLATE.unsafe,
+                  color: "#ffffff",
+                  fontWeight: 700,
+                  fontSize: 11,
+                  cursor: "pointer",
+                  boxShadow: SOFT_SLATE.raisedBtn,
                 }}
               >
                 Logout
@@ -9435,94 +6352,48 @@ function BarcodeScannerScreen({
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          LOGOUT LOADING
-      ══════════════════════════════════════════════════════════════════════ */}
-
+      {/* ── Logout loading ───────────────────────────────────────────────── */}
       {showLogoutLoading && (
         <div
           style={{
-            position:
-              "fixed",
-
+            position: "fixed",
             inset: 0,
-
-            background:
-              "rgba(0,0,0,0.55)",
-
+            background: "rgba(36,41,47,0.55)",
             zIndex: 220,
-
-            display:
-              "flex",
-
-            alignItems:
-              "center",
-
-            justifyContent:
-              "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <div
             style={{
-              width:
-                260,
-
-              background:
-                PALETTE.white,
-
-              borderRadius:
-                20,
-
-              padding:
-                25,
-
-              textAlign:
-                "center",
+              width: 260,
+              background: SOFT_SLATE.bg,
+              borderRadius: 22,
+              padding: 26,
+              textAlign: "center",
+              boxShadow: SOFT_SLATE.raisedLg,
+              boxSizing: "border-box",
             }}
           >
             <div
               style={{
                 width: 40,
                 height: 40,
-
-                borderRadius:
-                  "50%",
-
-                border:
-                  `4px solid ${PALETTE.border}`,
-
-                borderTopColor:
-                  PALETTE.green,
-
-                animation:
-                  "scanitySpin 0.8s linear infinite",
-
-                margin:
-                  "0 auto 14px",
+                borderRadius: "50%",
+                border: "4px solid #c6ccd4",
+                borderTopColor: SOFT_SLATE.green,
+                animation: "scanitySpin 0.8s linear infinite",
+                margin: "0 auto 14px",
               }}
             />
-
-            <strong
-              style={{
-                fontFamily:
-                  FONT,
-
-                fontSize:
-                  14,
-
-                color:
-                  PALETTE.textDark,
-              }}
-            >
-              Logging out...
-            </strong>
+            <strong style={{ fontSize: 14, color: SOFT_SLATE.textPrimary }}>Logging out...</strong>
           </div>
         </div>
       )}
     </div>
   )
 }
-
 
 // ── OCR Scanner Screen ───────────────────────────────────────────────────────
 
