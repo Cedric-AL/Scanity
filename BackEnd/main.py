@@ -9,10 +9,15 @@ from starlette.concurrency import run_in_threadpool
 
 from app.core.config import settings
 from app.database.errors import database_exception_handler
-from app.database.session import engine
+from app.database.session import Base, engine
 from app.routers.auth import router as auth_router
 from app.routers.example import router as example_router
 from app.routers.scan_router import router as scan_router
+
+# Registers Product/Ingredient on Base.metadata (they're otherwise only
+# imported lazily, inside barcode_lookup_service functions) so the local
+# SQLite bootstrap below actually knows about these tables.
+from app.models.product import Ingredient, Product  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +25,16 @@ logger = logging.getLogger(__name__)
 def check_database_connection():
     with engine.connect() as connection:
         connection.execute(text("SELECT 1"))
+
+
+def ensure_local_sqlite_schema():
+    """
+    Dev convenience only: for the local SQLite file, create any missing
+    tables on startup. Real (PostgreSQL/Supabase) environments are schema-
+    managed through the team's migrations instead — this never runs there.
+    """
+    if engine.dialect.name == "sqlite":
+        Base.metadata.create_all(bind=engine)
 
 
 @asynccontextmanager
@@ -32,6 +47,7 @@ async def lifespan(app: FastAPI):
             raise RuntimeError(
                 "Database connection failed. Check BackEnd/.env and run python -m scripts.check_database."
             ) from None
+        await run_in_threadpool(ensure_local_sqlite_schema)
         yield
     finally:
         await run_in_threadpool(engine.dispose)

@@ -143,6 +143,7 @@ type Screen =
   | "terms"
   | "settings"
   | "delete"
+  | "changePassword"
   | "forgotPassword"
   | "resetPassword"
   | "confirmationPassword"
@@ -4240,6 +4241,18 @@ const CLOCK_ICON_PATH: ReactNode = (
   </>
 )
 
+// Same "scale" glyph Dashboard's own Compare Products action card uses, so
+// Compare Products reads the same way on the rail as it does on Dashboard.
+const COMPARE_ICON_PATH: ReactNode = (
+  <>
+    <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+    <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+    <path d="M7 21h10" />
+    <path d="M12 3v18" />
+    <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+  </>
+)
+
 // Scan History reuses Dashboard's own rail (same shading, same shell) with
 // its own nav set: Dashboard, a "Scan History" entry the full sidebar has
 // never linked to directly, then the same Settings/Help/About as elsewhere.
@@ -5051,8 +5064,12 @@ function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
   const isDesktop = useIsDesktop()
 
   // ── BACKEND API ───────────────────────────────────────────────────────────
+  // The FastAPI backend (BackEnd/, run via `uvicorn main:app --reload`) serves
+  // this at POST /api/v1/scan/barcode on port 8000 by default. The frontend
+  // dev server runs on a different origin/port (8443), so this must be an
+  // absolute URL — a relative path here would hit the Vite server, not the API.
   const BACKEND_API_URL =
-    import.meta.env.VITE_BARCODE_LOOKUP_URL || "/api/barcode/lookup"
+    import.meta.env.VITE_BARCODE_LOOKUP_URL || "http://localhost:8000/api/v1/scan/barcode"
 
   // ── STOP CAMERA ───────────────────────────────────────────────────────────
   const stopCamera = () => {
@@ -9925,38 +9942,7 @@ function ProductCompareScreen({
           fontFamily: SOFT_SLATE.fontFamily,
         }}
       >
-        <DashboardIconRail
-          go={go}
-          isDesktop={isDesktop}
-          active="productCompare"
-          navItems={[
-            {
-              screen: "dashboard",
-              label: "Dashboard",
-              path: null,
-            },
-            {
-              screen: "productCompare",
-              label: "Compare Products",
-              path: null,
-            },
-            {
-              screen: "settings",
-              label: "Settings",
-              path: null,
-            },
-            {
-              screen: "help",
-              label: "Help & FAQ",
-              path: null,
-            },
-            {
-              screen: "about",
-              label: "About",
-              path: null,
-            },
-          ]}
-        />
+        <DashboardIconRail go={go} isDesktop={isDesktop} />
 
         <div
           style={{
@@ -10124,38 +10110,7 @@ function ProductCompareScreen({
           fontFamily: SOFT_SLATE.fontFamily,
         }}
       >
-        <DashboardIconRail
-          go={go}
-          isDesktop={isDesktop}
-          active="productCompare"
-          navItems={[
-            {
-              screen: "dashboard",
-              label: "Dashboard",
-              path: null,
-            },
-            {
-              screen: "productCompare",
-              label: "Compare Products",
-              path: null,
-            },
-            {
-              screen: "settings",
-              label: "Settings",
-              path: null,
-            },
-            {
-              screen: "help",
-              label: "Help & FAQ",
-              path: null,
-            },
-            {
-              screen: "about",
-              label: "About",
-              path: null,
-            },
-          ]}
-        />
+        <DashboardIconRail go={go} isDesktop={isDesktop} />
 
         <div
           style={{
@@ -10336,43 +10291,7 @@ function ProductCompareScreen({
     >
       {/* ── Dashboard-style icon rail ───────────────────────────────────── */}
 
-      <DashboardIconRail
-        go={go}
-        isDesktop={isDesktop}
-        active="productCompare"
-        navItems={[
-          {
-            screen: "dashboard",
-            label: "Dashboard",
-            path: null,
-          },
-          {
-            screen: "productCompare",
-            label: "Compare Products",
-            path: null,
-          },
-          {
-            screen: "history",
-            label: "Scan History",
-            path: null,
-          },
-          {
-            screen: "settings",
-            label: "Settings",
-            path: null,
-          },
-          {
-            screen: "help",
-            label: "Help & FAQ",
-            path: null,
-          },
-          {
-            screen: "about",
-            label: "About",
-            path: null,
-          },
-        ]}
-      />
+      <DashboardIconRail go={go} isDesktop={isDesktop} />
 
       {/* ── Mobile menu button ────────────────────────────────────────────── */}
 
@@ -12700,9 +12619,8 @@ function InfoHeader({
    ========================================================= */
 
 function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
-  const [openQuestion, setOpenQuestion] = useState(0)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const isDesktop = useIsDesktop()
+  const [openQuestion, setOpenQuestion] = useState(0)
 
   return (
     <div
@@ -12712,226 +12630,214 @@ function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
         display: "flex",
         position: "relative",
         overflow: "hidden",
-        background: PALETTE.page,
-        fontFamily: FONT_BODY,
+        background: SOFT_SLATE.bg,
       }}
     >
-      <AppSidebar
-        go={go}
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        isDesktop={isDesktop}
-        active="help"
-      />
+      {isDesktop && (
+        <div style={{ position: "fixed", top: 22, left: 26, bottom: 22, width: 80, zIndex: 5 }}>
+          <DashboardIconRail go={go} isDesktop active="help" />
+        </div>
+      )}
 
       <div
         style={{
           flex: 1,
           minHeight: 0,
-          display: "flex",
-          flexDirection: "column",
-          background: PALETTE.page,
-          overflow: "hidden",
-          marginLeft: isDesktop ? SIDEBAR_WIDTH : 0,
+          overflowY: "auto",
+          paddingTop: isDesktop ? 0 : SAFE_TOP,
+          boxSizing: "border-box",
+          marginLeft: isDesktop ? 80 + 26 + 26 : 0,
+          fontFamily: SOFT_SLATE.fontFamily,
         }}
       >
-        <InfoHeader
-          title="Help & FAQ"
-          subtitle="Answers for a safer scan"
-          go={go}
-          showBack={false}
-          onMobileMenuClick={() => setSidebarOpen(true)}
-        />
-
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-          }}
-        >
-          <Center
-            maxWidth={isDesktop ? 1180 : undefined}
+        <Center maxWidth={isDesktop ? 1420 - (80 + 26 + 26) : undefined}>
+          <div
             style={{
-              padding: isDesktop
-                ? "24px 40px 32px"
-                : "18px 12px 24px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 22,
+              padding: isDesktop ? "26px 40px 40px 0" : "16px 14px 32px",
+              boxSizing: "border-box",
+              color: SOFT_SLATE.textPrimary,
+              minWidth: 0,
+              maxWidth: 720,
             }}
           >
-            {/* HELP INTRO */}
-            <div
-              style={{
-                padding: "16px",
-                marginBottom: 18,
-                borderRadius: 13,
-                border: `1px solid rgba(224,167,46,0.28)`,
-                background: PALETTE.panel,
-                boxShadow: cardShadow,
-              }}
-            >
-              <i
-                className="fa fa-question-circle"
-                style={{
-                  color: C.greenLight,
-                  fontSize: 24,
-                  marginBottom: 8,
-                }}
-              />
+            {!isDesktop && <DashboardIconRail go={go} isDesktop={false} active="help" />}
 
-              <p
-                style={{
-                  margin: 0,
-                  fontFamily: FONT_HEAD,
-                  color: PALETTE.textDark,
-                  fontSize: 14,
-                  fontWeight: 700,
-                }}
-              >
-                How can we help?
-              </p>
-
-              <p
-                style={{
-                  margin: "4px 0 0",
-                  fontFamily: FONT_BODY,
-                  color: "rgba(26,26,26,0.55)",
-                  fontSize: 10,
-                  lineHeight: 1.5,
-                }}
-              >
-                Find quick answers about scanning products and managing your
-                nutrition profile.
-              </p>
+            {/* Header */}
+            <div>
+              <div style={{ fontSize: isDesktop ? 30 : 24, fontWeight: 800, letterSpacing: "-0.02em", color: SOFT_SLATE.textPrimary }}>
+                Help &amp; FAQ
+              </div>
+              <div style={{ fontSize: 14, color: SOFT_SLATE.textSecondary, marginTop: 4 }}>
+                Answers for a safer scan
+              </div>
             </div>
 
-            {/* FAQ TITLE */}
-            <p
+            {/* Intro card */}
+            <div
               style={{
-                margin: "0 0 8px 2px",
-                fontFamily: FONT_HEAD,
-                color: "rgba(26,26,26,0.55)",
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
+                background: SOFT_SLATE.bg,
+                borderRadius: 26,
+                padding: isDesktop ? "26px 24px" : "22px 18px",
+                boxShadow: SOFT_SLATE.raisedLg,
+                boxSizing: "border-box",
               }}
             >
-              Frequently asked questions
-            </p>
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  background: SOFT_SLATE.bg,
+                  boxShadow: SOFT_SLATE.insetSm,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                  <path d="M12 17h.01" />
+                </svg>
+              </div>
+              <div style={{ marginTop: 14, fontSize: 16, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>
+                How can we help?
+              </div>
+              <div style={{ marginTop: 5, fontSize: 12, lineHeight: 1.55, color: SOFT_SLATE.textSecondary }}>
+                Find quick answers about scanning products and managing your nutrition profile.
+              </div>
+            </div>
 
-            {/* FAQ ITEMS */}
+            {/* FAQ */}
+            <div>
+              <div
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: SOFT_SLATE.textMuted,
+                  margin: "0 0 10px 4px",
+                }}
+              >
+                Frequently asked questions
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {FAQ_ITEMS.map((item, index) => {
+                  const open = openQuestion === index
+
+                  return (
+                    <div
+                      key={item.question}
+                      style={{
+                        background: SOFT_SLATE.bg,
+                        borderRadius: 18,
+                        padding: "17px 20px",
+                        boxShadow: open ? SOFT_SLATE.insetSm : SOFT_SLATE.raisedSm,
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setOpenQuestion(open ? -1 : index)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 12,
+                          width: "100%",
+                          border: "none",
+                          background: "none",
+                          padding: 0,
+                          textAlign: "left",
+                          cursor: "pointer",
+                          fontFamily: SOFT_SLATE.fontFamily,
+                          fontSize: 13.5,
+                          fontWeight: 700,
+                          color: SOFT_SLATE.textPrimary,
+                        }}
+                      >
+                        <span>{item.question}</span>
+                        <svg
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke={SOFT_SLATE.textMuted}
+                          strokeWidth="2.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{
+                            flexShrink: 0,
+                            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+                            transition: "transform 0.15s",
+                          }}
+                        >
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+
+                      {open && (
+                        <div
+                          style={{
+                            marginTop: 12,
+                            paddingTop: 12,
+                            borderTop: "1px solid #c6ccd4",
+                            fontSize: 12.5,
+                            lineHeight: 1.6,
+                            color: SOFT_SLATE.textSecondary,
+                          }}
+                        >
+                          {item.answer}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Contact support */}
             <div
               style={{
                 display: "flex",
-                flexDirection: "column",
-                gap: 8,
+                alignItems: "center",
+                gap: 14,
+                padding: "16px 18px",
+                borderRadius: 18,
+                background: SOFT_SLATE.bg,
+                boxShadow: SOFT_SLATE.insetMd,
+                boxSizing: "border-box",
               }}
             >
-              {FAQ_ITEMS.map((item, index) => {
-                const open = openQuestion === index
-
-                return (
-                  <div
-                    key={item.question}
-                    style={{
-                      borderRadius: 13,
-                      border: `1px solid rgba(224,167,46,0.28)`,
-                      background: PALETTE.panel,
-                      overflow: "hidden",
-                      boxShadow: cardShadow,
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenQuestion(open ? -1 : index)
-                      }
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 10,
-                        width: "100%",
-                        padding: "13px",
-                        border: "none",
-                        background: "none",
-                        color: PALETTE.textDark,
-                        textAlign: "left",
-                        fontFamily: FONT_HEAD,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        cursor: "pointer",
-                      }}
-                    >
-                      <span>{item.question}</span>
-
-                      <i
-                        className={`fa fa-angle-${
-                          open ? "up" : "down"
-                        }`}
-                        style={{
-                          color: C.greenLight,
-                          fontSize: 16,
-                          flexShrink: 0,
-                        }}
-                      />
-                    </button>
-
-                    {open && (
-                      <p
-                        style={{
-                          margin: 0,
-                          padding: "0 13px 13px",
-                          fontFamily: FONT_BODY,
-                          color: "rgba(26,26,26,0.58)",
-                          fontSize: 10,
-                          lineHeight: 1.55,
-                        }}
-                      >
-                        {item.answer}
-                      </p>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-
-
-            {/* CONTACT SUPPORT */}
-            <div
-              style={{
-                marginTop: 18,
-                padding: "14px",
-                borderRadius: 13,
-                border: `1px solid rgba(224,167,46,0.20)`,
-                background: PALETTE.panel,
-                boxShadow: cardShadow,
-              }}
-            >
-              <p
+              <div
                 style={{
-                  margin: 0,
-                  fontFamily: FONT_HEAD,
-                  color: PALETTE.textDark,
-                  fontSize: 11,
-                  fontWeight: 700,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 12,
+                  background: SOFT_SLATE.bg,
+                  boxShadow: SOFT_SLATE.raisedSm,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
                 }}
               >
-                Still need help?
-              </p>
-
-              <p
-                style={{
-                  margin: "4px 0 0",
-                  fontFamily: FONT_BODY,
-                  color: "rgba(26,26,26,0.52)",
-                  fontSize: 10,
-                }}
-              >
-                Contact us at support@scanity.app
-              </p>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4h16v12H7l-3 3z" />
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: SOFT_SLATE.textPrimary }}>Still need help?</div>
+                <div style={{ marginTop: 3, fontSize: 11.5, color: SOFT_SLATE.textSecondary }}>Contact us at support@scanity.app</div>
+              </div>
             </div>
-          </Center>
-        </div>
+          </div>
+        </Center>
       </div>
     </div>
   )
@@ -12944,125 +12850,371 @@ function HelpFaqScreen({ go }: { go: (s: Screen) => void }) {
 
 function AboutScreen({ go }: { go: (s: Screen) => void }) {
   const isDesktop = useIsDesktop()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const features = [
-    { icon: "fa-shield", title: "Personalized Safety", text: "Scanity checks products against your allergies, dietary restrictions, and health conditions." },
-    { icon: "fa-barcode", title: "Smart Scanning", text: "Scan a barcode or capture a nutrition label using OCR to identify useful information." },
-    { icon: "fa-leaf", title: "Nutrition Insights", text: "Get an easy-to-understand nutrition score based on important nutritional factors." },
-    { icon: "fa-lightbulb-o", title: "AI Explanations", text: "Understand why a product may be safe, cautionary, or unsafe for you." },
+    {
+      title: "Personalized Safety",
+      text: "Scanity checks products against your allergies, dietary restrictions, and health conditions.",
+      path: (
+        <path d="M12 2 4 5v6c0 5.5 3.8 9.7 8 11 4.2-1.3 8-5.5 8-11V5z" />
+      ),
+    },
+    {
+      title: "Smart Scanning",
+      text: "Scan a barcode or capture a nutrition label using OCR to identify useful information.",
+      path: (
+        <>
+          <rect x="3" y="4" width="2" height="16" />
+          <rect x="7" y="4" width="1" height="16" />
+          <rect x="10" y="4" width="3" height="16" />
+          <rect x="15" y="4" width="1" height="16" />
+          <rect x="18" y="4" width="2" height="16" />
+          <rect x="21" y="4" width="1" height="16" />
+        </>
+      ),
+    },
+    {
+      title: "Nutrition Insights",
+      text: "Get an easy-to-understand nutrition score based on important nutritional factors.",
+      path: (
+        <>
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+        </>
+      ),
+    },
+    {
+      title: "AI Explanations",
+      text: "Understand why a product may be safe, cautionary, or unsafe for you.",
+      path: (
+        <>
+          <path d="M9 18h6" />
+          <path d="M10 22h4" />
+          <path d="M12 2a7 7 0 0 0-4 12.7c.5.4.9 1 1 1.8v.5h6v-.5c.1-.8.5-1.4 1-1.8A7 7 0 0 0 12 2Z" />
+        </>
+      ),
+    },
   ]
 
   const steps = [
-    ["01", "fa-barcode", "Scan", "Scan the product barcode or food label."],
-    ["02", "fa-search", "Analyze", "Scanity analyzes ingredients and nutrition information."],
-    ["03", "fa-user", "Personalize", "The system compares the product against your health profile."],
-    ["04", "fa-file-text-o", "Understand", "Scanity explains potential risks and unfamiliar ingredients."],
-    ["05", "fa-shield", "Decide", "Safe, caution, or avoid recommendation."],
+    {
+      num: "01",
+      title: "Scan",
+      text: "Scan the product barcode or food label.",
+      path: (
+        <>
+          <rect x="3" y="4" width="2" height="16" />
+          <rect x="7" y="4" width="1" height="16" />
+          <rect x="10" y="4" width="3" height="16" />
+          <rect x="15" y="4" width="1" height="16" />
+          <rect x="18" y="4" width="2" height="16" />
+        </>
+      ),
+    },
+    {
+      num: "02",
+      title: "Analyze",
+      text: "Scanity analyzes ingredients and nutrition information.",
+      path: (
+        <>
+          <circle cx="11" cy="11" r="7" />
+          <path d="m21 21-4.3-4.3" />
+        </>
+      ),
+    },
+    {
+      num: "03",
+      title: "Personalize",
+      text: "The system compares the product against your health profile.",
+      path: (
+        <>
+          <circle cx="12" cy="8" r="4" />
+          <path d="M6 21v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1" />
+        </>
+      ),
+    },
+    {
+      num: "04",
+      title: "Understand",
+      text: "Scanity explains potential risks and unfamiliar ingredients.",
+      path: (
+        <>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <path d="M14 2v6h6" />
+          <path d="M9 13h6" />
+          <path d="M9 17h6" />
+        </>
+      ),
+    },
+    {
+      num: "05",
+      title: "Decide",
+      text: "Safe, caution, or avoid recommendation.",
+      path: (
+        <path d="M12 2 4 5v6c0 5.5 3.8 9.7 8 11 4.2-1.3 8-5.5 8-11V5z" />
+      ),
+    },
   ]
 
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", overflow: "hidden", background: C.offWhite, fontFamily: FONT_BODY }}>
-      <AppSidebar
-        go={go}
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        isDesktop={isDesktop}
-        active="about"
-      />
+    <div
+      style={{
+        flex: 1,
+        minHeight: 0,
+        display: "flex",
+        position: "relative",
+        overflow: "hidden",
+        background: SOFT_SLATE.bg,
+      }}
+    >
+      {isDesktop && (
+        <div style={{ position: "fixed", top: 22, left: 26, bottom: 22, width: 80, zIndex: 5 }}>
+          <DashboardIconRail go={go} isDesktop active="about" />
+        </div>
+      )}
 
-      <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column", marginLeft: isDesktop ? SIDEBAR_WIDTH : 0 }}>
-        <InfoHeader
-          title="About Us"
-          subtitle=""
-          go={go}
-          showBack={false}
-          onMobileMenuClick={() => setSidebarOpen(true)}
-        />
-
-        <main style={{ flex: 1, overflowY: "auto" }}>
-          <section
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          paddingTop: isDesktop ? 0 : SAFE_TOP,
+          boxSizing: "border-box",
+          marginLeft: isDesktop ? 80 + 26 + 26 : 0,
+          fontFamily: SOFT_SLATE.fontFamily,
+        }}
+      >
+        <Center maxWidth={isDesktop ? 1420 - (80 + 26 + 26) : undefined}>
+          <div
             style={{
-              position: "relative",
-              minHeight: isDesktop ? 330 : 430,
               display: "flex",
-              alignItems: "center",
-              overflow: "hidden",
-              background: C.green,
+              flexDirection: "column",
+              gap: 24,
+              padding: isDesktop ? "26px 40px 40px 0" : "16px 14px 32px",
+              boxSizing: "border-box",
+              color: SOFT_SLATE.textPrimary,
+              minWidth: 0,
             }}
           >
-            <img
-              src={aboutHeroImg}
-              alt="Person shopping for food in a grocery store"
-              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
-            />
-            <div style={{ position: "absolute", inset: 0, background: `color-mix(in srgb, ${PALETTE.green} 68%, transparent)` }} />
-            <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 1180, margin: "0 auto", padding: isDesktop ? "54px 68px" : "54px 22px" }}>
-              <p style={{ margin: "0 0 14px", fontFamily: FONT_HEAD, fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: C.textOnDark }}>About Scanity</p>
-              <h1 style={{ margin: 0, maxWidth: 540, fontFamily: FONT_HEAD, fontSize: isDesktop ? 36 : 29, lineHeight: 1.1, fontWeight: 800, color: C.white }}>Making every food choice safer, simpler, and smarter.</h1>
-              <p style={{ maxWidth: 480, margin: "18px 0 0", fontSize: 13, lineHeight: 1.6, color: "rgba(255,255,255,0.88)" }}>
-                Scanity is an AI-powered food safety and nutrition decision support tool that helps consumers understand food labels and determine whether packaged food products are suitable for their personal health profile.
-              </p>
-              <button type="button" onClick={() => go("dashboard")} style={{ marginTop: 22, display: "inline-flex", alignItems: "center", gap: 8, border: "none", borderRadius: 999, padding: "11px 17px", background: PALETTE.greenDark, color: C.white, fontFamily: FONT_HEAD, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                <i className="fa fa-play-circle" /> How Scanity Works <i className="fa fa-arrow-right" />
-              </button>
-            </div>
-          </section>
+            {!isDesktop && <DashboardIconRail go={go} isDesktop={false} active="about" />}
 
-          <section style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: isDesktop ? "1fr 1fr" : "1fr", alignItems: "center", gap: isDesktop ? 48 : 28, padding: isDesktop ? "42px 68px 36px" : "34px 22px 36px" }}>
+            {/* Header */}
             <div>
-              <h2 style={{ margin: 0, maxWidth: 470, fontFamily: FONT_HEAD, fontSize: isDesktop ? 25 : 22, lineHeight: 1.12, color: PALETTE.greenDark }}>Food labels shouldn't be difficult to understand.</h2>
-              <p style={{ margin: "14px 0 0", maxWidth: 470, fontSize: 12.5, lineHeight: 1.65, color: PALETTE.textMuted }}>Ingredients and nutrition facts can contain technical terms that are difficult for ordinary consumers to interpret. Scanity transforms this information into simple, understandable insights so users can make more informed food choices.</p>
+              <div style={{ fontSize: isDesktop ? 30 : 24, fontWeight: 800, letterSpacing: "-0.02em", color: SOFT_SLATE.textPrimary }}>
+                About Us
+              </div>
             </div>
-            <img src={aboutLabelImg} alt="Nutrition facts label" style={{ width: "100%", height: isDesktop ? 170 : 190, objectFit: "cover", objectPosition: "center", borderRadius: 12 }} />
-          </section>
 
-          <section style={{ background: PALETTE.greenLight, padding: isDesktop ? "28px 68px 34px" : "26px 22px 32px" }}>
-            <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-              <h2 style={{ margin: "0 0 16px", fontFamily: FONT_HEAD, fontSize: 17, color: PALETTE.greenDark }}>How Scanity Helps</h2>
-              <div style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : "1fr", gap: isDesktop ? 16 : 12 }}>
+            {/* Hero card */}
+            <div
+              style={{
+                position: "relative",
+                borderRadius: 28,
+                overflow: "hidden",
+                boxShadow: SOFT_SLATE.raisedLg,
+                minHeight: isDesktop ? 300 : 340,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <img
+                src={aboutHeroImg}
+                alt="Person shopping for food in a grocery store"
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+              />
+              <div style={{ position: "absolute", inset: 0, background: `linear-gradient(120deg, rgba(43,49,56,0.88), rgba(30,107,63,0.82))` }} />
+              <div style={{ position: "relative", zIndex: 1, padding: isDesktop ? "44px 40px" : "34px 22px", maxWidth: 560 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.75)" }}>
+                  About Scanity
+                </div>
+                <div style={{ marginTop: 12, fontSize: isDesktop ? 28 : 22, fontWeight: 800, lineHeight: 1.15, color: "#ffffff" }}>
+                  Making every food choice safer, simpler, and smarter.
+                </div>
+                <div style={{ marginTop: 14, maxWidth: 460, fontSize: 12.5, lineHeight: 1.6, color: "rgba(255,255,255,0.85)" }}>
+                  Scanity is an AI-powered food safety and nutrition decision support tool that helps consumers understand food labels and determine whether packaged food products are suitable for their personal health profile.
+                </div>
+              </div>
+            </div>
+
+            {/* Label explainer */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isDesktop ? "1fr 1fr" : "1fr",
+                alignItems: "center",
+                gap: isDesktop ? 26 : 18,
+                background: SOFT_SLATE.bg,
+                borderRadius: 26,
+                padding: isDesktop ? "28px 26px" : "22px 18px",
+                boxShadow: SOFT_SLATE.raisedMd,
+                boxSizing: "border-box",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: isDesktop ? 19 : 17, fontWeight: 800, lineHeight: 1.2, color: SOFT_SLATE.textPrimary }}>
+                  Food labels shouldn't be difficult to understand.
+                </div>
+                <div style={{ marginTop: 10, fontSize: 12, lineHeight: 1.6, color: SOFT_SLATE.textSecondary }}>
+                  Ingredients and nutrition facts can contain technical terms that are difficult for ordinary consumers to interpret. Scanity transforms this information into simple, understandable insights so users can make more informed food choices.
+                </div>
+              </div>
+              <img
+                src={aboutLabelImg}
+                alt="Nutrition facts label"
+                style={{ width: "100%", height: isDesktop ? 160 : 180, objectFit: "cover", objectPosition: "center", borderRadius: 18 }}
+              />
+            </div>
+
+            {/* Feature grid */}
+            <div>
+              <div
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: SOFT_SLATE.textMuted,
+                  margin: "0 0 10px 4px",
+                }}
+              >
+                How Scanity Helps
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : "1fr 1fr", gap: 16 }}>
                 {features.map((feature) => (
-                  <article key={feature.title} style={{ minHeight: isDesktop ? 150 : 0, padding: "18px 17px", borderRadius: 8, background: "rgba(255,255,255,0.72)", border: "1px solid rgba(23,107,58,0.08)" }}>
-                    <div style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: PALETTE.green, color: C.white, fontSize: 18 }}><i className={`fa ${feature.icon}`} /></div>
-                    <h3 style={{ margin: "12px 0 5px", fontFamily: FONT_HEAD, fontSize: 12, color: PALETTE.greenDark }}>{feature.title}</h3>
-                    <p style={{ margin: 0, fontSize: 10.5, lineHeight: 1.5, color: PALETTE.textMuted }}>{feature.text}</p>
-                  </article>
+                  <div
+                    key={feature.title}
+                    style={{
+                      background: SOFT_SLATE.bg,
+                      borderRadius: 20,
+                      padding: 20,
+                      boxShadow: SOFT_SLATE.raisedMd,
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 13,
+                        background: SOFT_SLATE.bg,
+                        boxShadow: SOFT_SLATE.insetSm,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        {feature.path}
+                      </svg>
+                    </div>
+                    <div style={{ marginTop: 14, fontSize: 14, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>{feature.title}</div>
+                    <div style={{ marginTop: 5, fontSize: 11.5, lineHeight: 1.55, color: SOFT_SLATE.textSecondary }}>{feature.text}</div>
+                  </div>
                 ))}
               </div>
             </div>
-          </section>
 
-          <section style={{ maxWidth: 1180, margin: "0 auto", padding: isDesktop ? "34px 68px 38px" : "34px 22px 40px" }}>
-            <h2 style={{ margin: "0 0 20px", fontFamily: FONT_HEAD, fontSize: 17, color: PALETTE.greenDark }}>How It Works</h2>
-            <div style={{ display: "grid", gridTemplateColumns: isDesktop ? "repeat(5, 1fr)" : "1fr", gap: isDesktop ? 18 : 24 }}>
-              {steps.map(([number, icon, title, text], index) => (
-                <div key={title} style={{ position: "relative", textAlign: "center", padding: "0 8px" }}>
-                  <span style={{ position: "absolute", top: 0, left: isDesktop ? 0 : 8, fontSize: 9, fontWeight: 700, color: PALETTE.greenMid }}>{number}</span>
-                  <div style={{ width: 46, height: 46, margin: "0 auto 9px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: PALETTE.greenLight, color: C.green, fontSize: 19 }}><i className={`fa ${icon}`} /></div>
-                  <h3 style={{ margin: 0, fontFamily: FONT_HEAD, fontSize: 12, color: PALETTE.greenDark }}>{title}</h3>
-                  <p style={{ margin: "6px auto 0", maxWidth: 170, fontSize: 10, lineHeight: 1.5, color: PALETTE.textMuted }}>{text}</p>
-                  {isDesktop && index < steps.length - 1 && <i className="fa fa-arrow-right" style={{ position: "absolute", top: 16, right: -10, color: PALETTE.greenMid, fontSize: 11 }} />}
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section style={{ background: `linear-gradient(110deg, ${PALETTE.greenDark}, ${PALETTE.greenMid})`, color: C.white, padding: isDesktop ? "24px 68px" : "28px 22px" }}>
-            <div style={{ maxWidth: 1180, margin: "0 auto", display: "flex", alignItems: "center", gap: 18 }}>
-              <img src={logoImg} alt="Scanity logo" style={{ width: isDesktop ? 105 : 70, height: 80, objectFit: "contain", mixBlendMode: "screen" }} />
-              <div style={{ borderLeft: "1px solid rgba(255,255,255,0.5)", paddingLeft: 18 }}>
-                <p style={{ margin: 0, fontSize: 9, color: C.textOnDark }}>Our Purpose</p>
-                <h2 style={{ margin: 0, fontFamily: FONT_HEAD, fontSize: isDesktop ? 18 : 16, lineHeight: 1.2 }}>We believe understanding what you eat should be simple.</h2>
-                <p style={{ margin: "8px 0 0", maxWidth: 560, fontSize: 10.5, lineHeight: 1.5, color: "rgba(255,255,255,0.82)" }}>Scanity was created to help consumers better understand food labels, recognize potentially unsafe ingredients, and make food decisions based on their individual health needs.</p>
+            {/* How it works */}
+            <div>
+              <div
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: SOFT_SLATE.textMuted,
+                  margin: "0 0 10px 4px",
+                }}
+              >
+                How It Works
+              </div>
+              <div
+                style={{
+                  background: SOFT_SLATE.bg,
+                  borderRadius: 26,
+                  padding: isDesktop ? "26px 24px" : "22px 16px",
+                  boxShadow: SOFT_SLATE.raisedMd,
+                  boxSizing: "border-box",
+                  display: "grid",
+                  gridTemplateColumns: isDesktop ? "repeat(5, 1fr)" : "1fr 1fr",
+                  gap: isDesktop ? 14 : 22,
+                }}
+              >
+                {steps.map((step) => (
+                  <div key={step.title} style={{ textAlign: "center", padding: "0 6px" }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: SOFT_SLATE.gold, marginBottom: 8 }}>{step.num}</div>
+                    <div
+                      style={{
+                        width: 52,
+                        height: 52,
+                        margin: "0 auto 10px",
+                        borderRadius: 16,
+                        background: SOFT_SLATE.bg,
+                        boxShadow: SOFT_SLATE.raisedSm,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        {step.path}
+                      </svg>
+                    </div>
+                    <div style={{ fontSize: 12.5, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>{step.title}</div>
+                    <div style={{ marginTop: 5, fontSize: 10.5, lineHeight: 1.5, color: SOFT_SLATE.textSecondary }}>{step.text}</div>
+                  </div>
+                ))}
               </div>
             </div>
-          </section>
 
-          <footer style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 22px 18px", display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", fontSize: 9, color: PALETTE.textMuted }}>
-            <span>Scanity &nbsp;|&nbsp; See · Know · Eat</span>
-            <span>About &nbsp; | &nbsp; Privacy Policy &nbsp; | &nbsp; Terms &nbsp; | &nbsp; Contact</span>
-          </footer>
-        </main>
+            {/* Purpose banner */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 20,
+                padding: isDesktop ? "22px 26px" : "20px 18px",
+                borderRadius: 22,
+                background: SOFT_SLATE.bg,
+                boxShadow: SOFT_SLATE.insetMd,
+                boxSizing: "border-box",
+              }}
+            >
+              <img
+                src={logoImg}
+                alt="Scanity logo"
+                style={{ width: isDesktop ? 64 : 48, height: isDesktop ? 64 : 48, objectFit: "contain", flexShrink: 0 }}
+              />
+              <div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: SOFT_SLATE.textMuted }}>
+                  Our Purpose
+                </div>
+                <div style={{ marginTop: 4, fontSize: isDesktop ? 16 : 14, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>
+                  We believe understanding what you eat should be simple.
+                </div>
+                <div style={{ marginTop: 6, maxWidth: 560, fontSize: 11.5, lineHeight: 1.55, color: SOFT_SLATE.textSecondary }}>
+                  Scanity was created to help consumers better understand food labels, recognize potentially unsafe ingredients, and make food decisions based on their individual health needs.
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 10,
+                padding: "4px 6px",
+                fontSize: 10.5,
+                color: SOFT_SLATE.textMuted,
+              }}
+            >
+              <span>Scanity &nbsp;&middot;&nbsp; See &middot; Know &middot; Eat</span>
+              <span>About &nbsp;&middot;&nbsp; Privacy Policy &nbsp;&middot;&nbsp; Terms &nbsp;&middot;&nbsp; Contact</span>
+            </div>
+          </div>
+        </Center>
       </div>
     </div>
   )
@@ -13732,194 +13884,195 @@ function LegalScreen({
         flex: 1,
         minHeight: 0,
         display: "flex",
-        flexDirection: "column",
-        background: PALETTE.page,
+        position: "relative",
         overflow: "hidden",
-        fontFamily: FONT_BODY,
+        background: SOFT_SLATE.bg,
       }}
     >
-      <InfoHeader
-        title={privacy ? "Privacy Policy" : "Terms of Service"}
-        subtitle={
-          privacy
-            ? "Your information and choices"
-            : "Using Scanity responsibly"
-        }
-        go={go}
-      />
+      {isDesktop && (
+        <div style={{ position: "fixed", top: 22, left: 26, bottom: 22, width: 80, zIndex: 5 }}>
+          <DashboardIconRail go={go} isDesktop active="settings" />
+        </div>
+      )}
 
       <div
         style={{
           flex: 1,
+          minHeight: 0,
           overflowY: "auto",
+          paddingTop: isDesktop ? 0 : SAFE_TOP,
+          boxSizing: "border-box",
+          marginLeft: isDesktop ? 80 + 26 + 26 : 0,
+          fontFamily: SOFT_SLATE.fontFamily,
         }}
       >
-        <Center
-          maxWidth={isDesktop ? 1180 : undefined}
-          style={{
-            padding: isDesktop
-              ? "24px 40px 32px"
-              : "18px 12px 24px",
-          }}
-        >
-          {/* INTRO */}
-          <div
-            style={{
-              padding: "15px",
-              marginBottom: 16,
-              borderRadius: 13,
-              border: `1px solid rgba(224,167,46,0.28)`,
-              background: PALETTE.panel,
-              boxShadow: cardShadow,
-            }}
-          >
-            <i
-              className={`fa ${
-                privacy ? "fa-shield" : "fa-file-text-o"
-              }`}
-              style={{
-                color: C.greenLight,
-                fontSize: 23,
-                marginBottom: 8,
-              }}
-            />
-
-            <p
-              style={{
-                margin: 0,
-                fontFamily: FONT_HEAD,
-                color: PALETTE.textDark,
-                fontSize: 13,
-                fontWeight: 700,
-              }}
-            >
-              {privacy
-                ? "Your privacy matters"
-                : "A few important notes"}
-            </p>
-
-            <p
-              style={{
-                margin: "4px 0 0",
-                fontFamily: FONT_BODY,
-                color: "rgba(26,26,26,0.55)",
-                fontSize: 10,
-                lineHeight: 1.55,
-              }}
-            >
-              {privacy
-                ? "Here is how Scanity uses information to personalize your experience."
-                : "Please read these guidelines before using Scanity."}
-            </p>
-          </div>
-
-          {/* SECTION TITLE */}
-          <p
-            style={{
-              margin: "0 0 8px 2px",
-              fontFamily: FONT_HEAD,
-              color: "rgba(26,26,26,0.55)",
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-            }}
-          >
-            {privacy ? "Policy details" : "Terms details"}
-          </p>
-
-          {/* LEGAL SECTIONS */}
+        <Center maxWidth={isDesktop ? 1420 - (80 + 26 + 26) : undefined}>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 9,
+              gap: 22,
+              padding: isDesktop ? "26px 40px 40px 0" : "16px 14px 32px",
+              boxSizing: "border-box",
+              color: SOFT_SLATE.textPrimary,
+              minWidth: 0,
+              maxWidth: 720,
             }}
           >
-            {sections.map(([title, text]) => (
-              <section
-                key={title}
+            {!isDesktop && <DashboardIconRail go={go} isDesktop={false} active="settings" />}
+
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20 }}>
+              <div>
+                <div style={{ fontSize: isDesktop ? 30 : 24, fontWeight: 800, letterSpacing: "-0.02em", color: SOFT_SLATE.textPrimary }}>
+                  {privacy ? "Privacy Policy" : "Terms of Service"}
+                </div>
+                <div style={{ fontSize: 14, color: SOFT_SLATE.textSecondary, marginTop: 4 }}>
+                  {privacy ? "Your information and choices" : "Using Scanity responsibly"}
+                </div>
+              </div>
+
+              <Tooltip label="Back to Settings">
+                <button
+                  type="button"
+                  onClick={() => go("settings")}
+                  aria-label="Back to Settings"
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: "50%",
+                    background: SOFT_SLATE.bg,
+                    border: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: SOFT_SLATE.raisedSm,
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </button>
+              </Tooltip>
+            </div>
+
+            {/* Intro card */}
+            <div
+              style={{
+                background: SOFT_SLATE.bg,
+                borderRadius: 26,
+                padding: isDesktop ? "26px 24px" : "22px 18px",
+                boxShadow: SOFT_SLATE.raisedLg,
+                boxSizing: "border-box",
+              }}
+            >
+              <div
                 style={{
-                  padding: "14px",
-                  borderRadius: 13,
-                  border: `1px solid rgba(224,167,46,0.28)`,
-                  background: PALETTE.panel,
-                  boxShadow: cardShadow,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  background: SOFT_SLATE.bg,
+                  boxShadow: SOFT_SLATE.insetSm,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                <p
-                  style={{
-                    margin: "0 0 5px",
-                    fontFamily: FONT_HEAD,
-                    color: PALETTE.textDark,
-                    fontSize: 11,
-                    fontWeight: 700,
-                  }}
-                >
-                  {title}
-                </p>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {privacy ? (
+                    <path d="M12 2 4 5v6c0 5.5 3.8 9.7 8 11 4.2-1.3 8-5.5 8-11V5z" />
+                  ) : (
+                    <>
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
+                      <path d="M9 13h6" />
+                      <path d="M9 17h6" />
+                    </>
+                  )}
+                </svg>
+              </div>
+              <div style={{ marginTop: 14, fontSize: 16, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>
+                {privacy ? "Your privacy matters" : "A few important notes"}
+              </div>
+              <div style={{ marginTop: 5, fontSize: 12, lineHeight: 1.55, color: SOFT_SLATE.textSecondary }}>
+                {privacy
+                  ? "Here is how Scanity uses information to personalize your experience."
+                  : "Please read these guidelines before using Scanity."}
+              </div>
+            </div>
 
-                <p
-                  style={{
-                    margin: 0,
-                    fontFamily: FONT_BODY,
-                    color: "rgba(26,26,26,0.56)",
-                    fontSize: 10,
-                    lineHeight: 1.6,
-                  }}
-                >
-                  {text}
-                </p>
-              </section>
-            ))}
+            {/* Sections */}
+            <div>
+              <div
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: SOFT_SLATE.textMuted,
+                  margin: "0 0 10px 4px",
+                }}
+              >
+                {privacy ? "Policy details" : "Terms details"}
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {sections.map(([title, text]) => (
+                  <div
+                    key={title}
+                    style={{
+                      background: SOFT_SLATE.bg,
+                      borderRadius: 18,
+                      padding: "18px 20px",
+                      boxShadow: SOFT_SLATE.raisedSm,
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 700, color: SOFT_SLATE.textPrimary }}>{title}</div>
+                    <div style={{ marginTop: 6, fontSize: 12, lineHeight: 1.6, color: SOFT_SLATE.textSecondary }}>{text}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ textAlign: "center", fontSize: 11, color: SOFT_SLATE.textMuted, marginTop: 4 }}>
+              Last updated August 2026
+            </div>
           </div>
-
-          {/* LAST UPDATED */}
-          <p
-            style={{
-              margin: "18px 0 0",
-              fontFamily: FONT_BODY,
-              color: "rgba(26,26,26,0.38)",
-              fontSize: 9,
-              textAlign: "center",
-            }}
-          >
-            Last updated August 2026
-          </p>
         </Center>
       </div>
     </div>
   )
 }
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
 function SettingsScreen({ go }: { go: (s: Screen) => void }) {
-  const [notifications, setNotifications] = useState(true)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const isDesktop = useIsDesktop()
 
   const Section = ({ title }: { title: string }) => (
-    <p
+    <div
       style={{
-        margin: "0 0 8px 2px",
-        fontFamily: FONT_HEAD,
+        fontSize: 10.5,
         fontWeight: 700,
-        fontSize: 10,
         letterSpacing: "0.08em",
         textTransform: "uppercase",
-        color: "rgba(26,26,26,0.55)",
+        color: SOFT_SLATE.textMuted,
+        margin: "0 0 10px 4px",
       }}
     >
       {title}
-    </p>
+    </div>
   )
 
   const Chevron = () => (
-    <i
-      className="fa fa-angle-right"
-      style={{
-        fontSize: 18,
-        color: "rgba(26,26,26,0.45)",
-      }}
-    />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.textMuted} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
   )
 
   const Row = ({
@@ -13941,97 +14094,52 @@ function SettingsScreen({ go }: { go: (s: Screen) => void }) {
 
     return (
       <Tag
-        {...(onClick
-          ? {
-              type: "button" as const,
-              onClick,
-            }
-          : {})}
+        {...(onClick ? { type: "button" as const, onClick } : {})}
         style={{
           width: "100%",
           display: "flex",
           alignItems: "center",
-          gap: 12,
-          padding: "12px 13px",
-          marginBottom: 7,
-          borderRadius: 13,
-
-          /* DELETE ACCOUNT CARD */
-          border: danger
-            ? "1px solid rgba(232,69,60,0.20)"
-            : `1px solid ${PALETTE.border}`,
-
-          background: danger
-            ? PALETTE.dangerBg
-            : PALETTE.panel,
-
-          boxShadow: cardShadow,
+          gap: 14,
+          padding: "16px 18px",
+          borderRadius: 18,
+          background: SOFT_SLATE.bg,
+          boxShadow: SOFT_SLATE.raisedSm,
           boxSizing: "border-box",
+          border: "none",
           cursor: onClick ? "pointer" : "default",
           textAlign: "left",
+          fontFamily: SOFT_SLATE.fontFamily,
         }}
       >
-        {/* ICON BOX */}
         <div
           style={{
-            width: 38,
-            height: 38,
-            borderRadius: 10,
+            width: 42,
+            height: 42,
+            borderRadius: 13,
+            background: SOFT_SLATE.bg,
+            boxShadow: SOFT_SLATE.insetSm,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
-
-            background: danger
-              ? "rgba(232,69,60,0.10)"
-              : PALETTE.greenLight,
-
-            border: danger
-              ? "1px solid rgba(232,69,60,0.20)"
-              : `1px solid ${PALETTE.border}`,
           }}
         >
-          {icon}
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={danger ? SOFT_SLATE.unsafe : SOFT_SLATE.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {icon}
+          </svg>
         </div>
 
-        {/* TEXT */}
-        <div
-          style={{
-            flex: 1,
-            minWidth: 0,
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontFamily: FONT_HEAD,
-              fontWeight: 700,
-              fontSize: 11,
-              color: danger
-                ? C.statusDanger
-                : PALETTE.textDark,
-            }}
-          >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: danger ? SOFT_SLATE.unsafe : SOFT_SLATE.textPrimary }}>
             {label}
-          </p>
-
+          </div>
           {sub && (
-            <p
-              style={{
-                margin: "2px 0 0",
-                fontFamily: FONT_BODY,
-                fontSize: 8,
-                color: danger
-                  ? "rgba(185,55,48,0.75)"
-                  : "rgba(26,26,26,0.52)",
-              }}
-            >
+            <div style={{ marginTop: 2, fontSize: 11.5, color: SOFT_SLATE.textMuted }}>
               {sub}
-            </p>
+            </div>
           )}
         </div>
 
-        {/* RIGHT ICON */}
         {right}
       </Tag>
     )
@@ -14045,302 +14153,115 @@ function SettingsScreen({ go }: { go: (s: Screen) => void }) {
         display: "flex",
         position: "relative",
         overflow: "hidden",
-        background: PALETTE.page,
-        fontFamily: FONT_BODY,
+        background: SOFT_SLATE.bg,
       }}
     >
-      {/* SIDEBAR */}
-      <AppSidebar
-        go={go}
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        isDesktop={isDesktop}
-        active="settings"
-      />
+      {isDesktop && (
+        <div style={{ position: "fixed", top: 22, left: 26, bottom: 22, width: 80, zIndex: 5 }}>
+          <DashboardIconRail go={go} isDesktop active="settings" />
+        </div>
+      )}
 
       <div
         style={{
           flex: 1,
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          background: PALETTE.page,
-          marginLeft: isDesktop ? SIDEBAR_WIDTH : 0,
+          minHeight: 0,
+          overflowY: "auto",
+          paddingTop: isDesktop ? 0 : SAFE_TOP,
+          boxSizing: "border-box",
+          marginLeft: isDesktop ? 80 + 26 + 26 : 0,
+          fontFamily: SOFT_SLATE.fontFamily,
         }}
       >
-        {/* HEADER */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 2,
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            paddingTop: isDesktop
-              ? 13
-              : `calc(${SAFE_TOP} + 12px)`,
-            paddingLeft: isDesktop ? 20 : 16,
-            paddingRight: 20,
-            paddingBottom: 13,
-            borderBottom: `1px solid ${PALETTE.border}`,
-            background: PALETTE.panel,
-            boxSizing: "border-box",
-          }}
-        >
-          {/* MOBILE MENU */}
-          {!isDesktop && (
-            <button
-              type="button"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Open menu"
-              style={{
-                width: 38,
-                height: 38,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: 10,
-                border: `1px solid ${PALETTE.border}`,
-                background: "#EAF4EE",
-                color: PALETTE.green,
-                cursor: "pointer",
-                boxShadow: "0 3px 10px rgba(23,107,58,0.08)",
-                flexShrink: 0,
-              }}
-            >
-              <svg
-                width={18}
-                height={14}
-                viewBox="0 0 24 18"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              >
-                <line
-                  x1="0"
-                  y1="1"
-                  x2="24"
-                  y2="1"
-                />
-                <line
-                  x1="0"
-                  y1="9"
-                  x2="24"
-                  y2="9"
-                />
-                <line
-                  x1="0"
-                  y1="17"
-                  x2="24"
-                  y2="17"
-                />
-              </svg>
-            </button>
-          )}
-
-          {/* TITLE */}
+        <Center maxWidth={isDesktop ? 1420 - (80 + 26 + 26) : undefined}>
           <div
             style={{
-              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: 22,
+              padding: isDesktop ? "26px 40px 40px 0" : "16px 14px 32px",
+              boxSizing: "border-box",
+              color: SOFT_SLATE.textPrimary,
               minWidth: 0,
+              maxWidth: 640,
             }}
           >
-            <h2
-              style={{
-                margin: 0,
-                fontFamily: FONT_HEAD,
-                fontWeight: 800,
-                fontSize: 23,
-                lineHeight: 1.2,
-                letterSpacing: "-0.04em",
-                color: PALETTE.textDark,
-              }}
-            >
-              Settings
-            </h2>
+            {!isDesktop && <DashboardIconRail go={go} isDesktop={false} active="settings" />}
 
-            <p
-              style={{
-                margin: "4px 0 0",
-                fontFamily: FONT_BODY,
-                fontSize: 12,
-                color: "rgba(26,26,26,0.58)",
-              }}
-            >
-              Customize your Scanity experience
-            </p>
-          </div>
-        </div>
-
-        {/* CONTENT */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 2,
-            flex: 1,
-            overflowY: "auto",
-            boxSizing: "border-box",
-          }}
-        >
-          <Center
-            maxWidth={isDesktop ? 1180 : undefined}
-            style={{
-              padding: isDesktop
-                ? "24px 40px 32px"
-                : "15px 12px 25px",
-            }}
-          >
-            {/* PREFERENCES */}
-            <Section title="Preferences" />
-
-            <Row
-              icon={
-                <i
-                  className="fa fa-bell-o"
-                  style={{
-                    fontSize: 17,
-                    color: PALETTE.green,
-                  }}
-                />
-              }
-              label="Notifications"
-              sub="Receive updates and reminders"
-              right={
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setNotifications(!notifications)
-                  }}
-                  aria-label={
-                    notifications
-                      ? "Disable notifications"
-                      : "Enable notifications"
-                  }
-                  style={{
-                    width: 42,
-                    height: 24,
-                    padding: 0,
-                    border: "none",
-                    borderRadius: 12,
-                    background: notifications
-                      ? PALETTE.green
-                      : "rgba(26,26,26,0.20)",
-                    position: "relative",
-                    cursor: "pointer",
-                    flexShrink: 0,
-                  }}
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 3,
-                      left: notifications ? 21 : 3,
-                      width: 18,
-                      height: 18,
-                      borderRadius: "50%",
-                      background: C.white,
-                      transition: "left 0.2s",
-                      boxShadow:
-                        "0 2px 5px rgba(0,0,0,0.25)",
-                    }}
-                  />
-                </button>
-              }
-            />
+            {/* Header */}
+            <div>
+              <div style={{ fontSize: isDesktop ? 30 : 24, fontWeight: 800, letterSpacing: "-0.02em", color: SOFT_SLATE.textPrimary }}>
+                Settings
+              </div>
+              <div style={{ fontSize: 14, color: SOFT_SLATE.textSecondary, marginTop: 4 }}>
+                Customize your Scanity experience
+              </div>
+            </div>
 
             {/* SECURITY */}
-            <div style={{ marginTop: 17 }}>
+            <div>
               <Section title="Security" />
+              <Row
+                onClick={() => go("changePassword")}
+                label="Change Password"
+                sub="Update your current password"
+                right={<Chevron />}
+                icon={
+                  <>
+                    <circle cx="7.5" cy="15.5" r="5.5" />
+                    <path d="m21 2-9.6 9.6" />
+                    <path d="m15.5 7.5 3 3L22 7l-3-3" />
+                  </>
+                }
+              />
             </div>
-
-            <Row
-              onClick={() => go("forgotPassword")}
-              icon={
-                <i
-                  className="fa fa-key"
-                  style={{
-                    fontSize: 17,
-                    color: PALETTE.green,
-                  }}
-                />
-              }
-              label="Change Password"
-              sub="Update your current password"
-              right={<Chevron />}
-            />
 
             {/* SUPPORT & INFO */}
-            <div style={{ marginTop: 17 }}>
+            <div>
               <Section title="Support & Info" />
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <Row
+                  onClick={() => go("privacy")}
+                  label="Privacy Policy"
+                  right={<Chevron />}
+                  icon={<path d="M12 2 4 5v6c0 5.5 3.8 9.7 8 11 4.2-1.3 8-5.5 8-11V5z" />}
+                />
+                <Row
+                  onClick={() => go("terms")}
+                  label="Terms of Service"
+                  right={<Chevron />}
+                  icon={
+                    <>
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
+                      <path d="M9 13h6" />
+                      <path d="M9 17h6" />
+                    </>
+                  }
+                />
+              </div>
             </div>
-
-            <Row
-              icon={
-                <i
-                  className="fa fa-shield"
-                  style={{
-                    fontSize: 16,
-                    color: PALETTE.green,
-                  }}
-                />
-              }
-              onClick={() => go("privacy")}
-              label="Privacy Policy"
-              right={<Chevron />}
-            />
-
-            <Row
-              icon={
-                <i
-                  className="fa fa-file-text-o"
-                  style={{
-                    fontSize: 16,
-                    color: PALETTE.green,
-                  }}
-                />
-              }
-              onClick={() => go("terms")}
-              label="Terms of Service"
-              right={<Chevron />}
-            />
 
             {/* ACCOUNT */}
-            <div style={{ marginTop: 17 }}>
+            <div>
               <Section title="Account" />
+              <Row
+                danger
+                onClick={() => go("delete")}
+                label="Delete Account"
+                sub="Permanently delete your account"
+                right={<Chevron />}
+                icon={
+                  <>
+                    <path d="M3 6h18" />
+                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  </>
+                }
+              />
             </div>
-
-            {/* DELETE ACCOUNT */}
-            <Row
-              danger
-              onClick={() => go("delete")}
-              icon={
-                <i
-                  className="fa fa-trash-o"
-                  style={{
-                    fontSize: 18,
-                    color: C.statusDanger,
-                  }}
-                />
-              }
-              label="Delete Account"
-              sub="Permanently delete your account"
-              right={
-                <i
-                  className="fa fa-angle-right"
-                  style={{
-                    fontSize: 18,
-                    color: "rgba(232,69,60,0.55)",
-                  }}
-                />
-              }
-            />
-
-            <div style={{ height: 15 }} />
-          </Center>
-        </div>
+          </div>
+        </Center>
       </div>
     </div>
   )
@@ -14351,245 +14272,203 @@ function DeleteAccountScreen({
 }: {
   go: (s: Screen) => void
 }) {
-  const [showDeleteLoading, setShowDeleteLoading] =
-    useState(false)
+  const isDesktop = useIsDesktop()
+  const [showDeleteLoading, setShowDeleteLoading] = useState(false)
 
   return (
     <div
       style={{
-        position: "relative",
         flex: 1,
+        minHeight: 0,
         display: "flex",
-        flexDirection: "column",
+        position: "relative",
         overflow: "hidden",
-        background: PALETTE.page,
+        background: SOFT_SLATE.bg,
       }}
     >
-      {/* ── Back Button ─────────────────────────────────────────────────── */}
-      <Tooltip
-        label="Back to settings"
-        wrapperStyle={{
-          position: "absolute",
-          top: SAFE_TOP,
-          left: 18,
-          zIndex: 5,
+      {isDesktop && (
+        <div style={{ position: "fixed", top: 22, left: 26, bottom: 22, width: 80, zIndex: 5 }}>
+          <DashboardIconRail go={go} isDesktop active="settings" />
+        </div>
+      )}
+
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          paddingTop: isDesktop ? 0 : SAFE_TOP,
+          boxSizing: "border-box",
+          marginLeft: isDesktop ? 80 + 26 + 26 : 0,
+          fontFamily: SOFT_SLATE.fontFamily,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        <button
-          type="button"
-          onClick={() => go("settings")}
-          aria-label="Back to settings"
+        {!isDesktop && (
+          <div style={{ padding: "16px 14px 0" }}>
+            <DashboardIconRail go={go} isDesktop={false} active="settings" />
+          </div>
+        )}
+
+        <div style={{ padding: isDesktop ? "22px 40px 8px 0" : "18px 14px 0" }}>
+          <Tooltip label="Back to Settings">
+            <button
+              type="button"
+              onClick={() => go("settings")}
+              aria-label="Back to Settings"
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                background: SOFT_SLATE.bg,
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: SOFT_SLATE.raisedSm,
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+          </Tooltip>
+        </div>
+
+        <div
           style={{
-            width: 38,
-            height: 38,
+            flex: 1,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            borderRadius: 11,
-            border: `1px solid ${PALETTE.border}`,
-            background: PALETTE.panel,
-            color: PALETTE.textDark,
-            cursor: "pointer",
-            boxShadow:
-              "0 2px 8px rgba(0,0,0,0.08)",
-          }}
-        >
-          <i
-            className="fa fa-angle-left"
-            style={{
-              fontSize: 21,
-            }}
-          />
-        </button>
-      </Tooltip>
-
-      {/* ── Main Content ────────────────────────────────────────────────── */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 22,
-          boxSizing: "border-box",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: 330,
-            padding: "30px 22px 22px",
-            borderRadius: 24,
-            background: PALETTE.panel,
-            border: `1.5px solid ${PALETTE.border}`,
-            boxShadow:
-              "0 18px 50px rgba(0,0,0,0.16)",
-            textAlign: "center",
+            padding: 22,
             boxSizing: "border-box",
           }}
         >
-          {/* ── Delete Icon ─────────────────────────────────────────────── */}
           <div
             style={{
-              width: 78,
-              height: 78,
-              margin: "0 auto 17px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "50%",
-              background: PALETTE.dangerBg,
-              border:
-                "2px solid rgba(217,74,74,0.35)",
-            }}
-          >
-            <i
-              className="fa fa-trash-o"
-              style={{
-                fontSize: 35,
-                color: PALETTE.danger,
-              }}
-            />
-          </div>
-
-          {/* ── Title ──────────────────────────────────────────────────── */}
-          <h2
-            style={{
-              margin: "0 0 8px",
-              fontFamily: FONT_HEAD,
-              fontWeight: 800,
-              fontSize: 18,
-              color: PALETTE.textDark,
-            }}
-          >
-            Delete your account?
-          </h2>
-
-          {/* ── Description ────────────────────────────────────────────── */}
-          <p
-            style={{
-              margin: "0 auto 19px",
-              maxWidth: 255,
-              fontFamily: FONT_BODY,
-              fontSize: 9,
-              lineHeight: "15px",
-              color: "rgba(26,26,26,0.58)",
-            }}
-          >
-            This action cannot be undone. All
-            your data, scan history, and
-            preferences will be permanently
-            deleted.
-          </p>
-
-          {/* ── Warning ────────────────────────────────────────────────── */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 9,
               width: "100%",
-              padding: "11px 12px",
-              marginBottom: 20,
+              maxWidth: 400,
+              background: SOFT_SLATE.bg,
+              borderRadius: 28,
+              padding: isDesktop ? "38px 32px" : "32px 24px",
+              boxShadow: SOFT_SLATE.raisedLg,
               boxSizing: "border-box",
-              borderRadius: 12,
-              background:
-                "rgba(245,197,24,0.10)",
-              border:
-                "1px solid rgba(245,197,24,0.20)",
-              textAlign: "left",
+              textAlign: "center",
             }}
           >
-            <i
-              className="fa fa-exclamation-triangle"
+            <div
               style={{
-                fontSize: 13,
-                color: "#F5C518",
-                flexShrink: 0,
-              }}
-            />
-
-            <span
-              style={{
-                fontFamily: FONT_BODY,
-                fontSize: 9,
-                lineHeight: "13px",
-                color: "rgba(26,26,26,0.68)",
+                width: 76,
+                height: 76,
+                margin: "0 auto 18px",
+                borderRadius: "50%",
+                background: SOFT_SLATE.bg,
+                boxShadow: SOFT_SLATE.insetMd,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              This action cannot be undone.
-            </span>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.unsafe} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18" />
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              </svg>
+            </div>
+
+            <div style={{ fontSize: 19, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>
+              Delete your account?
+            </div>
+
+            <div style={{ marginTop: 8, fontSize: 12.5, lineHeight: 1.55, color: SOFT_SLATE.textSecondary }}>
+              This action cannot be undone. All your data, scan history, and preferences will be permanently deleted.
+            </div>
+
+            <div
+              style={{
+                marginTop: 20,
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "13px 15px",
+                borderRadius: 14,
+                background: SOFT_SLATE.bg,
+                boxShadow: SOFT_SLATE.insetSm,
+                textAlign: "left",
+                boxSizing: "border-box",
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.gold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="m21.7 18.4-8.6-15a1.5 1.5 0 0 0-2.6 0l-8.6 15a1.5 1.5 0 0 0 1.3 2.2h17.2a1.5 1.5 0 0 0 1.3-2.2Z" />
+                <path d="M12 9v4" />
+                <path d="M12 17h.01" />
+              </svg>
+              <span style={{ fontSize: 11.5, color: SOFT_SLATE.textSecondary }}>This action cannot be undone.</span>
+            </div>
+
+            <button
+              type="button"
+              disabled={showDeleteLoading}
+              onClick={() => {
+                setShowDeleteLoading(true)
+
+                setTimeout(() => {
+                  setShowDeleteLoading(false)
+                  go("splash")
+                }, 1800)
+              }}
+              style={{
+                width: "100%",
+                marginTop: 22,
+                padding: 15,
+                border: "none",
+                borderRadius: 16,
+                background: SOFT_SLATE.unsafe,
+                color: "#ffffff",
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: 14,
+                fontWeight: 700,
+                boxShadow: "6px 6px 14px #c6ccd4, -4px -4px 10px #ffffff",
+                cursor: showDeleteLoading ? "not-allowed" : "pointer",
+                opacity: showDeleteLoading ? 0.7 : 1,
+                boxSizing: "border-box",
+              }}
+            >
+              Yes, Delete My Account
+            </button>
+
+            <button
+              type="button"
+              disabled={showDeleteLoading}
+              onClick={() => go("settings")}
+              style={{
+                width: "100%",
+                marginTop: 10,
+                padding: 15,
+                border: "none",
+                borderRadius: 16,
+                background: SOFT_SLATE.bg,
+                color: SOFT_SLATE.textMuted,
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: 14,
+                fontWeight: 700,
+                boxShadow: SOFT_SLATE.raisedSm,
+                cursor: showDeleteLoading ? "not-allowed" : "pointer",
+                opacity: showDeleteLoading ? 0.6 : 1,
+                boxSizing: "border-box",
+              }}
+            >
+              Cancel
+            </button>
           </div>
-
-          {/* ── Delete Button ───────────────────────────────────────────── */}
-          <button
-            type="button"
-            disabled={showDeleteLoading}
-            onClick={() => {
-              setShowDeleteLoading(true)
-
-              setTimeout(() => {
-                setShowDeleteLoading(false)
-                go("splash")
-              }, 1800)
-            }}
-            style={{
-              width: "100%",
-              height: 43,
-              marginBottom: 9,
-              border: "none",
-              borderRadius: 12,
-              background:
-                "linear-gradient(135deg, #D9534F, #B93E3A)",
-              color: "#FFFFFF",
-              fontFamily: FONT_HEAD,
-              fontWeight: 700,
-              fontSize: 10,
-              cursor: showDeleteLoading
-                ? "not-allowed"
-                : "pointer",
-              boxShadow:
-                "0 5px 16px rgba(217,83,79,0.24)",
-              opacity: showDeleteLoading
-                ? 0.7
-                : 1,
-            }}
-          >
-            Yes, Delete My Account
-          </button>
-
-          {/* ── Cancel Button ───────────────────────────────────────────── */}
-          <button
-            type="button"
-            disabled={showDeleteLoading}
-            onClick={() => go("settings")}
-            style={{
-              width: "100%",
-              height: 43,
-              border:
-                `1px solid ${PALETTE.border}`,
-              borderRadius: 12,
-              background: PALETTE.page,
-              color: PALETTE.textDark,
-              fontFamily: FONT_BODY,
-              fontWeight: 600,
-              fontSize: 10,
-              cursor: showDeleteLoading
-                ? "not-allowed"
-                : "pointer",
-              opacity: showDeleteLoading
-                ? 0.6
-                : 1,
-            }}
-          >
-            Cancel
-          </button>
         </div>
       </div>
 
-      {/* ── Delete Loading Overlay ─────────────────────────────────────── */}
+      {/* Delete loading overlay */}
       {showDeleteLoading && (
         <div
           style={{
@@ -14600,89 +14479,60 @@ function DeleteAccountScreen({
             alignItems: "center",
             justifyContent: "center",
             padding: 20,
-            background:
-              "rgba(3,18,10,0.78)",
+            background: "rgba(36,41,47,0.55)",
             backdropFilter: "blur(8px)",
-            WebkitBackdropFilter:
-              "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
           }}
         >
           <div
             style={{
               width: "100%",
-              maxWidth: 300,
-              padding: "30px 22px 24px",
-              borderRadius: 24,
-              background: PALETTE.panel,
-              border:
-                `1.5px solid ${PALETTE.border}`,
-              boxShadow:
-                "0 18px 50px rgba(0,0,0,0.28)",
-              textAlign: "center",
+              maxWidth: 320,
+              background: SOFT_SLATE.bg,
+              borderRadius: 28,
+              padding: "30px 24px 26px",
+              boxShadow: SOFT_SLATE.raisedLg,
               boxSizing: "border-box",
+              textAlign: "center",
             }}
           >
-            {/* Loading Icon */}
             <div
               style={{
                 width: 70,
                 height: 70,
                 margin: "0 auto 16px",
+                borderRadius: "50%",
+                background: SOFT_SLATE.bg,
+                boxShadow: SOFT_SLATE.insetMd,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                borderRadius: "50%",
-                border:
-                  "2px solid rgba(217,74,74,0.35)",
-                background:
-                  PALETTE.dangerBg,
               }}
             >
-              <i
-                className="fa fa-trash-o"
-                style={{
-                  fontSize: 29,
-                  color: PALETTE.danger,
-                }}
-              />
+              <svg width="29" height="29" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.unsafe} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18" />
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              </svg>
             </div>
 
-            {/* Loading Title */}
-            <h2
-              style={{
-                margin: "0 0 7px",
-                fontFamily: FONT_HEAD,
-                fontWeight: 800,
-                fontSize: 17,
-                color: PALETTE.textDark,
-              }}
-            >
+            <div style={{ fontSize: 17, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>
               Deleting Account
-            </h2>
+            </div>
 
-            {/* Loading Description */}
-            <p
-              style={{
-                margin: "0 0 19px",
-                fontFamily: FONT_HEAD,
-                fontSize: 9,
-                color: "rgba(26,26,26,0.52)",
-              }}
-            >
+            <div style={{ marginTop: 7, fontSize: 11.5, color: SOFT_SLATE.textMuted }}>
               Please wait...
-            </p>
+            </div>
 
-            {/* Progress Bar */}
             <div
               style={{
+                marginTop: 19,
                 width: "100%",
                 height: 8,
                 borderRadius: 8,
                 overflow: "hidden",
-                background:
-                  "rgba(26,26,26,0.10)",
-                border:
-                  "1px solid rgba(26,26,26,0.18)",
+                background: SOFT_SLATE.bg,
+                boxShadow: SOFT_SLATE.insetSm,
               }}
             >
               <div
@@ -14690,31 +14540,19 @@ function DeleteAccountScreen({
                   width: "0%",
                   height: "100%",
                   borderRadius: 8,
-                  background:
-                    PALETTE.danger,
-                  animation:
-                    "deleteProgress 1.8s linear forwards",
+                  background: SOFT_SLATE.unsafe,
+                  animation: "deleteProgress 1.8s linear forwards",
                 }}
               />
             </div>
 
-            {/* Loading Message */}
-            <p
-              style={{
-                margin: "11px 0 0",
-                fontFamily: FONT_BODY,
-                fontWeight: 600,
-                fontSize: 8,
-                color: "rgba(26,26,26,0.60)",
-              }}
-            >
+            <div style={{ marginTop: 11, fontSize: 11, fontWeight: 600, color: SOFT_SLATE.textSecondary }}>
               Please wait a moment.
-            </p>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── Animation ───────────────────────────────────────────────────── */}
       <style>
         {`
           @keyframes deleteProgress {
@@ -14728,6 +14566,249 @@ function DeleteAccountScreen({
           }
         `}
       </style>
+    </div>
+  )
+}
+
+// ── Change Password Screen ───────────────────────────────────────────────
+function ChangePasswordScreen({
+  go,
+}: {
+  go: (s: Screen) => void
+}) {
+  const isDesktop = useIsDesktop()
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [showSaved, setShowSaved] = useState(false)
+
+  const canSubmit =
+    currentPassword.length > 0 &&
+    newPassword.length >= 8 &&
+    newPassword === confirmPassword
+
+  const handleUpdate = () => {
+    if (!canSubmit) return
+
+    setShowSaved(true)
+
+    setTimeout(() => {
+      setShowSaved(false)
+      go("settings")
+    }, 1400)
+  }
+
+  const Field = ({
+    label,
+    value,
+    onChange,
+  }: {
+    label: string
+    value: string
+    onChange: (v: string) => void
+  }) => (
+    <label style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+      <span style={{ fontSize: 11.5, fontWeight: 600, color: SOFT_SLATE.textMuted }}>{label}</span>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "14px 16px",
+          borderRadius: 14,
+          background: SOFT_SLATE.bg,
+          boxShadow: SOFT_SLATE.insetMd,
+          boxSizing: "border-box",
+        }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <rect x="3" y="11" width="18" height="10" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        <input
+          type="password"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="••••••••"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            border: "none",
+            background: "none",
+            outline: "none",
+            fontFamily: SOFT_SLATE.fontFamily,
+            fontSize: 13,
+            color: SOFT_SLATE.textPrimary,
+          }}
+        />
+      </div>
+    </label>
+  )
+
+  return (
+    <div
+      style={{
+        flex: 1,
+        minHeight: 0,
+        display: "flex",
+        position: "relative",
+        overflow: "hidden",
+        background: SOFT_SLATE.bg,
+      }}
+    >
+      {isDesktop && (
+        <div style={{ position: "fixed", top: 22, left: 26, bottom: 22, width: 80, zIndex: 5 }}>
+          <DashboardIconRail go={go} isDesktop active="settings" />
+        </div>
+      )}
+
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          paddingTop: isDesktop ? 0 : SAFE_TOP,
+          boxSizing: "border-box",
+          marginLeft: isDesktop ? 80 + 26 + 26 : 0,
+          fontFamily: SOFT_SLATE.fontFamily,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {!isDesktop && (
+          <div style={{ padding: "16px 14px 0" }}>
+            <DashboardIconRail go={go} isDesktop={false} active="settings" />
+          </div>
+        )}
+
+        <div style={{ padding: isDesktop ? "22px 40px 8px 0" : "18px 14px 0" }}>
+          <Tooltip label="Back to Settings">
+            <button
+              type="button"
+              onClick={() => go("settings")}
+              aria-label="Back to Settings"
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                background: SOFT_SLATE.bg,
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: SOFT_SLATE.raisedSm,
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+          </Tooltip>
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 22,
+            boxSizing: "border-box",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              background: SOFT_SLATE.bg,
+              borderRadius: 28,
+              padding: isDesktop ? "34px 32px" : "28px 22px",
+              boxShadow: SOFT_SLATE.raisedLg,
+              boxSizing: "border-box",
+            }}
+          >
+            <div
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: 16,
+                background: SOFT_SLATE.bg,
+                boxShadow: SOFT_SLATE.insetSm,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="7.5" cy="15.5" r="5.5" />
+                <path d="m21 2-9.6 9.6" />
+                <path d="m15.5 7.5 3 3L22 7l-3-3" />
+              </svg>
+            </div>
+
+            <div style={{ marginTop: 16, fontSize: 19, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>
+              Change Password
+            </div>
+            <div style={{ marginTop: 5, fontSize: 12, lineHeight: 1.5, color: SOFT_SLATE.textSecondary }}>
+              Use at least 8 characters with 1 number.
+            </div>
+
+            <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 16 }}>
+              <Field label="Current Password" value={currentPassword} onChange={setCurrentPassword} />
+              <Field label="New Password" value={newPassword} onChange={setNewPassword} />
+              <Field label="Confirm New Password" value={confirmPassword} onChange={setConfirmPassword} />
+            </div>
+
+            <button
+              type="button"
+              disabled={!canSubmit || showSaved}
+              onClick={handleUpdate}
+              style={{
+                width: "100%",
+                marginTop: 24,
+                padding: 15,
+                border: "none",
+                borderRadius: 16,
+                background: SOFT_SLATE.green,
+                color: "#ffffff",
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: 14,
+                fontWeight: 700,
+                boxShadow: "6px 6px 14px #c6ccd4, -4px -4px 10px #ffffff",
+                cursor: canSubmit && !showSaved ? "pointer" : "not-allowed",
+                opacity: canSubmit ? 1 : 0.6,
+                boxSizing: "border-box",
+              }}
+            >
+              {showSaved ? "Password Updated" : "Update Password"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => go("settings")}
+              style={{
+                width: "100%",
+                marginTop: 10,
+                padding: 15,
+                border: "none",
+                borderRadius: 16,
+                background: SOFT_SLATE.bg,
+                color: SOFT_SLATE.textMuted,
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: 14,
+                fontWeight: 700,
+                boxShadow: SOFT_SLATE.raisedSm,
+                cursor: "pointer",
+                boxSizing: "border-box",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -16107,6 +16188,7 @@ export default function App() {
     ocr: <OCRScannerScreen go={go} />,
     settings: <SettingsScreen go={go} />,
     delete: <DeleteAccountScreen go={go} />,
+    changePassword: <ChangePasswordScreen go={go} />,
     forgotPassword: <ForgotPasswordScreen go={go} goBack={goBack} />,
     resetPassword: <ResetPasswordScreen go={go} />,
     confirmationPassword: <ConfirmationPasswordScreen go={go} />,
