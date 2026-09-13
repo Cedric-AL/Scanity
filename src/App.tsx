@@ -11722,8 +11722,6 @@ function ProfileScreen({
 }: {
   go: (s: Screen) => void
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-
   const isDesktop = useIsDesktop()
 
   // ── Identity ─────────────────────────────────────────────────────────────
@@ -11795,9 +11793,6 @@ function ProfileScreen({
   const [otherHealth, setOtherHealth] =
     useState("")
 
-  const watchPanelRef =
-    useRef<HTMLDivElement>(null)
-
   // ── Toggle allergy ───────────────────────────────────────────────────────
   const toggleAllergy = (id: string) => {
     setAllergies((prev) => {
@@ -11857,14 +11852,6 @@ function ProfileScreen({
     setEditingIdentity(true)
   }
 
-  // ── Scroll to preference panel ───────────────────────────────────────────
-  const scrollToWatchPanel = () => {
-    watchPanelRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    })
-  }
-
   // ── Profile information ──────────────────────────────────────────────────
   const joinedLabel = "March 2026"
 
@@ -11892,9 +11879,6 @@ function ProfileScreen({
       .join(", ") ||
     "Nothing saved yet"
 
-  const labelsScanned =
-    RECENT_SCANS.length
-
   const lastScan = RECENT_SCANS[0]
 
   const lastScanLabel = lastScan
@@ -11909,1114 +11893,644 @@ function ProfileScreen({
         display: "flex",
         position: "relative",
         overflow: "hidden",
+        background: SOFT_SLATE.bg,
       }}
     >
-      {/* ── Sidebar ─────────────────────────────────────────────────────── */}
-      <AppSidebar
-        go={go}
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        isDesktop={isDesktop}
-        active="profile"
-      />
+      {/* ── Icon rail — same shell as Dashboard/Scan History; Profile isn't
+          one of its four destinations (it's reached via the avatar button),
+          so nothing shows active. ──────────────────────────────────────── */}
+      {isDesktop && (
+        <div
+          style={{
+            position: "fixed",
+            top: 22,
+            left: 26,
+            bottom: 22,
+            width: 80,
+            zIndex: 5,
+          }}
+        >
+          <DashboardIconRail go={go} isDesktop active="profile" />
+        </div>
+      )}
 
       <div
         style={{
           flex: 1,
           minHeight: 0,
-          display: "flex",
-          flexDirection: "column",
-          background: PALETTE.page,
-          color: PALETTE.textDark,
-          overflow: "hidden",
-          marginLeft: isDesktop
-            ? SIDEBAR_WIDTH
-            : 0,
+          overflowY: "auto",
+          paddingTop: isDesktop ? 0 : SAFE_TOP,
+          boxSizing: "border-box",
+          marginLeft: isDesktop ? 80 + 26 + 26 : 0,
+          fontFamily: SOFT_SLATE.fontFamily,
         }}
       >
-        {/* ── Header ────────────────────────────────────────────────────── */}
-        <InfoHeader
-          title="My Profile"
-          subtitle="Your saved details and preferences"
-          go={go}
-          backTo="dashboard"
-          showBack={false}
-          onMobileMenuClick={() =>
-            setSidebarOpen(true)
-          }
-        />
-
-        {/* ── Scrollable content ───────────────────────────────────────── */}
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            overflowY: "auto",
-          }}
-        >
-          <Center
-            maxWidth={
-              isDesktop ? 960 : 680
-            }
+        <Center maxWidth={isDesktop ? 1420 - (80 + 26 + 26) : undefined}>
+          <div
             style={{
-              padding: isDesktop
-                ? "48px 32px 48px"
-                : "26px 20px 40px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 22,
+              padding: isDesktop ? "26px 40px 40px 0" : "16px 14px 32px",
+              boxSizing: "border-box",
+              color: SOFT_SLATE.textPrimary,
+              minWidth: 0,
             }}
           >
-            {/* ────────────────────────────────────────────────────────────
-                IDENTITY CARD
-            ──────────────────────────────────────────────────────────── */}
+            {!isDesktop && <DashboardIconRail go={go} isDesktop={false} active="profile" />}
+
+            {/* Header */}
             <div
               style={{
-                position: "relative",
-                borderRadius: 20,
-                background: PALETTE.panel,
-                border: `1.5px solid ${PALETTE.border}`,
-                boxShadow: cardShadow,
-                overflow: "hidden",
-                paddingTop: 14,
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                gap: 20,
               }}
             >
-              {/* Profile badge */}
-              {!editingIdentity && (
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 14,
-                    left: 16,
-                    padding: "3px 11px",
-                    borderRadius: 999,
-                    background:
-                      PALETTE.greenLight,
-                    border: `1px solid ${PALETTE.green}`,
-                    fontFamily: FONT_HEAD,
-                    fontWeight: 700,
-                    fontSize: 9.5,
-                    letterSpacing: "0.03em",
-                    color:
-                      PALETTE.greenText,
-                  }}
-                >
-                  {profileBadge}
-                </span>
-              )}
-
-              {/* Identity content */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  padding: isDesktop
-                    ? "26px 30px 30px"
-                    : "18px 22px 22px",
-                  textAlign: "center",
-                }}
-              >
-                {/* Avatar */}
+              <div>
                 <div
                   style={{
-                    position: "relative",
+                    fontSize: isDesktop ? 30 : 24,
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    color: SOFT_SLATE.textPrimary,
                   }}
                 >
-                  {/* Hidden file input backing the avatar upload */}
-                  <input
-                    ref={avatarInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={
-                      handleAvatarChange
-                    }
-                    style={{
-                      display: "none",
-                    }}
-                  />
+                  My Profile
+                </div>
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: SOFT_SLATE.textSecondary,
+                    marginTop: 4,
+                  }}
+                >
+                  Your saved details and preferences
+                </div>
+              </div>
 
-                  <Tooltip
-                    label={
-                      avatarUrl
-                        ? "Change profile picture"
-                        : "Add profile picture"
-                    }
-                  >
-                    <button
-                      type="button"
-                      onClick={
-                        openAvatarPicker
-                      }
-                      aria-label={
-                        avatarUrl
-                          ? "Change profile picture"
-                          : "Add profile picture"
-                      }
-                      style={{
-                        width: isDesktop
-                          ? 92
-                          : 76,
-                        height: isDesktop
-                          ? 92
-                          : 76,
-                        borderRadius:
-                          "50%",
-                        padding: 0,
-                        background:
-                          avatarUrl
-                            ? "transparent"
-                            : PALETTE.goldDark,
-                        border: `3px solid ${PALETTE.goldDark}`,
-                        display: "flex",
-                        alignItems:
-                          "center",
-                        justifyContent:
-                          "center",
-                        boxShadow:
-                          "0 4px 10px rgba(0,0,0,0.12)",
-                        cursor: "pointer",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {avatarUrl ? (
-                        <img
-                          src={avatarUrl}
-                          alt="Profile"
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit:
-                              "cover",
-                          }}
-                        />
-                      ) : (
-                        <span
-                          style={{
-                            fontFamily:
-                              FONT_HEAD,
-                            fontWeight: 600,
-                            fontSize:
-                              isDesktop
-                                ? 28
-                                : 23,
-                            color:
-                              PALETTE.brown,
-                          }}
-                        >
-                          {initials(name)}
-                        </span>
-                      )}
-                    </button>
-                  </Tooltip>
+              <Tooltip label="Back to Dashboard">
+                <button
+                  type="button"
+                  onClick={() => go("dashboard")}
+                  aria-label="Back to Dashboard"
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: "50%",
+                    background: SOFT_SLATE.bg,
+                    border: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: SOFT_SLATE.raisedSm,
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2" strokeLinecap="round">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <path d="M9 22V12h6v10" />
+                  </svg>
+                </button>
+              </Tooltip>
+            </div>
 
-                  {/* Add/change photo badge */}
-                  <Tooltip
-                    label={
-                      avatarUrl
-                        ? "Change profile picture"
-                        : "Add profile picture"
-                    }
-                    wrapperStyle={{
-                      position:
-                        "absolute",
-                      bottom: -2,
-                      left: -2,
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={
-                        openAvatarPicker
-                      }
-                      aria-label={
-                        avatarUrl
-                          ? "Change profile picture"
-                          : "Add profile picture"
-                      }
-                      style={{
-                        width: 24,
-                        height: 24,
-                        display: "flex",
-                        alignItems:
-                          "center",
-                        justifyContent:
-                          "center",
-                        borderRadius:
-                          "50%",
-                        border: `1.5px solid ${C.white}`,
-                        background:
-                          C.green,
-                        color: C.white,
-                        cursor:
-                          "pointer",
-                        boxShadow:
-                          "0 2px 6px rgba(0,0,0,0.18)",
-                      }}
-                    >
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+            {/* Two columns on desktop, stacked on mobile */}
+            <div
+              style={{
+                display: "flex",
+                gap: 22,
+                alignItems: "flex-start",
+                flexDirection: isDesktop ? "row" : "column",
+              }}
+            >
+              {/* ── LEFT — identity + stats ─────────────────────────────── */}
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 18,
+                }}
+              >
+                {/* Identity card */}
+                <div
+                  style={{
+                    background: SOFT_SLATE.bg,
+                    borderRadius: 26,
+                    padding: isDesktop ? "30px 28px" : "24px 20px",
+                    boxShadow: SOFT_SLATE.raisedLg,
+                    boxSizing: "border-box",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    textAlign: "center",
+                  }}
+                >
+                  <div style={{ position: "relative" }}>
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      style={{ display: "none" }}
+                    />
+
+                    <Tooltip label={avatarUrl ? "Change profile picture" : "Add profile picture"}>
+                      <button
+                        type="button"
+                        onClick={openAvatarPicker}
+                        aria-label={avatarUrl ? "Change profile picture" : "Add profile picture"}
+                        style={{
+                          width: isDesktop ? 92 : 76,
+                          height: isDesktop ? 92 : 76,
+                          borderRadius: "50%",
+                          padding: 0,
+                          background: SOFT_SLATE.bg,
+                          border: `3px solid ${SOFT_SLATE.gold}`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: SOFT_SLATE.raisedSm,
+                          cursor: "pointer",
+                          overflow: "hidden",
+                          boxSizing: "border-box",
+                        }}
                       >
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                        <circle
-                          cx="12"
-                          cy="13"
-                          r="4"
-                        />
-                      </svg>
-                    </button>
-                  </Tooltip>
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt="Profile"
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: isDesktop ? 28 : 23,
+                              fontWeight: 700,
+                              color: SOFT_SLATE.textPrimary,
+                            }}
+                          >
+                            {initials(name)}
+                          </span>
+                        )}
+                      </button>
+                    </Tooltip>
 
-                  {/* Edit button */}
-                  {!editingIdentity && (
                     <Tooltip
-                      label="Edit name and email"
-                      wrapperStyle={{
-                        position:
-                          "absolute",
-                        bottom: -2,
-                        right: -2,
-                      }}
+                      label={avatarUrl ? "Change profile picture" : "Add profile picture"}
+                      wrapperStyle={{ position: "absolute", bottom: -2, left: -2 }}
                     >
                       <button
                         type="button"
-                        onClick={
-                          startEditingIdentity
-                        }
-                        aria-label="Edit name and email"
+                        onClick={openAvatarPicker}
+                        aria-label={avatarUrl ? "Change profile picture" : "Add profile picture"}
                         style={{
-                          width: 24,
-                          height: 24,
+                          width: 26,
+                          height: 26,
                           display: "flex",
-                          alignItems:
-                            "center",
-                          justifyContent:
-                            "center",
-                          borderRadius:
-                            "50%",
-                          border: `1.5px solid ${PALETTE.panel}`,
-                          background:
-                            PALETTE.green,
-                          color:
-                            "#FFFFFF",
-                          cursor:
-                            "pointer",
-                          boxShadow:
-                            "0 2px 6px rgba(0,0,0,0.18)",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "50%",
+                          border: `2px solid ${SOFT_SLATE.bg}`,
+                          background: SOFT_SLATE.textMuted,
+                          color: "#ffffff",
+                          cursor: "pointer",
+                          boxShadow: SOFT_SLATE.raisedSm,
                         }}
                       >
-                        <svg
-                          width="11"
-                          height="11"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.4"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M17 3a2.85 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                          <circle cx="12" cy="13" r="4" />
                         </svg>
                       </button>
                     </Tooltip>
+
+                    {!editingIdentity && (
+                      <Tooltip
+                        label="Edit name and email"
+                        wrapperStyle={{ position: "absolute", bottom: -2, right: -2 }}
+                      >
+                        <button
+                          type="button"
+                          onClick={startEditingIdentity}
+                          aria-label="Edit name and email"
+                          style={{
+                            width: 26,
+                            height: 26,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: "50%",
+                            border: `2px solid ${SOFT_SLATE.bg}`,
+                            background: SOFT_SLATE.green,
+                            color: "#ffffff",
+                            cursor: "pointer",
+                            boxShadow: SOFT_SLATE.raisedSm,
+                          }}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17 3a2.85 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                          </svg>
+                        </button>
+                      </Tooltip>
+                    )}
+                  </div>
+
+                  {!editingIdentity ? (
+                    <>
+                      <div
+                        style={{
+                          marginTop: 16,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 7,
+                          padding: "6px 14px",
+                          borderRadius: 999,
+                          boxShadow: SOFT_SLATE.insetSm,
+                        }}
+                      >
+                        <span style={{ width: 7, height: 7, borderRadius: "50%", background: SOFT_SLATE.green }} />
+                        <span style={{ fontSize: 11, fontWeight: 700, color: SOFT_SLATE.green }}>{profileBadge}</span>
+                      </div>
+
+                      <h3 style={{ margin: "14px 0 0", fontSize: isDesktop ? 22 : 19, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>
+                        {name}
+                      </h3>
+                      <div style={{ marginTop: 6, fontSize: 13, color: SOFT_SLATE.textMuted }}>{email}</div>
+                      <div style={{ marginTop: 2, fontSize: 12, color: SOFT_SLATE.textMuted }}>Member since {joinedLabel}</div>
+                    </>
+                  ) : (
+                    <div style={{ marginTop: 18, width: "100%", maxWidth: 360, textAlign: "left" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 14 }}>
+                        <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: SOFT_SLATE.textMuted }}>Name</span>
+                          <input
+                            autoFocus
+                            value={draftName}
+                            onChange={(e) => setDraftName(e.target.value)}
+                            placeholder="Your name"
+                            style={{
+                              fontFamily: SOFT_SLATE.fontFamily,
+                              fontWeight: 700,
+                              fontSize: 14,
+                              color: SOFT_SLATE.textPrimary,
+                              background: SOFT_SLATE.bg,
+                              border: "none",
+                              borderRadius: 12,
+                              padding: "10px 12px",
+                              outline: "none",
+                              boxSizing: "border-box",
+                              width: "100%",
+                              boxShadow: SOFT_SLATE.insetSm,
+                            }}
+                          />
+                        </label>
+
+                        <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: SOFT_SLATE.textMuted }}>Email Address</span>
+                          <input
+                            value={draftEmail}
+                            onChange={(e) => setDraftEmail(e.target.value)}
+                            placeholder="you@email.com"
+                            style={{
+                              fontFamily: SOFT_SLATE.fontFamily,
+                              fontWeight: 600,
+                              fontSize: 13,
+                              color: SOFT_SLATE.textPrimary,
+                              background: SOFT_SLATE.bg,
+                              border: "none",
+                              borderRadius: 12,
+                              padding: "10px 12px",
+                              outline: "none",
+                              boxSizing: "border-box",
+                              width: "100%",
+                              boxShadow: SOFT_SLATE.insetSm,
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16 }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setName(draftName.trim() || name)
+                            setEmail(draftEmail.trim() || email)
+                            setEditingIdentity(false)
+                          }}
+                          style={{
+                            padding: "10px 20px",
+                            borderRadius: 12,
+                            border: "none",
+                            background: SOFT_SLATE.green,
+                            color: "#ffffff",
+                            fontFamily: SOFT_SLATE.fontFamily,
+                            fontWeight: 700,
+                            fontSize: 12.5,
+                            cursor: "pointer",
+                            boxShadow: SOFT_SLATE.raisedBtn,
+                          }}
+                        >
+                          Save
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setEditingIdentity(false)}
+                          style={{
+                            padding: "10px 20px",
+                            borderRadius: 12,
+                            border: "none",
+                            background: SOFT_SLATE.bg,
+                            color: SOFT_SLATE.textMuted,
+                            fontFamily: SOFT_SLATE.fontFamily,
+                            fontWeight: 600,
+                            fontSize: 12.5,
+                            cursor: "pointer",
+                            boxShadow: SOFT_SLATE.raisedBtnAlt,
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
 
-                {/* Name / edit form */}
-                {!editingIdentity ? (
-                  <>
-                    <h3
-                      style={{
-                        margin:
-                          "12px 0 0",
-                        fontFamily:
-                          FONT_HEAD,
-                        fontWeight: 600,
-                        fontSize:
-                          isDesktop
-                            ? 23
-                            : 19,
-                        color:
-                          PALETTE.brown,
-                      }}
-                    >
-                      {name}
-                    </h3>
+                {/* Stat row — Avoids / Watching / Last Scan */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: isDesktop ? "1fr 1fr 1fr" : "1fr",
+                    gap: 18,
+                  }}
+                >
+                  <div style={{ background: SOFT_SLATE.bg, borderRadius: 20, padding: "18px 20px", boxShadow: SOFT_SLATE.insetMd, boxSizing: "border-box" }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: SOFT_SLATE.textMuted }}>Avoids</div>
+                    <div style={{ marginTop: 6, fontSize: 15, fontWeight: 700, color: SOFT_SLATE.textPrimary }}>{avoidsLabel}</div>
+                  </div>
+                  <div style={{ background: SOFT_SLATE.bg, borderRadius: 20, padding: "18px 20px", boxShadow: SOFT_SLATE.insetMd, boxSizing: "border-box" }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: SOFT_SLATE.textMuted }}>Watching</div>
+                    <div style={{ marginTop: 6, fontSize: 15, fontWeight: 700, color: SOFT_SLATE.textPrimary }}>{watchingLabel}</div>
+                  </div>
+                  <div style={{ background: SOFT_SLATE.bg, borderRadius: 20, padding: "18px 20px", boxShadow: SOFT_SLATE.insetMd, boxSizing: "border-box" }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: SOFT_SLATE.textMuted }}>Last Scan</div>
+                    <div style={{ marginTop: 6, fontSize: 15, fontWeight: 700, color: SOFT_SLATE.textPrimary }}>{lastScanLabel}</div>
+                  </div>
+                </div>
+              </div>
 
-                    <span
-                      style={{
-                        display: "block",
-                        width: 34,
-                        height: 3,
-                        borderRadius: 2,
-                        background:
-                          PALETTE.brown,
-                        margin:
-                          "7px auto 0",
-                      }}
-                    />
-                  </>
-                ) : (
+              {/* ── RIGHT — preferences ─────────────────────────────────── */}
+              <div
+                style={{
+                  width: isDesktop ? 420 : "100%",
+                  flexShrink: 0,
+                  background: SOFT_SLATE.bg,
+                  borderRadius: 26,
+                  padding: isDesktop ? "26px 24px" : "22px 20px",
+                  boxShadow: SOFT_SLATE.raisedLg,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 22,
+                  boxSizing: "border-box",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>Preferences</div>
                   <div
                     style={{
-                      marginTop: 18,
-                      width: "100%",
-                      maxWidth: 360,
-                      textAlign: "left",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "5px 11px",
+                      borderRadius: 999,
+                      boxShadow: SOFT_SLATE.insetSm,
+                      flexShrink: 0,
                     }}
                   >
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fit, minmax(150px, 1fr))",
-                        gap: 14,
-                      }}
-                    >
-                      {/* Name */}
-                      <label
-                        style={{
-                          display: "flex",
-                          flexDirection:
-                            "column",
-                          gap: 6,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontFamily:
-                              FONT_BODY,
-                            fontSize: 11,
-                            fontWeight: 600,
-                            color:
-                              PALETTE.textMuted,
-                          }}
-                        >
-                          Name
-                        </span>
-
-                        <input
-                          autoFocus
-                          value={
-                            draftName
-                          }
-                          onChange={(e) =>
-                            setDraftName(
-                              e.target
-                                .value
-                            )
-                          }
-                          placeholder="Your name"
-                          style={{
-                            fontFamily:
-                              FONT_HEAD,
-                            fontWeight: 700,
-                            fontSize: 14,
-                            color:
-                              PALETTE.textDark,
-                            background:
-                              PALETTE.page,
-                            border: `1.5px solid ${PALETTE.border}`,
-                            borderRadius: 10,
-                            padding:
-                              "10px 12px",
-                            outline:
-                              "none",
-                            boxSizing:
-                              "border-box",
-                            width:
-                              "100%",
-                          }}
-                        />
-                      </label>
-
-                      {/* Email */}
-                      <label
-                        style={{
-                          display: "flex",
-                          flexDirection:
-                            "column",
-                          gap: 6,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontFamily:
-                              FONT_BODY,
-                            fontSize: 11,
-                            fontWeight: 600,
-                            color:
-                              PALETTE.textMuted,
-                          }}
-                        >
-                          Email Address
-                        </span>
-
-                        <input
-                          value={
-                            draftEmail
-                          }
-                          onChange={(e) =>
-                            setDraftEmail(
-                              e.target
-                                .value
-                            )
-                          }
-                          placeholder="you@email.com"
-                          style={{
-                            fontFamily:
-                              FONT_BODY,
-                            fontWeight: 600,
-                            fontSize: 13,
-                            color:
-                              PALETTE.textDark,
-                            background:
-                              PALETTE.page,
-                            border: `1.5px solid ${PALETTE.border}`,
-                            borderRadius: 10,
-                            padding:
-                              "10px 12px",
-                            outline:
-                              "none",
-                            boxSizing:
-                              "border-box",
-                            width:
-                              "100%",
-                          }}
-                        />
-                      </label>
-                    </div>
-
-                    {/* Edit actions */}
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent:
-                          "flex-end",
-                        gap: 8,
-                        marginTop: 16,
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setName(
-                            draftName.trim() ||
-                              name
-                          )
-
-                          setEmail(
-                            draftEmail.trim() ||
-                              email
-                          )
-
-                          setEditingIdentity(
-                            false
-                          )
-                        }}
-                        style={{
-                          padding:
-                            "9px 20px",
-                          borderRadius: 10,
-                          border: "none",
-                          background:
-                            PALETTE.green,
-                          color:
-                            "#FFFFFF",
-                          fontFamily:
-                            FONT_HEAD,
-                          fontWeight: 700,
-                          fontSize: 12,
-                          cursor:
-                            "pointer",
-                          boxShadow:
-                            "0 4px 12px rgba(23,107,58,0.22)",
-                        }}
-                      >
-                        Save
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setEditingIdentity(
-                            false
-                          )
-                        }
-                        style={{
-                          padding:
-                            "9px 20px",
-                          borderRadius: 10,
-                          border: `1px solid ${PALETTE.border}`,
-                          background:
-                            "transparent",
-                          color:
-                            PALETTE.textMuted,
-                          fontFamily:
-                            FONT_HEAD,
-                          fontWeight: 600,
-                          fontSize: 12,
-                          cursor:
-                            "pointer",
-                        }}
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: isDirty ? SOFT_SLATE.caution : SOFT_SLATE.green }} />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: isDirty ? SOFT_SLATE.caution : SOFT_SLATE.green }}>
+                      {isDirty ? "Unsaved" : "Saved"}
+                    </span>
                   </div>
-                )}
-              </div>
-
-              {/* Email / member since */}
-              {!editingIdentity && (
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    alignItems:
-                      "center",
-                    justifyContent:
-                      "space-between",
-                    gap: 8,
-                    padding: isDesktop
-                      ? "16px 30px"
-                      : "12px 22px",
-                    background:
-                      PALETTE.goldDark,
-                  }}
-                >
-                  <span
-                    style={{
-                      display: "flex",
-                      flexDirection:
-                        "column",
-                      gap: 2,
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontFamily:
-                          FONT_BODY,
-                        fontSize: 12,
-                        color:
-                          PALETTE.textDark,
-                      }}
-                    >
-                      <strong
-                        style={{
-                          fontFamily:
-                            FONT_HEAD,
-                        }}
-                      >
-                        Email:
-                      </strong>{" "}
-                      {email}
-                    </span>
-
-                    <span
-                      style={{
-                        fontFamily:
-                          FONT_BODY,
-                        fontSize: 12,
-                        color:
-                          PALETTE.textDark,
-                      }}
-                    >
-                      <strong
-                        style={{
-                          fontFamily:
-                            FONT_HEAD,
-                        }}
-                      >
-                        Member since:
-                      </strong>{" "}
-                      {joinedLabel}
-                    </span>
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* ────────────────────────────────────────────────────────────
-                ABOUT YOU
-            ──────────────────────────────────────────────────────────── */}
-            <div
-              style={{
-                marginTop: 18,
-              }}
-            >
-              {/* About you */}
-              <div
-                style={{
-                  borderRadius: 16,
-                  background:
-                    PALETTE.panel,
-                  border: `1.5px solid ${PALETTE.border}`,
-                  boxShadow:
-                    cardShadow,
-                  padding: isDesktop
-                    ? "22px 24px 24px"
-                    : "16px 18px 18px",
-                }}
-              >
-                <h4
-                  style={{
-                    margin: 0,
-                    fontFamily:
-                      FONT_HEAD,
-                    fontWeight: 700,
-                    fontSize:
-                      isDesktop
-                        ? 15
-                        : 13.5,
-                    color:
-                      PALETTE.textDark,
-                    paddingBottom: 8,
-                    borderBottom: `2px solid ${PALETTE.green}`,
-                  }}
-                >
-                  About you
-                </h4>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection:
-                      "column",
-                    gap: isDesktop
-                      ? 12
-                      : 9,
-                    marginTop:
-                      isDesktop
-                        ? 16
-                        : 12,
-                  }}
-                >
-                  {[
-                    {
-                      label: "Avoids",
-                      value:
-                        avoidsLabel,
-                    },
-                    {
-                      label:
-                        "Watching",
-                      value:
-                        watchingLabel,
-                    },
-                    {
-                      label:
-                        "Labels scanned",
-                      value:
-                        String(
-                          labelsScanned
-                        ),
-                    },
-                    {
-                      label:
-                        "Last scan",
-                      value:
-                        lastScanLabel,
-                    },
-                  ].map((row) => (
-                    <div
-                      key={row.label}
-                      style={{
-                        display:
-                          "flex",
-                        justifyContent:
-                          "space-between",
-                        gap: 10,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily:
-                            FONT_BODY,
-                          fontSize:
-                            isDesktop
-                              ? 13
-                              : 11.5,
-                          color:
-                            PALETTE.textMuted,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {row.label}
-                      </span>
-
-                      <span
-                        style={{
-                          fontFamily:
-                            FONT_BODY,
-                          fontWeight: 600,
-                          fontSize:
-                            isDesktop
-                              ? 13
-                              : 11.5,
-                          color:
-                            PALETTE.textDark,
-                          textAlign:
-                            "right",
-                        }}
-                      >
-                        {row.value}
-                      </span>
-                    </div>
-                  ))}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={
-                    scrollToWatchPanel
-                  }
-                  style={{
-                    marginTop:
-                      isDesktop
-                        ? 17
-                        : 13,
-                    padding: 0,
-                    border: "none",
-                    background:
-                      "none",
-                    fontFamily:
-                      FONT_HEAD,
-                    fontWeight: 700,
-                    fontSize:
-                      isDesktop
-                        ? 13
-                        : 11.5,
-                    color:
-                      PALETTE.green,
-                    cursor:
-                      "pointer",
-                  }}
-                >
-                  Edit details →
-                </button>
-              </div>
-            </div>
-
-            {/* ────────────────────────────────────────────────────────────
-                WHAT SCANITY WATCHES FOR YOU
-            ──────────────────────────────────────────────────────────── */}
-            <div
-              ref={watchPanelRef}
-              style={{
-                borderRadius: 18,
-                background:
-                  PALETTE.panel,
-                border: `1.5px solid ${PALETTE.border}`,
-                boxShadow:
-                  cardShadow,
-                padding: isDesktop
-                  ? "26px 30px 28px"
-                  : "18px 20px 20px",
-                marginTop: 18,
-                scrollMarginTop: 20,
-              }}
-            >
-              {/* Section header */}
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                  justifyContent:
-                    "space-between",
-                  gap: 8,
-                }}
-              >
-                <h4
-                  style={{
-                    margin: 0,
-                    fontFamily:
-                      FONT_HEAD,
-                    fontWeight: 700,
-                    fontSize:
-                      isDesktop
-                        ? 17
-                        : 15,
-                    color:
-                      PALETTE.textDark,
-                  }}
-                >
-                  What Scanity watches
-                  for you
-                </h4>
-
-                {/* Save status */}
-                <span
-                  style={{
-                    fontFamily:
-                      FONT_HEAD,
-                    fontWeight: 700,
-                    fontSize: 10.5,
-                    color: isDirty
-                      ? PALETTE.cautionText
-                      : PALETTE.greenText,
-                    background: isDirty
-                      ? "#FBF1D9"
-                      : PALETTE.greenLight,
-                    border: `1px solid ${
-                      isDirty
-                        ? "#E0C067"
-                        : PALETTE.green
-                    }`,
-                    borderRadius: 999,
-                    padding:
-                      "3px 10px",
-                  }}
-                >
-                  {isDirty
-                    ? "Unsaved changes"
-                    : "Everything saved"}
-                </span>
-              </div>
-
-              {/* ── Allergies ─────────────────────────────────────────── */}
-              <div
-                style={{
-                  marginTop: 18,
-                  borderTop: `1px solid ${PALETTE.border}`,
-                  paddingTop: 18,
-                }}
-              >
-                <h4
-                  style={PRF_HEADING}
-                >
-                  Allergies
-                </h4>
-
-                <p
-                  style={
-                    PRF_SUPPORTING
-                  }
-                >
-                  Anything you select
-                  here gets flagged the
-                  moment it shows up on a
-                  label.
-                </p>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 8,
-                    marginTop: 13,
-                  }}
-                >
-                  {ALLERGY_LIST
-                    .filter(
-                      (i) =>
-                        i.id !==
-                        "other"
-                    )
-                    .map((item) => (
-                      <PreferenceChip
+                {/* Allergies */}
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>Allergies</div>
+                  <p style={{ margin: "4px 0 0", fontSize: 11.5, lineHeight: 1.5, color: SOFT_SLATE.textSecondary }}>
+                    Anything you select here gets flagged the moment it shows up on a label.
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginTop: 13 }}>
+                    {ALLERGY_LIST.filter((i) => i.id !== "other").map((item) => (
+                      <SoftSlateChip
                         key={item.id}
-                        active={allergies.has(
-                          item.id
-                        )}
-                        iconSrc={
-                          item.icon
-                        }
-                        iconBg={
-                          item.iconBg
-                        }
-                        label={
-                          item.label
-                        }
-                        onClick={() =>
-                          toggleAllergy(
-                            item.id
-                          )
-                        }
-                        accent="green"
+                        active={allergies.has(item.id)}
+                        dotColor={item.iconBg}
+                        label={item.label}
+                        onClick={() => toggleAllergy(item.id)}
                       />
                     ))}
-
-                  <OtherChip
-                    active={allergies.has(
-                      "other"
-                    )}
-                    value={
-                      otherAllergy
-                    }
-                    onToggle={() =>
-                      toggleAllergy(
-                        "other"
-                      )
-                    }
-                    onChangeText={
-                      setOtherAllergy
-                    }
-                    placeholder="Name an allergy"
-                  />
+                    <SoftSlateOtherChip
+                      active={allergies.has("other")}
+                      value={otherAllergy}
+                      onToggle={() => toggleAllergy("other")}
+                      onChangeText={setOtherAllergy}
+                      placeholder="Name an allergy"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* ── Health conditions ─────────────────────────────────── */}
-              <div
-                style={{
-                  marginTop: 18,
-                  borderTop: `1px solid ${PALETTE.border}`,
-                  paddingTop: 18,
-                }}
-              >
-                <h4
-                  style={PRF_HEADING}
-                >
-                  Health conditions
-                </h4>
+                <div style={{ width: "100%", height: 1, background: "#c6ccd4" }} />
 
-                <p
-                  style={
-                    PRF_SUPPORTING
-                  }
-                >
-                  These shape how we read
-                  sodium, sugar, and
-                  saturated fat on a label.
-                </p>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 8,
-                    marginTop: 13,
-                  }}
-                >
-                  {HEALTH_LIST
-                    .filter(
-                      (i) =>
-                        i.id !==
-                        "none"
-                    )
-                    .map((item) => (
-                      <PreferenceChip
+                {/* Health conditions */}
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: SOFT_SLATE.textPrimary }}>Health Conditions</div>
+                  <p style={{ margin: "4px 0 0", fontSize: 11.5, lineHeight: 1.5, color: SOFT_SLATE.textSecondary }}>
+                    These shape how we read sodium, sugar, and saturated fat on a label.
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginTop: 13 }}>
+                    {HEALTH_LIST.filter((i) => i.id !== "none").map((item) => (
+                      <SoftSlateChip
                         key={item.id}
-                        active={health.has(
-                          item.id
-                        )}
-                        iconSrc={
-                          item.icon
-                        }
-                        iconBg={
-                          item.iconBg
-                        }
-                        label={
-                          item.label
-                        }
-                        onClick={() =>
-                          toggleHealth(
-                            item.id
-                          )
-                        }
-                        accent="red"
+                        active={health.has(item.id)}
+                        dotColor={item.iconBg}
+                        label={item.label}
+                        onClick={() => toggleHealth(item.id)}
                       />
                     ))}
-
-                  <OtherChip
-                    active={health.has(
-                      "other"
-                    )}
-                    value={
-                      otherHealth
-                    }
-                    onToggle={() =>
-                      toggleHealth(
-                        "other"
-                      )
-                    }
-                    onChangeText={
-                      setOtherHealth
-                    }
-                    placeholder="Name a condition"
-                  />
+                    <SoftSlateOtherChip
+                      active={health.has("other")}
+                      value={otherHealth}
+                      onToggle={() => toggleHealth("other")}
+                      onChangeText={setOtherHealth}
+                      placeholder="Name a condition"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Divider */}
-              <div
-                style={{
-                  height: 1,
-                  background:
-                    PALETTE.border,
-                  margin:
-                    "22px 0 16px",
-                }}
-              />
-
-              {/* Save section */}
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems:
-                    "center",
-                  gap: 14,
-                }}
-              >
                 <button
                   type="button"
                   onClick={handleSave}
                   disabled={!isDirty}
                   style={{
-                    padding:
-                      "11px 26px",
-                    borderRadius: 12,
                     border: "none",
-                    background: isDirty
-                      ? `linear-gradient(135deg, ${PALETTE.green}, ${PALETTE.greenDark})`
-                      : PALETTE.border,
-                    color: isDirty
-                      ? "#FFFFFF"
-                      : PALETTE.textMuted,
-                    fontFamily:
-                      FONT_HEAD,
-                    fontWeight: 600,
-                    fontSize: 12.5,
-                    cursor: isDirty
-                      ? "pointer"
-                      : "not-allowed",
-                    boxShadow: isDirty
-                      ? "0 6px 18px rgba(23,107,58,0.26)"
-                      : "none",
-                    transition:
-                      "background 0.15s ease, box-shadow 0.15s ease",
-                    flexShrink: 0,
+                    borderRadius: 16,
+                    background: isDirty ? SOFT_SLATE.green : SOFT_SLATE.bg,
+                    color: isDirty ? "#ffffff" : SOFT_SLATE.textMuted,
+                    fontFamily: SOFT_SLATE.fontFamily,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    padding: "15px 26px",
+                    boxShadow: isDirty ? SOFT_SLATE.raisedBtn : SOFT_SLATE.insetSm,
+                    cursor: isDirty ? "pointer" : "not-allowed",
+                    transition: "background 0.15s ease, box-shadow 0.15s ease",
                   }}
                 >
-                  {isDirty
-                    ? "Update profile"
-                    : "No changes to update"}
+                  {isDirty ? "Save changes" : "No changes to save"}
                 </button>
-
-                <span
-                  style={{
-                    fontFamily:
-                      FONT_BODY,
-                    fontSize: 11,
-                    color:
-                      PALETTE.textMuted,
-                  }}
-                >
-                  Changes apply to your
-                  next scan.
-                </span>
               </div>
             </div>
-          </Center>
-        </div>
+          </div>
+        </Center>
       </div>
+    </div>
+  )
+}
+
+// ── Soft Slate preference chip — dot-bullet pill, matches the status pills
+// used elsewhere (Scan History rows, DashboardIconRail's active state):
+// raised when unselected, pressed/inset + a small check when selected.
+function SoftSlateChip({
+  active,
+  dotColor,
+  label,
+  onClick,
+}: {
+  active: boolean
+  dotColor: string
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "9px 14px",
+        borderRadius: 999,
+        border: "none",
+        background: SOFT_SLATE.bg,
+        boxShadow: active ? SOFT_SLATE.insetSm : SOFT_SLATE.raisedSm,
+        fontFamily: SOFT_SLATE.fontFamily,
+        fontSize: 12.5,
+        fontWeight: 600,
+        color: active ? SOFT_SLATE.textPrimary : SOFT_SLATE.textMuted,
+        cursor: "pointer",
+      }}
+    >
+      <span style={{ width: 8, height: 8, borderRadius: "50%", background: dotColor, flexShrink: 0 }} />
+      {label}
+      {active && (
+        <svg width="11" height="11" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+          <polyline points="12 3 5.5 10 2 6.5" stroke={SOFT_SLATE.green} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </button>
+  )
+}
+
+// The "Other" chip doubles as the add affordance for allergies/conditions
+// that aren't in the preset list. Same Soft Slate raised/inset language as
+// SoftSlateChip; clicking it opens an inline text field in place.
+function SoftSlateOtherChip({
+  active,
+  value,
+  onToggle,
+  onChangeText,
+  placeholder,
+}: {
+  active: boolean
+  value: string
+  onToggle: () => void
+  onChangeText: (v: string) => void
+  placeholder: string
+}) {
+  return (
+    <div
+      onClick={!active ? onToggle : undefined}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "9px 12px",
+        borderRadius: 999,
+        background: SOFT_SLATE.bg,
+        boxShadow: active ? SOFT_SLATE.insetSm : SOFT_SLATE.raisedSm,
+        cursor: active ? "text" : "pointer",
+      }}
+    >
+      <span style={{ width: 8, height: 8, borderRadius: "50%", background: SOFT_SLATE.gold, flexShrink: 0 }} />
+
+      {active ? (
+        <input
+          autoFocus
+          value={value}
+          onChange={(e) => onChangeText(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          placeholder={placeholder}
+          style={{
+            width: 132,
+            background: "transparent",
+            border: "none",
+            outline: "none",
+            fontFamily: SOFT_SLATE.fontFamily,
+            fontWeight: 600,
+            fontSize: 12.5,
+            color: SOFT_SLATE.textPrimary,
+          }}
+        />
+      ) : (
+        <span style={{ fontFamily: SOFT_SLATE.fontFamily, fontWeight: 600, fontSize: 12.5, color: SOFT_SLATE.textMuted }}>
+          Other
+        </span>
+      )}
+
+      {active && (
+        <Tooltip label="Remove">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onChangeText("")
+              onToggle()
+            }}
+            aria-label="Remove"
+            style={{
+              border: "none",
+              background: "none",
+              color: SOFT_SLATE.textMuted,
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+            }}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+              <line x1="6" y1="6" x2="18" y2="18" />
+              <line x1="18" y1="6" x2="6" y2="18" />
+            </svg>
+          </button>
+        </Tooltip>
+      )}
     </div>
   )
 }
