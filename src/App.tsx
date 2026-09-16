@@ -638,7 +638,7 @@ function AppSidebar({
     setTimeout(() => {
       setShowLogoutLoading(false)
       onClose()
-      go("splash")
+      go("login")
     }, 1800)
   }
 
@@ -4738,32 +4738,16 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
                           border: "none",
                           borderRadius: 16,
                           background: SOFT_SLATE.green,
-                          color: "#ffffff",
+                          color: "#f6fafe",
                           fontSize: 14,
-                          fontWeight: 700,
-                          boxShadow: SOFT_SLATE.raisedBtn,
+                          fontWeight: 600,
+                          boxShadow: SOFT_SLATE.raisedBtnAlt,
                           cursor: "pointer",
                         }}
                       >
                         Start scan
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => go("barcode")}
-                        style={{
-                          padding: "15px 26px",
-                          border: "none",
-                          borderRadius: 16,
-                          background: SOFT_SLATE.bg,
-                          color: "#4a5158",
-                          fontSize: 14,
-                          fontWeight: 700,
-                          boxShadow: SOFT_SLATE.raisedBtnAlt,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Enter code manually
-                      </button>
+      
                     </div>
                   </div>
 
@@ -4951,6 +4935,7 @@ function DashboardScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
+
 // ── Barcode Scanner Screen — Soft Slate ─────────────────────────────────────
 // Reskinned to match DashboardScreen's neumorphic "Soft Slate" direction:
 // same SOFT_SLATE token set, same DashboardIconRail nav shell, raised/inset
@@ -5674,7 +5659,6 @@ function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
                   background: "#111111",
                   borderRadius: 20,
                   overflow: "hidden",
-                  boxShadow: SOFT_SLATE.insetLg,
                 }}
               >
                 <video
@@ -6197,7 +6181,6 @@ function BarcodeScannerScreen({ go }: { go: (s: Screen) => void }) {
               background: SOFT_SLATE.bg,
               borderRadius: 26,
               padding: 26,
-              boxShadow: SOFT_SLATE.raisedLg,
               boxSizing: "border-box",
             }}
           >
@@ -7059,7 +7042,6 @@ function OCRScannerScreen({ go }: { go: (s: Screen) => void }) {
                     background: "#111111",
                     borderRadius: 20,
                     overflow: "hidden",
-                    boxShadow: SOFT_SLATE.insetLg,
                   }}
                 >
                   <video
@@ -7371,8 +7353,9 @@ function OCRScannerScreen({ go }: { go: (s: Screen) => void }) {
         >
           <div
             style={{
-              width: "100%", maxWidth: 430, background: SOFT_SLATE.bg, borderRadius: 26, padding: 26,
-              boxShadow: "16px 16px 34px #b8bfc8, -16px -16px 34px #ffffff",
+              width: "100%", maxWidth: 430, 
+              background: SOFT_SLATE.bg, 
+              borderRadius: 26, padding: 26,
             }}
           >
             <h3 style={{ margin: "0 0 18px", fontWeight: 800, fontSize: 18, color: SOFT_SLATE.textPrimary }}>
@@ -7505,20 +7488,17 @@ function OCRScannerScreen({ go }: { go: (s: Screen) => void }) {
     </div>
   )
 }
-// ── Product Result Screen ─────────────────────────────────────────────────────
+
+// ── Product Result Screen — Soft Slate Neumorphic ─────────────────────────────
 function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
   const isDesktop = useIsDesktop()
 
-  // Nutrition grade (A–E) reflects ingredient/nutrition quality only — it is
-  // calculated from the product itself and is never lowered just because an
-  // ingredient happens to match this user's saved allergy profile. A product
-  // can be Grade A and still be flagged unsafe for a specific person; that
-  // personalized check is the separate Safety verdict below.
   const grade: NutritionGrade = "a"
 
   const verdict: CompareVerdict = "avoid"
   const verdictReason =
     "Flagged against your saved allergy profile — see allergens below."
+
   const allergens = ["wheat", "soy"]
 
   return (
@@ -7528,43 +7508,128 @@ function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
         minHeight: 0,
         display: "flex",
         flexDirection: "column",
-        background: C.offWhite,
+        position: "relative",
         overflow: "hidden",
+        background: SOFT_SLATE.bg,
+        fontFamily: SOFT_SLATE.fontFamily,
+        color: SOFT_SLATE.textPrimary,
       }}
     >
       {/* ── Header ───────────────────────────────────────────────────────── */}
-      <div>
-        <InfoHeader
-          title="Product Result"
-          subtitle="Scan analysis complete"
-          go={go}
-        />
+      <div
+        style={{
+          flexShrink: 0,
+          padding: isDesktop
+            ? "26px 40px 18px"
+            : "18px 16px 14px",
+          background: SOFT_SLATE.bg,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+          }}
+        >
+          {/* Back Button */}
+          <button
+            type="button"
+            onClick={() => go("barcode")}
+            aria-label="Back"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 15,
+              border: "none",
+              background: SOFT_SLATE.bg,
+              color: SOFT_SLATE.textPrimary,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              flexShrink: 0,
+              boxShadow: SOFT_SLATE.raisedSm,
+            }}
+          >
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
+          </button>
+
+          {/* Header Title */}
+          <div
+            style={{
+              minWidth: 0,
+            }}
+          >
+            <h1
+              style={{
+                margin: 0,
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: isDesktop ? 24 : 21,
+                fontWeight: 800,
+                lineHeight: 1.15,
+                letterSpacing: "-0.02em",
+                color: SOFT_SLATE.textPrimary,
+              }}
+            >
+              Product Result
+            </h1>
+
+            <p
+              style={{
+                margin: "4px 0 0",
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: 11,
+                lineHeight: 1.4,
+                color: SOFT_SLATE.textMuted,
+              }}
+            >
+              Scan analysis complete
+            </p>
+          </div>
+        </div>
       </div>
 
+      {/* ── Scrollable Content ───────────────────────────────────────────── */}
       <div
         style={{
           flex: 1,
           overflowY: "auto",
+          minHeight: 0,
         }}
       >
         <Center
           maxWidth={isDesktop ? 900 : 640}
           style={{
             padding: isDesktop
-              ? "30px 40px 40px"
-              : "0 16px 24px",
+              ? "10px 40px 40px"
+              : "8px 16px 28px",
+            boxSizing: "border-box",
           }}
         >
-          {/* ── Product Image ─────────────────────────────────────────────── */}
+          {/* ── Product Image ────────────────────────────────────────────── */}
           <div
             style={{
               width: "100%",
-              aspectRatio: "16/9",
-              borderRadius: C.radiusLg ?? 16,
-              background: C.white,
-              border: `1.5px solid ${C.border}`,
+              aspectRatio: "16 / 9",
+              borderRadius: 26,
+              background: SOFT_SLATE.bg,
               overflow: "hidden",
-              marginBottom: 16,
+              boxShadow: SOFT_SLATE.raisedLg,
+              boxSizing: "border-box",
+              marginBottom: 24,
             }}
           >
             <img
@@ -7573,28 +7638,36 @@ function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
               style={{
                 width: "100%",
                 height: "100%",
+                display: "block",
                 objectFit: "cover",
               }}
             />
           </div>
 
-          {/* ── Product Name + Grade ──────────────────────────────────────── */}
+          {/* ── Product Information ─────────────────────────────────────── */}
           <div
             style={{
+              width: "100%",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              marginBottom: 12,
+              gap: 20,
+              marginBottom: 20,
             }}
           >
-            <div>
+            <div
+              style={{
+                minWidth: 0,
+              }}
+            >
               <p
                 style={{
                   margin: 0,
-                  fontFamily: FONT_HEAD,
-                  fontWeight: 700,
-                  fontSize: 16,
-                  color: C.black,
+                  fontFamily: SOFT_SLATE.fontFamily,
+                  fontSize: isDesktop ? 24 : 21,
+                  fontWeight: 800,
+                  letterSpacing: "-0.02em",
+                  color: SOFT_SLATE.textPrimary,
                 }}
               >
                 Noodles Beef
@@ -7602,90 +7675,232 @@ function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
 
               <p
                 style={{
-                  margin: 0,
-                  fontFamily: FONT_BODY,
+                  margin: "5px 0 0",
+                  fontFamily: SOFT_SLATE.fontFamily,
                   fontSize: 12,
-                  color: "rgba(26,18,9,0.45)",
-                  marginTop: 2,
+                  color: SOFT_SLATE.textSecondary,
                 }}
               >
                 Brand · 85g pack
               </p>
             </div>
 
-            {/* Grade Badge */}
+            {/* ── Grade Badge ───────────────────────────────────────────── */}
             <div
               style={{
+                width: 82,
+                height: 82,
+                borderRadius: 22,
+                background: SOFT_SLATE.bg,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 4,
+                justifyContent: "center",
                 flexShrink: 0,
+                boxShadow: SOFT_SLATE.raisedMd,
+                gap: 3,
               }}
             >
-              <GradeBadge grade={grade} size={56} />
+              <GradeBadge
+                grade={grade}
+                size={52}
+              />
 
               <span
                 style={{
-                  fontFamily: FONT_BODY,
-                  fontSize: 9,
+                  fontFamily: SOFT_SLATE.fontFamily,
+                  fontSize: 8,
                   fontWeight: 700,
-                  letterSpacing: "0.05em",
+                  letterSpacing: "0.1em",
                   textTransform: "uppercase",
-                  color: "rgba(26,18,9,0.42)",
+                  color: SOFT_SLATE.textMuted,
                 }}
               >
-                grade
+                Grade
               </span>
             </div>
           </div>
 
-          {/* ── Grade Scale ──────────────────────────────────────────────── */}
+          {/* ── Nutrition Grade Scale ───────────────────────────────────── */}
           <div
             style={{
-              marginBottom: 20,
+              width: "100%",
+              padding: "16px 18px",
+              borderRadius: 20,
+              background: SOFT_SLATE.bg,
+              boxShadow: SOFT_SLATE.insetMd,
+              boxSizing: "border-box",
+              marginBottom: 22,
             }}
           >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                marginBottom: 10,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: SOFT_SLATE.fontFamily,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: SOFT_SLATE.textMuted,
+                }}
+              >
+                Nutrition Grade
+              </span>
+
+              <span
+                style={{
+                  fontFamily: SOFT_SLATE.fontFamily,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: SOFT_SLATE.green,
+                }}
+              >
+                A — Excellent
+              </span>
+            </div>
+
             <GradeScale grade={grade} />
           </div>
 
           {/* ── Allergy & Safety ─────────────────────────────────────────── */}
           <div
             style={{
-              borderRadius: 14,
-              background: C.white,
-              border: `1.5px solid rgba(224,167,46,0.2)`,
-              padding: "14px 16px",
+              width: "100%",
+              borderRadius: 26,
+              background: SOFT_SLATE.bg,
+              padding: isDesktop ? "24px" : "20px",
+              boxShadow: SOFT_SLATE.raisedLg,
+              boxSizing: "border-box",
               marginBottom: 24,
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
             }}
           >
-            <p
+            {/* Section Header */}
+            <div
               style={{
-                margin: 0,
-                fontFamily: FONT_HEAD,
-                fontWeight: 700,
-                fontSize: 11,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: "rgba(26,18,9,0.5)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                marginBottom: 16,
               }}
             >
-              Allergy &amp; safety
-            </p>
+              <div>
+                <p
+                  style={{
+                    margin: 0,
+                    fontFamily: SOFT_SLATE.fontFamily,
+                    fontSize: 16,
+                    fontWeight: 800,
+                    color: SOFT_SLATE.textPrimary,
+                  }}
+                >
+                  Allergy & Safety
+                </p>
 
-            <StatusBadge verdict={verdict} reason={verdictReason} size="lg" />
+                <p
+                  style={{
+                    margin: "3px 0 0",
+                    fontFamily: SOFT_SLATE.fontFamily,
+                    fontSize: 10,
+                    color: SOFT_SLATE.textMuted,
+                  }}
+                >
+                  Personalized safety check
+                </p>
+              </div>
 
-            <AllergenList allergens={allergens} />
+              {/* Safety Icon Well */}
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 13,
+                  background: SOFT_SLATE.bg,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: SOFT_SLATE.insetSm,
+                  flexShrink: 0,
+                }}
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={SOFT_SLATE.unsafe}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 3 20 7v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4Z" />
+                  <path d="M12 8v4" />
+                  <path d="M12 16h.01" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Safety Status */}
+            <div
+              style={{
+                width: "100%",
+                padding: "15px 16px",
+                borderRadius: 18,
+                background: SOFT_SLATE.bg,
+                boxShadow: SOFT_SLATE.insetMd,
+                boxSizing: "border-box",
+                marginBottom: 16,
+              }}
+            >
+              <StatusBadge
+                verdict={verdict}
+                reason={verdictReason}
+                size="lg"
+              />
+            </div>
+
+            {/* Allergens */}
+            <div
+              style={{
+                width: "100%",
+                padding: "15px 16px",
+                borderRadius: 18,
+                background: SOFT_SLATE.bg,
+                boxShadow: SOFT_SLATE.raisedSm,
+                boxSizing: "border-box",
+              }}
+            >
+              <p
+                style={{
+                  margin: "0 0 10px",
+                  fontFamily: SOFT_SLATE.fontFamily,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: SOFT_SLATE.textSecondary,
+                }}
+              >
+                Detected Allergens
+              </p>
+
+              <AllergenList allergens={allergens} />
+            </div>
           </div>
 
-          {/* ── Action Buttons ────────────────────────────────────────────── */}
+          {/* ── Action Buttons ───────────────────────────────────────────── */}
           <div
             style={{
+              width: "100%",
               display: "flex",
-              gap: 12,
+              flexDirection: isDesktop ? "row" : "column",
+              gap: 14,
             }}
           >
             {/* SAVE */}
@@ -7693,15 +7908,32 @@ function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
               type="button"
               style={{
                 flex: 1,
-                padding: "13px",
-                borderRadius: 14,
-                border: `1.5px solid rgba(224,167,46,0.4)`,
-                background: "transparent",
-                color: C.greenLight,
-                fontFamily: FONT_HEAD,
-                fontWeight: 400,
-                fontSize: 14,
+                minHeight: 52,
+                padding: "14px 20px",
+                border: "none",
+                borderRadius: 17,
+                background: SOFT_SLATE.bg,
+                color: SOFT_SLATE.green,
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: "0.04em",
                 cursor: "pointer",
+                boxShadow: SOFT_SLATE.raisedBtn,
+                transition:
+                  "transform 0.15s ease, box-shadow 0.15s ease",
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.boxShadow =
+                  SOFT_SLATE.insetMd
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.boxShadow =
+                  SOFT_SLATE.raisedBtn
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow =
+                  SOFT_SLATE.raisedBtn
               }}
             >
               SAVE
@@ -7713,19 +7945,35 @@ function ProductResultScreen({ go }: { go: (s: Screen) => void }) {
               onClick={() => go("productCompare")}
               style={{
                 flex: 1,
-                padding: "13px",
-                borderRadius: 14,
+                minHeight: 52,
+                padding: "14px 20px",
                 border: "none",
-                background:
-                  "linear-gradient(135deg, #E0A72E, #C98A1F)",
-                color: C.offWhite,
-                fontFamily: FONT_HEAD,
-                fontWeight: 400,
-                fontSize: 14,
+                borderRadius: 17,
+                background: SOFT_SLATE.green,
+                color: "#ffffff",
+                fontFamily: SOFT_SLATE.fontFamily,
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: "0.04em",
                 cursor: "pointer",
+                boxShadow: SOFT_SLATE.raisedBtn,
+                transition:
+                  "transform 0.15s ease, box-shadow 0.15s ease",
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.boxShadow =
+                  SOFT_SLATE.insetMd
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.boxShadow =
+                  SOFT_SLATE.raisedBtn
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow =
+                  SOFT_SLATE.raisedBtn
               }}
             >
-              COMPARE
+              COMPARE PRODUCTS
             </button>
           </div>
         </Center>
