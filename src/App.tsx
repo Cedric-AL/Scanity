@@ -7,9 +7,11 @@ import {
   type CSSProperties,
   type ChangeEvent,
 } from "react"
+
 import { createWorker } from "tesseract.js"
 import { BrowserMultiFormatReader, type IScannerControls } from "@zxing/browser"
 import { BarcodeFormat, DecodeHintType } from "@zxing/library"
+
 import logoImg from "@/imports/image-19.png"
 import beefNoodlesImg from "@/imports/beef_noodles.jpeg"
 import chickenNoodlesImg from "@/imports/chicken_noodles.jpeg"
@@ -10289,9 +10291,21 @@ function ProductCompareScreen({
         fontFamily: SOFT_SLATE.fontFamily,
       }}
     >
-      {/* ── Dashboard-style icon rail ───────────────────────────────────── */}
-
-      <DashboardIconRail go={go} isDesktop={isDesktop} />
+      {/* ── ICON RAIL — same geometry as Scan History ───────────────────── */}
+{isDesktop && (
+  <div
+    style={{
+      position: "fixed",
+      top: 22,
+      left: 26,
+      bottom: 22,
+      width: 80,
+      zIndex: 5,
+    }}
+  >
+    <DashboardIconRail go={go} isDesktop />
+  </div>
+)}
 
       {/* ── Mobile menu button ────────────────────────────────────────────── */}
 
@@ -11067,6 +11081,7 @@ function ProductCompareScreen({
     </div>
   )
 }
+
 
 // Same data the Dashboard panel reads from — no separate placeholder set.
 function ScanHistoryScreen({ go }: { go: (s: Screen) => void }) {
@@ -13932,30 +13947,6 @@ function LegalScreen({
                 </div>
               </div>
 
-              <Tooltip label="Back to Settings">
-                <button
-                  type="button"
-                  onClick={() => go("settings")}
-                  aria-label="Back to Settings"
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: "50%",
-                    background: SOFT_SLATE.bg,
-                    border: "none",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: SOFT_SLATE.raisedSm,
-                    cursor: "pointer",
-                    flexShrink: 0,
-                  }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                </button>
-              </Tooltip>
             </div>
 
             {/* Intro card */}
@@ -14312,30 +14303,6 @@ function DeleteAccountScreen({
         )}
 
         <div style={{ padding: isDesktop ? "22px 40px 8px 0" : "18px 14px 0" }}>
-          <Tooltip label="Back to Settings">
-            <button
-              type="button"
-              onClick={() => go("settings")}
-              aria-label="Back to Settings"
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: "50%",
-                background: SOFT_SLATE.bg,
-                border: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: SOFT_SLATE.raisedSm,
-                cursor: "pointer",
-                flexShrink: 0,
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={SOFT_SLATE.green} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
-          </Tooltip>
         </div>
 
         <div
