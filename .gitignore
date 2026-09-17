@@ -11,3 +11,13 @@ logs/
 *.log
 .claude-replay.*
 .tmp-*
+
+# Python / backend
+BackEnd/venv/
+BackEnd/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.db
+*.sqlite3
